@@ -4,15 +4,16 @@
 
 int main(void)
 {
-    led_init();
-    led_off();
+    led0Init();
+    led1Init();
+    led0Off();
      
     mthread* th3 = mthread::create("th3",512,0,20,[&](){
         //using MyString = std::basic_string<char, std::char_traits<char>, mMemAllocator<char>>;
-        int m = 100;
         while(1)
         {
             mthread::threadDelay(1000);
+            led1Toggle();
             printf("get event\r\n");
         }
     });
@@ -48,9 +49,9 @@ int main(void)
     while(1)
     {
        mthread::threadSleep(1000);
-       led_on();
+       led0On();
        mthread::threadSleep(1000);
-       led_off();
+       led0Off();
        printf("thread run now\r\n");
     }
     return 0;

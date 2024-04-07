@@ -5,9 +5,16 @@
 #endif
 #include "sys.h"
 
-void led_init();
-void led_on();
-void led_off();
+void led0Init();
+void led0On();
+void led0Off();
+void led0Toggle();
+
+void led1Init();
+void led1On();
+void led1Off();
+void led1Toggle();
+
 #ifdef __cplusplus
 }
 #endif 

@@ -37,7 +37,7 @@
  * @retval    错误代码: 0, 成功; 1, 错误;
  */
 
-HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, uint32_t pllq)
+HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, uint32_t pllq, uint32_t pllr)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -69,7 +69,7 @@ HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, 
     RCC_OscInitStruct.PLL.PLLN = plln;
     RCC_OscInitStruct.PLL.PLLP = pllp;
     RCC_OscInitStruct.PLL.PLLQ = pllq;
-    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLR = pllr;
     RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
     RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
     RCC_OscInitStruct.PLL.PLLFRACN = 0;
@@ -105,11 +105,11 @@ HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, 
     * USB 工作需要 48MHz 的时钟,可以由 PLL1Q,PLL3Q 和 HSI48 提供,这里配置时钟源是 HSI48
     */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_QSPI | RCC_PERIPHCLK_USART16 | RCC_PERIPHCLK_FMC | RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USB;	   	// 设置时钟
-    PeriphClkInitStruct.PLL2.PLL2M = 8;
-    PeriphClkInitStruct.PLL2.PLL2N = 440;
-    PeriphClkInitStruct.PLL2.PLL2P = 2;
-    PeriphClkInitStruct.PLL2.PLL2Q = 2;
-    PeriphClkInitStruct.PLL2.PLL2R = 2;
+    PeriphClkInitStruct.PLL2.PLL2M = pllm;
+    PeriphClkInitStruct.PLL2.PLL2N = plln;
+    PeriphClkInitStruct.PLL2.PLL2P = pllp;
+    PeriphClkInitStruct.PLL2.PLL2Q = pllq;
+    PeriphClkInitStruct.PLL2.PLL2R = pllr;
     PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_0;
     PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
     PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
@@ -137,7 +137,7 @@ void hwInit()
     SCB_EnableICache();		// 使能ICache
 	  SCB_EnableDCache();		// 使能DCache
     HAL_Init(); //初始化 HAL 库
-    Stm32_Clock_Init(5,192,2,2); //设置时钟,480Mhz
+    Stm32_Clock_Init(PLLM_VALUE,PLLN_VALUE,PLLP_VALUE,PLLQ_VALUE,PLLR_VALUE); //设置时钟,480Mhz
     /* System Clock Update */
     SystemCoreClockUpdate();
     delay_init(HAL_RCC_GetSysClockFreq()/1000000);//1US跑的tick数
