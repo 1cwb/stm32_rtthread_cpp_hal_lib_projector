@@ -440,24 +440,3 @@ void mMem::plugHoles(struct heapMem_t *mem)
         ((struct heapMem_t *)&heapPtr_[mem->next])->prev = (uint8_t *)pmem - heapPtr_;
     }
 }
-
-
-void* operator new(size_t size) 
-{
-    return mMem::getInstance()->malloc(size);
-}
-
-void* operator new[](size_t size) 
-{
-    return mMem::getInstance()->malloc(size);
-}
-
-void operator delete(void* ptr) noexcept 
-{
-    mMem::getInstance()->free(ptr);
-}
-
-void operator delete[](void* ptr) noexcept 
-{
-    mMem::getInstance()->free(ptr);
-}

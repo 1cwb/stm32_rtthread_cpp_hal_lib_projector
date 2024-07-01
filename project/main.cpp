@@ -5,14 +5,15 @@
 #include "icm42688.h"
 #include <math.h>
 #include <list>
+#include "containers.hpp"
+#include "atomic.h"
 //using namespace std;
 	int16_t iTemperature = 0;
 	icm42688RawData_t stAccData;
 	icm42688RawData_t stGyroData;
-	
+mAtomic<uint32_t> u32val(0);
 int main(void)
 {
-
     /*RCC_PeriphCLKInitTypeDef  PeriphClkInit;
     HAL_RCCEx_GetPeriphCLKConfig(&PeriphClkInit);
     printf("PeriphClkInit.Spi45ClockSelection = %ld, freq = %lu\r\n",PeriphClkInit.Spi45ClockSelection,HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45));
@@ -27,6 +28,8 @@ int main(void)
     led0Off();
     spi4Init();
     bsp_Icm42688Init();
+    u32val |= 0x12;
+    printf("u32 = %lu\r\n",u32val);
     mthread* th3 = mthread::create("th3",512,0,20,[&](){
         //using MyString = std::basic_string<char, std::char_traits<char>, mMemAllocator<char>>;
         //using MyList = std::list<test1*, mMemAllocator<test1*>>;

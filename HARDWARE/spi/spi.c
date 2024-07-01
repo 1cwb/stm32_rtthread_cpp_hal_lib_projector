@@ -52,7 +52,7 @@ void spi1Init()
   SPI1Handler.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
   SPI1Handler.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
   SPI1Handler.Init.IOSwap = SPI_IO_SWAP_DISABLE;
-  HAL_SPI_Init(&SPI1Handler) != HAL_OK;
+  HAL_SPI_Init(&SPI1Handler);
 }
 void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
 {
