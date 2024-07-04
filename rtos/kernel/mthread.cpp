@@ -609,6 +609,10 @@ mTimer* mthread::getThTimer()
 {
     return &thTimer_;
 }
+mTimer_t* mthread::getThTimer_t()
+{
+    return reinterpret_cast<mTimer_t*>(&thTimer_);
+}
 char* mthread::name() const
 {
     return ((mObject_t*)&thData_)->name;

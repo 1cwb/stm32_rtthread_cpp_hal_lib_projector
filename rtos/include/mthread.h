@@ -175,6 +175,7 @@ public:
      */
     mResult threadDetach();
     mTimer* getThTimer();
+    mTimer_t* getThTimer_t();
     char* name() const;
 private:
     mResult threadInit( const char       *name,

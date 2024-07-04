@@ -181,6 +181,10 @@ public:
     mMutex()
     {
     }
+    mMutex(const char *name, mIpcFlag flag)
+    {
+        init(name, flag);
+    }
     ~mMutex()
     {
 

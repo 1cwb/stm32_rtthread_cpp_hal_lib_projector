@@ -94,7 +94,8 @@ enum mResult
     M_RESULT_EBUSY               =         7,               /**< Busy */
     M_RESULT_EIO                 =         8,               /**< IO error */
     M_RESULT_EINTR               =         9,               /**< Interrupted system call */
-    M_RESULT_EINVAL              =         10               /**< Invalid argument */
+    M_RESULT_EINVAL              =         10,              /**< Invalid argument */
+    M_RESULT_EXIST               =         11,
 };
 /**@}*/
 

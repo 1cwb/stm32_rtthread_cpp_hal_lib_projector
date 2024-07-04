@@ -7,6 +7,7 @@
 #include <list>
 #include "containers.hpp"
 #include "atomic.h"
+//#include "platform.hpp"
 //using namespace std;
 	int16_t iTemperature = 0;
 	icm42688RawData_t stAccData;

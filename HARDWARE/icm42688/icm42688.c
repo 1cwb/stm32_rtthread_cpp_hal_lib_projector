@@ -70,8 +70,8 @@ static uint8_t icm42688_write_reg(uint8_t reg, uint8_t value)
 {
 #if defined(ICM_USE_HARD_SPI)
     ICM_SPI_CS_LOW();
-    Icm_Spi_ReadWriteNbytes(&reg, 1);
-    Icm_Spi_ReadWriteNbytes(&value, 1);
+    HAL_SPI_Transmit(getSpi4Handler(), &reg, 1, 0xffff);
+    HAL_SPI_Transmit(getSpi4Handler(), &value, 1, 0xffff);
     ICM_SPI_CS_HIGH();
 #elif defined(ICM_USE_HARD_I2C)
 #endif
