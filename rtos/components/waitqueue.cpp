@@ -46,6 +46,12 @@ mResult mWqueue::wait(int condition, int timeout)
         }
         HW::hwInterruptEnable(level);
         mSchedule::getInstance()->schedule();
+        if (tid->error != M_RESULT_EOK)
+        {
+            /*if timeout return error */
+            remove(&__wait);
+            return tid->error;
+        }
         level = HW::hwInterruptDisable();
     }while(0);
     queue_.flag = WQFLAGS::WQ_FLAG_CLEAN;

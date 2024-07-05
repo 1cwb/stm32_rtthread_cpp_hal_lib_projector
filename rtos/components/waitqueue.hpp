@@ -39,6 +39,7 @@ using wqueueNode_t = wqueueNode;
 
 class mWqueue
 {
+public:
     mWqueue() = default;
     mWqueue(const mWqueue& mq) = default;
     mWqueue(mWqueue&& mq) = default;
