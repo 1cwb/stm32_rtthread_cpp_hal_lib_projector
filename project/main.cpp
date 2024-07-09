@@ -16,18 +16,6 @@
 	icm42688RawData_t stGyroData;
 int main(void)
 {
-    /*RCC_PeriphCLKInitTypeDef  PeriphClkInit;
-    HAL_RCCEx_GetPeriphCLKConfig(&PeriphClkInit);
-    printf("PeriphClkInit.Spi45ClockSelection = %ld, freq = %lu\r\n",PeriphClkInit.Spi45ClockSelection,HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45));
-    memset(&PeriphClkInit, 0, sizeof(PeriphClkInit));
-    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_SPI45;
-    PeriphClkInit.Spi45ClockSelection = RCC_SPI45CLKSOURCE_HSE;
-    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-    memset(&PeriphClkInit, 0, sizeof(PeriphClkInit));
-    printf("PeriphClkInit.Spi45ClockSelection = %ld, freq = %lu\r\n",PeriphClkInit.Spi45ClockSelection,HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI45));*/
-    
-    //led1Init();
-    //led0Off();
     int fd = -1;
     mResult ret = mopen(LED0_DEVICE_PATH, 0666, &fd);
     if(ret != M_RESULT_EOK)
@@ -40,12 +28,8 @@ int main(void)
     bsp_Icm42688Init();
     delay_ms(1000);
     printf("WHOAMI:%x\r\n",bsp_WhoAmi());
-    mSemaphore waiteq;
-    waiteq.init("test",0,IPC_FLAG_FIFO);
+
     mthread* th3 = mthread::create("th3",512,0,20,[&](){
-        //using MyString = std::basic_string<char, std::char_traits<char>, mMemAllocator<char>>;
-        //using MyList = std::list<test1*, mMemAllocator<test1*>>;
-        //MyList listxx;
         
         while(1)
         {
@@ -62,7 +46,6 @@ int main(void)
     }
 
     mthread* th4 = mthread::create("th4",512,0,20,[&](){
-        //using MyString = std::basic_string<char, std::char_traits<char>, mMemAllocator<char>>;
         while(1)
         {
             mthread::threadDelay(2000);
