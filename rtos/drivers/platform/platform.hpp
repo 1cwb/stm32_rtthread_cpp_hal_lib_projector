@@ -30,5 +30,16 @@ namespace mdev
     };
 };
 
-extern "C" mResult registerDriver(const char* name, const mdev::fileOperations_t* fops, mdev::mode_t mode, void* data);
-extern "C" mResult unregisterDriver(const char* name);
+extern "C" {
+mResult registerDriver(const char* name, const mdev::fileOperations_t* fops, mdev::mode_t mode, void* data);
+mResult unregisterDriver(const char* name);
+mResult mopen(const char* path, int flags, int* outfd, ...);
+mResult mclose(int fd);
+ssize_t mread(int fd, void* buffer, size_t buflen);
+ssize_t mread(int fd, void* buffer, size_t buflen);
+ssize_t mwrite(int fd, const void* buffer, size_t buflen);
+mResult mioctl(int fd, int cmd, unsigned long arg);
+mResult mpoll(struct pollfd_t* fds, unsigned int nfds, int timeout, int* pollCount);
+bool maccess(const char* pathname);
+void mshowFiles();
+}

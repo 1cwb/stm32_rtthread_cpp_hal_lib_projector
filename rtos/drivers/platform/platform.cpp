@@ -1,10 +1,12 @@
 #include "platform.hpp"
 #include "mdev.hpp"
-
+#include "containers.hpp"
 #include <stdlib.h>
 #include "mthread.h"
 #include "mpoll.hpp"
-#if 0
+
+const mdev::fileOperations_t mdev::mDev::fops = {};
+
 mMutex devmutex("devmtx",IPC_FLAG_FIFO);
 mMutex filemutex("filemtx",IPC_FLAG_FIFO);
 
@@ -46,11 +48,12 @@ class VFile : public mdev::mDev
 public:
     VFile(const char* fname, mode_t mode) : mdev::mDev(fname){}
     virtual ~VFile() override = default;
-    /*ssize_t write(mdev::file_t* phandle, const char* buffer, size_t buflen)override
+    ssize_t write(mdev::file_t* phandle, const char* buffer, size_t buflen)override
     {
+        printf("virtual file write\r\n");
         pollNotify(POLLIN);
         return buflen;
-    }*/
+    }
 };
 
 static mdev::mDev* getDev(const char* name)
@@ -140,7 +143,7 @@ extern "C"
         devmutex.mutexRelease();
         return ret;
     }
-    mResult mopen(const char* path, int flags, ...)
+    mResult mopen(const char* path, int flags, int* outfd, ...)
     {
         printf("%s()%d\r\n",__FUNCTION__,__LINE__);
         mdev::mDev* dev = getDev(path);
@@ -153,7 +156,7 @@ extern "C"
             strncmp(path, "/dev/", 5) != 0)
         {
             va_list p;
-            va_start(p, flags);
+            va_start(p, outfd);
             mode = va_arg(p, int);
             va_end(p);
 
@@ -174,6 +177,7 @@ extern "C"
                 }
             }
             filemutex.mutexRelease();
+            *outfd = i;
             if(i < MAX_DRV_FD_SIZE)
             {
                 ret = dev->open(&filemap[i]);
@@ -246,17 +250,77 @@ extern "C"
         }
         return ret;
     }
-#if 1
-    mResult mpoll(struct pollfd_t* fd, unsigned int nfds, int timeout)
+    mResult mpoll(struct pollfd_t* fds, unsigned int nfds, int timeout, int* pollCount)
     {
         if(nfds == 0)
         {
             return M_RESULT_EINVAL;
         }
-        int num;
-        
+        mSemaphore sem;
+        int count = 0;
+        mResult ret = M_RESULT_ERROR;
+        *pollCount = 0;
+
+        sem.init(mthread::threadSelf()->name, 0, IPC_FLAG_FIFO);
+        bool fdpollable = false;
+
+        for(unsigned int i = 0; i < nfds; ++i)
+        {
+            fds[i].sem = sem.getSem();
+            fds[i].revents = 0;
+            fds[i].priv = nullptr;
+            mdev::mDev* dev = getFile(fds[i].fd);
+
+            if(dev)
+            {
+                ret = dev->poll(&filemap[fds[i].fd], &fds[i], true);
+                if(ret != M_RESULT_EOK)
+                {
+                    printf("%s()%d poll error %d\r\n",__FUNCTION__,__LINE__,ret);
+                    break;
+                }
+                if(ret == M_RESULT_EOK)
+                {
+                    fdpollable = true;
+                }
+            }
+        }
+        if(fdpollable)
+        {
+            if(timeout > 0)
+            {
+                int32_t tickcount = mClock::getInstance()->tickGet() + timeout;
+                ret = sem.semTake(tickcount);
+                if(ret == M_RESULT_ETIMEOUT)
+                {
+                    printf("%s()%d timeout\r\n",__FUNCTION__,__LINE__);
+                }
+            }
+            else if(timeout < 0)
+            {
+                sem.semTake(WAITING_FOREVER);
+            }
+            for(unsigned int i = 0; i < nfds; ++i)
+            {
+                mdev::mDev* dev = getFile(fds[i].fd);
+                if(dev)
+                {
+                    ret = dev->poll(&filemap[fds[i].fd], &fds[i], false);
+                    if(ret != M_RESULT_EOK)
+                    {
+                        break;
+                    }
+                    if(fds[i].revents)
+                    {
+                        count += i;
+                    }
+                }
+            }
+        }
+        sem.detach();
+        *pollCount = count;
+        return ret;
     }
-#endif
     bool maccess(const char* pathname)
     {
         mdev::mDev* dev = getDev(pathname);
@@ -277,4 +341,3 @@ extern "C"
         devmutex.mutexRelease();
     }
 };
-#endif

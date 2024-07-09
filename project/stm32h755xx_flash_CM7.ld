@@ -83,6 +83,12 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
+  
+       /* section information for initial. */
+    initStart = .;
+    KEEP(*(SORT(.initfunc*)))
+    initEnd = .;
+    . = ALIGN(4);
   } >FLASH
 
   .ARM.extab   : { 

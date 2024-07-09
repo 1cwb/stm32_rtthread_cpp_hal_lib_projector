@@ -19,7 +19,7 @@ static float gyroSensitivity  = 32.8f;
 #define ICM_PIN_SPIX_CS	     GPIO_PIN_11
 #define ICM_SPI_CS_LOW()     HAL_GPIO_WritePin(ICM_PORT_SPIX_CS, ICM_PIN_SPIX_CS, GPIO_PIN_RESET)
 #define ICM_SPI_CS_HIGH()    HAL_GPIO_WritePin(ICM_PORT_SPIX_CS, ICM_PIN_SPIX_CS, GPIO_PIN_SET)
-
+#if 0
 static void Icm_Spi_ReadWriteNbytes(uint8_t* pBuffer, uint8_t len)
 {
     uint8_t i = 0;
@@ -36,6 +36,7 @@ static void Icm_Spi_ReadWriteNbytes(uint8_t* pBuffer, uint8_t len)
     }
 #endif
 }
+#endif
 #endif
 
 static uint8_t icm42688_read_reg(uint8_t reg)
@@ -59,8 +60,14 @@ static void icm42688_read_regs(uint8_t reg, uint8_t* buf, uint16_t len)
 #if defined(ICM_USE_HARD_SPI)
     reg |= 0x80;
     ICM_SPI_CS_LOW();
-    HAL_SPI_Transmit(getSpi4Handler(), &reg, 1, 0xffff);
-    HAL_SPI_Receive(getSpi4Handler(), buf, len, 0xffff);
+    if(HAL_SPI_Transmit(getSpi4Handler(), &reg, 1, 0xffff)!=HAL_OK)
+    {
+        printf("Error %s%d\r\n",__FUNCTION__,__LINE__);
+    }
+    if(HAL_SPI_Receive(getSpi4Handler(), buf, len, 0xffff) != HAL_OK)
+    {
+        printf("Error %s%d\r\n",__FUNCTION__,__LINE__);
+    }
     ICM_SPI_CS_HIGH();
 #elif defined(ICM_USE_HARD_I2C)
 #endif
@@ -70,8 +77,14 @@ static uint8_t icm42688_write_reg(uint8_t reg, uint8_t value)
 {
 #if defined(ICM_USE_HARD_SPI)
     ICM_SPI_CS_LOW();
-    HAL_SPI_Transmit(getSpi4Handler(), &reg, 1, 0xffff);
-    HAL_SPI_Transmit(getSpi4Handler(), &value, 1, 0xffff);
+    if(HAL_SPI_Transmit(getSpi4Handler(), &reg, 1, 0xffff) != HAL_OK)
+    {
+        printf("Error %s%d\r\n",__FUNCTION__,__LINE__);
+    }
+    if(HAL_SPI_Transmit(getSpi4Handler(), &value, 1, 0xffff) != HAL_OK)
+    {
+        printf("Error %s%d\r\n",__FUNCTION__,__LINE__);
+    }
     ICM_SPI_CS_HIGH();
 #elif defined(ICM_USE_HARD_I2C)
 #endif
@@ -265,3 +278,7 @@ int8_t bsp_IcmGetRawData(icm42688RawData_t* accData, icm42688RawData_t* GyroData
     return 0;
 }
 
+uint8_t bsp_WhoAmi()
+{
+    return icm42688_read_reg(ICM42688_WHO_AM_I);
+}

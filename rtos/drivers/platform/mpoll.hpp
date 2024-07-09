@@ -15,28 +15,12 @@
 #define POLLNVAL        (0x10)
 
 #define POLLMASK_DEFAULT (POLLIN | POLLOUT | POLLRDNORM | POLLWRNORM)
-#if 0
+
 struct pollfd_t
 {
     int fd;
     short events;
     short revents;
+    mSemaphore_t* sem;
+    void* priv;
 };
-
-struct rt_poll_node;
-
-struct rt_poll_table
-{
-    rt_pollreq_t req;
-    rt_uint32_t triggered; /* the waited thread whether triggered */
-    rt_thread_t polling_thread;
-    struct rt_poll_node *nodes;
-};
-
-struct rt_poll_node
-{
-    struct rt_wqueue_node wqn;
-    struct rt_poll_table *pt;
-    struct rt_poll_node *next;
-};
-#endif

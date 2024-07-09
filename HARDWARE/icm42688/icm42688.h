@@ -192,6 +192,7 @@ int8_t bsp_IcmGetTemperature(int16_t* pTemp);
 int8_t bsp_IcmGetAccelerometer(icm42688RawData_t *accData);
 int8_t bsp_IcmGetGyroscope(icm42688RawData_t *GyroData);
 int8_t bsp_IcmGetRawData(icm42688RawData_t *accData,icm42688RawData_t *GyroData);
+uint8_t bsp_WhoAmi();
 #ifdef __cplusplus
 }
 #endif 

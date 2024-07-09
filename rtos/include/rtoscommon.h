@@ -81,6 +81,18 @@ typedef __gnuc_va_list          va_list;
 #define ALIGN(n)                    __attribute__((aligned(n)))
 #define M_WEAK                      __attribute__((weak))
 
+typedef int (*initFunc)(void);
+struct initDesc_t
+{
+    const char* fnName; //函数名称
+    const initFunc fn;  //函数指针
+};
+
+#define INIT_EXPORT(fn, level)                                                       \
+    const char __init_##fn##_name[] = #fn;                                            \
+    M_USED const struct initDesc_t __initDesc_t_##fn SECTION(".initfunc." level) = \
+    { __init_##fn##_name, fn};
+
 /* RT-Thread error code definitions */
 enum mResult
 {
@@ -96,6 +108,9 @@ enum mResult
     M_RESULT_EINTR               =         9,               /**< Interrupted system call */
     M_RESULT_EINVAL              =         10,              /**< Invalid argument */
     M_RESULT_EXIST               =         11,
+    M_RESULT_NODEV               =         12,
+    M_RESULT_NOFILE              =         13,
+    M_RESULT_BADF                =         14,
 };
 /**@}*/
 

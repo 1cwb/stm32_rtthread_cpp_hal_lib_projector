@@ -156,6 +156,7 @@ public:
      * @return the error code
      */
     mResult semControl(mIpcCmd cmd, void *arg);
+    mSemaphore_t* getSem() {return &sem_;}
 private:
 
         /**
