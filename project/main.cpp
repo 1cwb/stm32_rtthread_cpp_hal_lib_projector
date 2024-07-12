@@ -15,6 +15,8 @@
 	icm42688RawData_t stGyroData;
 int main(void)
 {
+    printf("WHOAMI:%x\r\n",bsp_WhoAmi());
+
     mthread* th3 = mthread::create("th3",512,0,20,[&](){
         
         while(1)
@@ -49,6 +51,7 @@ int main(void)
             i = 0;
         }
         tim1->setTimerAndStart(200);
+        mthread::showAllThreadStackSizeInfo();
         //printf("timeout\r\n");
     });
     tim1->start();

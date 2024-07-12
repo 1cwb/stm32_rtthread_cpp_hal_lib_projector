@@ -131,6 +131,12 @@ void mSchedule::schedule(void)
 #endif
 
         /* get switch to thread */
+        if(threadPriorityTable_[highestReadyPriority].isEmpty())
+        {
+            printf("Error: all thread sleep\r\n");
+            printf("Error: do not use threadSleep in idle thread\r\n");
+            while(1);
+        }
         toThread = listEntry(threadPriorityTable_[highestReadyPriority].next, struct thread_t, tlist);
 
         /* if the destination thread is not the same as current thread */

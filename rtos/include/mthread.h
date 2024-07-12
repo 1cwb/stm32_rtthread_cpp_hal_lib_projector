@@ -177,6 +177,10 @@ public:
     mTimer* getThTimer();
     mTimer_t* getThTimer_t();
     char* name() const;
+    int32_t getTotalStackSize() const {return thData_.stackSize;}
+    int32_t getFreeStackSize() {return (reinterpret_cast<uint8_t*>(thData_.sp) - reinterpret_cast<uint8_t*>(thData_.stackAddr));}
+
+    static void showAllThreadStackSizeInfo();
 private:
     mResult threadInit( const char       *name,
                         void (*entry)(void *parameter),
