@@ -110,7 +110,8 @@ enum mResult
     M_RESULT_EXIST               =         11,
     M_RESULT_NODEV               =         12,
     M_RESULT_NOFILE              =         13,
-    M_RESULT_BADF                =         14,
+    M_RESULT_NOTTY               =         14,
+    M_RESULT_BADF                =         15,
 };
 /**@}*/
 

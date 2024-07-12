@@ -8,22 +8,13 @@
 #include "containers.hpp"
 #include "atomic.h"
 #include "waitqueue.hpp"
-#include "platform.hpp"
-#include "mled.hpp"
+
 //using namespace std;
 	int16_t iTemperature = 0;
 	icm42688RawData_t stAccData;
 	icm42688RawData_t stGyroData;
 int main(void)
 {
-    int fd = -1;
-    mResult ret = mopen(LED0_DEVICE_PATH, 0666, &fd);
-    if(ret != M_RESULT_EOK)
-    {
-        printf("open %s error\r\n",LED0_DEVICE_PATH);
-    }
-    mshowFiles();
-    mioctl(fd, LED_OFF, 0);
     spi4Init();
     bsp_Icm42688Init();
     delay_ms(1000);
@@ -34,8 +25,7 @@ int main(void)
         while(1)
         {
             mthread::threadDelay(20);
-            //led1Toggle();
-            mioctl(fd, LED_TOGGLE, 0);
+            led1Toggle();
             bsp_IcmGetRawData(&stAccData,&stGyroData);
 			printf("AccX:%d--AccY:%d--AccZ:%d----GyroX:%d--GyroY:%d--GyroZ:%d\r\n",stAccData.x,stAccData.y,stAccData.z,stGyroData.x,stGyroData.y,stGyroData.z);
         }
