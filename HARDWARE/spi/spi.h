@@ -5,7 +5,7 @@
 #endif
 #include "sys.h"
 #include "delay.h"
-void spi4Init();
+int spi4Init();
 void spi1Init();
 SPI_HandleTypeDef* getSpi4Handler();
 SPI_HandleTypeDef* getSpi1Handler();

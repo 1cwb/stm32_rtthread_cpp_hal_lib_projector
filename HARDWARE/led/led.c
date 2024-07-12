@@ -1,5 +1,7 @@
 #include "led.h"
-void led0Init()
+#include "mbase.h"
+
+int led0Init()
 {
     GPIO_InitTypeDef GPIO_Initure;
     __HAL_RCC_GPIOE_CLK_ENABLE(); //开启 GPIOE 时钟
@@ -8,7 +10,9 @@ void led0Init()
     GPIO_Initure.Pull=GPIO_NOPULL; //上拉
     GPIO_Initure.Speed= GPIO_SPEED_FREQ_MEDIUM; //高速
     HAL_GPIO_Init(GPIOE,&GPIO_Initure);
+    return 0;
 }
+INIT_EXPORT(led0Init, "0.1");
 void led0On()
 {
     HAL_GPIO_WritePin(GPIOE,GPIO_PIN_9,GPIO_PIN_RESET);
@@ -22,7 +26,7 @@ void led0Toggle()
     HAL_GPIO_TogglePin(GPIOE,GPIO_PIN_9);
 }
 
-void led1Init()
+int led1Init()
 {
     GPIO_InitTypeDef GPIO_Initure;
     __HAL_RCC_GPIOA_CLK_ENABLE(); //开启 GPIOC 时钟
@@ -31,7 +35,9 @@ void led1Init()
     GPIO_Initure.Pull=GPIO_NOPULL; //上拉
     GPIO_Initure.Speed= GPIO_SPEED_FREQ_MEDIUM; //高速
     HAL_GPIO_Init(GPIOA,&GPIO_Initure);
+    return 0;
 }
+INIT_EXPORT(led1Init, "0.1");
 void led1On()
 {
     HAL_GPIO_WritePin(GPIOA,GPIO_PIN_7,GPIO_PIN_RESET); //PC13 置 0

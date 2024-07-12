@@ -5,12 +5,12 @@
 #endif
 #include "sys.h"
 
-void led0Init();
+int led0Init();
 void led0On();
 void led0Off();
 void led0Toggle();
 
-void led1Init();
+int led1Init();
 void led1On();
 void led1Off();
 void led1Toggle();

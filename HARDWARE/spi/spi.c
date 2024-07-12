@@ -1,6 +1,7 @@
 #include "spi.h"
+#include "mbase.h"
 static SPI_HandleTypeDef SPI4Handler;
-void spi4Init()
+int spi4Init()
 {
   SPI4Handler.Instance = SPI4;
   SPI4Handler.Init.Mode = SPI_MODE_MASTER;
@@ -25,8 +26,9 @@ void spi4Init()
   SPI4Handler.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
   SPI4Handler.Init.IOSwap = SPI_IO_SWAP_DISABLE;
   HAL_SPI_Init(&SPI4Handler);
+  return 0;
 }
-
+INIT_EXPORT(spi4Init, "0.1");
 static SPI_HandleTypeDef SPI1Handler;
 void spi1Init()
 {

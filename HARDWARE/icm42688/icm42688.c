@@ -1,4 +1,5 @@
 #include "icm42688.h"
+#include "mbase.h"
 #if defined(ICM_USE_HARD_SPI)
 #include "spi.h"
 
@@ -149,11 +150,11 @@ float bsp_Icm42688GetGres(uint8_t Gscale)
 int8_t bsp_Icm42688RegCfg(void)
 {
     uint8_t reg_val = 0;
-    reg_val = icm42688_read_reg(ICM42688_WHO_AM_I);
+
     icm42688_write_reg(ICM42688_REG_BANK_SEL, 0); 
     icm42688_write_reg(ICM42688_REG_BANK_SEL, 0x01);
     ICM42688DelayMs(100);
-
+    reg_val = icm42688_read_reg(ICM42688_WHO_AM_I);
 
     if(reg_val == ICM42688_ID)
     {
@@ -206,11 +207,11 @@ int8_t bsp_Icm42688RegCfg(void)
     return -1;
 }
 
-int8_t bsp_Icm42688Init(void)
+int bsp_Icm42688Init(void)
 {
     return(bsp_Icm42688RegCfg());
 }
-
+INIT_EXPORT(bsp_Icm42688Init, "1");
 int8_t bsp_IcmGetTemperature(int16_t* pTemp)
 {
     uint8_t buffer[2] = {0};

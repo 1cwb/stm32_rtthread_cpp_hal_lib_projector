@@ -15,11 +15,6 @@
 	icm42688RawData_t stGyroData;
 int main(void)
 {
-    spi4Init();
-    bsp_Icm42688Init();
-    delay_ms(1000);
-    printf("WHOAMI:%x\r\n",bsp_WhoAmi());
-
     mthread* th3 = mthread::create("th3",512,0,20,[&](){
         
         while(1)
@@ -60,9 +55,9 @@ int main(void)
     while(1)
     {
        mthread::threadSleep(1000);
-       //led0On();
+       led0On();
        mthread::threadSleep(1000);
-       //led0Off();
+       led0Off();
        //HAL_Delay(200);
        delay_ms(200);
        //printf("thread run now\r\n");
