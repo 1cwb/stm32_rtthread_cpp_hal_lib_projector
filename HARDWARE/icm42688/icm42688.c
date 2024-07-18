@@ -211,7 +211,7 @@ int bsp_Icm42688Init(void)
 {
     return(bsp_Icm42688RegCfg());
 }
-INIT_EXPORT(bsp_Icm42688Init, "1");
+//INIT_EXPORT(bsp_Icm42688Init, "1");
 int8_t bsp_IcmGetTemperature(int16_t* pTemp)
 {
     uint8_t buffer[2] = {0};

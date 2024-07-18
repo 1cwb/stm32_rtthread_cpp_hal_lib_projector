@@ -100,7 +100,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     GPIO_InitStruct.Mode=GPIO_MODE_OUTPUT_PP; //复用推挽输出
     GPIO_InitStruct.Pull=GPIO_PULLUP; //上拉
     GPIO_InitStruct.Speed=GPIO_SPEED_FREQ_VERY_HIGH; //高速
-    HAL_GPIO_Init(GPIOE,&GPIO_InitStruct); //初始化
+    HAL_GPIO_Init(GPIOE,&GPIO_InitStruct); //初始化、
   }
   if(spiHandle->Instance==SPI1)
   {
@@ -173,4 +173,12 @@ SPI_HandleTypeDef* getSpi4Handler()
 SPI_HandleTypeDef* getSpi1Handler()
 {
   return &SPI1Handler;
+}
+GPIO_TypeDef* getSpi4CsGpio()
+{
+  return GPIOE;
+}
+uint16_t getSpi4GpioNum()
+{
+  return GPIO_PIN_11;
 }
