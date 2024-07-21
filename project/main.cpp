@@ -1,19 +1,17 @@
 #include "stm32h7xx_hal.h"
 #include "led.h"
 #include "mthread.h"
-#include "spi.h"
 #include <math.h>
 #include <list>
 #include "containers.hpp"
 #include "atomic.h"
 #include "waitqueue.hpp"
 #include "DFRobot_ICM42688.h"
-//#include "icm42688.h"
+#include "mplatform.hpp"
 //using namespace std;
 	//int16_t iTemperature = 0;
 	//icm42688RawData_t stAccData;
 	//icm42688RawData_t stGyroData;
-
 int main(void)
 {
     //printf("WHOAMI:%x\r\n",bsp_WhoAmi());
@@ -79,7 +77,7 @@ int main(void)
        mthread::threadSleep(1000);
        led0Off();
        //HAL_Delay(200);
-       delay_ms(200);
+       //delay_ms(200);
        //printf("thread run now\r\n");
     }
     return 0;

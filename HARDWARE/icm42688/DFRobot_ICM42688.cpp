@@ -28,12 +28,13 @@ DFRobot_ICM42688::DFRobot_ICM42688()
 int DFRobot_ICM42688::begin(void)
 {
   uint8_t bank = 0;
+  printf("begin to write reg\r\n");
   writeReg(ICM42688_REG_BANK_SEL,&bank,1);
   delay_ms(100);
   uint8_t id=0;
   if(readReg(ICM42688_WHO_AM_I,&id,1) == 0){
     DBG("bus data access error");
-    return ERR_DATA_BUS;
+    //return ERR_DATA_BUS;
   }
   DBG("real sensor id= %d\r\n",id)
   if(id != DFRobot_ICM42688_ID){
@@ -734,17 +735,22 @@ bool DFRobot_ICM42688::setUIFilter(uint8_t who,uint8_t filterOrder ,uint8_t UIFi
   return ret;
 }
 
-DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI(GPIO_TypeDef * gpiox, uint16_t csPin, SPI_HandleTypeDef* spix)
+DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI()
 {
-  _gpiox = gpiox;
-  _pSpi = spix;
-  _csPin = csPin;
+  mspi = reinterpret_cast<mDev::mSpi*> (mDev::mPlatform::getInstance()->getDevice("spi4"));
+  if(!mspi)
+  {
+    printf("Error: spi4 not init yet\r\n");
+  }
   begin();
 }
 
 int DFRobot_ICM42688_SPI::begin(void)
 {
-  HAL_GPIO_WritePin(_gpiox, _csPin, GPIO_PIN_SET);
+  if(mspi)
+  {
+    mspi->csDisable();
+  }
   return DFRobot_ICM42688::begin();
 }
 
@@ -753,23 +759,34 @@ void DFRobot_ICM42688_SPI::writeReg(uint8_t reg, void* pBuf, size_t size)
   if(pBuf == NULL){
      DBG("pBuf ERROR!! : null pointer");
   }
-  HAL_GPIO_WritePin(_gpiox, _csPin, GPIO_PIN_RESET);
-  HAL_SPI_Transmit(_pSpi, &reg, 1, 10000);
-  HAL_SPI_Transmit(_pSpi, (const uint8_t*)pBuf, size, 10000);
-  HAL_GPIO_WritePin(_gpiox, _csPin, GPIO_PIN_SET);
+  if(!mspi)
+  {
+    printf("Error: spi4 not init yet\r\n");
+    return;
+  }
+  if(mspi->writeReg(reg, (uint8_t*)pBuf, size) != M_RESULT_EOK)
+  {
+    printf("ERROR: SPI WRITE REG ERROR\r\n");
+  }
 }
 
 uint8_t DFRobot_ICM42688_SPI::readReg(uint8_t reg, void* pBuf, size_t size)
 {
+  uint8_t ret = 0;
   if(pBuf == NULL){
 	  DBG("pBuf ERROR!! : null pointer");
   }
-  reg |= 0x80;
-  HAL_GPIO_WritePin(_gpiox, _csPin, GPIO_PIN_RESET);
-  HAL_SPI_Transmit(_pSpi, &reg, 1, 10000);
-  HAL_SPI_Receive(_pSpi, (uint8_t*)pBuf, size, 10000);
-  HAL_GPIO_WritePin(_gpiox, _csPin, GPIO_PIN_SET);
-  return (_pSpi->RxXferSize - _pSpi->RxXferCount);
+  if(!mspi)
+  {
+    printf("Error: spi4 not init yet\r\n");
+    return 0;
+  }
+  ret = (uint8_t)mspi->readReg(reg, (uint8_t*)pBuf, size);
+  if(ret != (uint8_t)M_RESULT_EOK)
+  {
+    printf("ERROR: SPI READ REG ERROR\r\n");
+  }
+  return ret;
 }
 
 static DFRobot_ICM42688_SPI* icm42688 = nullptr;
@@ -873,11 +890,11 @@ void interruptMode(DFRobot_ICM42688_SPI* dev)
 
 int init42688()
 {
-  icm42688 = new DFRobot_ICM42688_SPI(getSpi4CsGpio(), getSpi4GpioNum(), getSpi4Handler());
+  icm42688 = new DFRobot_ICM42688_SPI();
   getDataByFIFO(icm42688);
   return 0;
 }
-INIT_EXPORT(init42688, "1");
+INIT_EXPORT(init42688, "3");
 
 DFRobot_ICM42688_SPI* getIcm42688Driver()
 {

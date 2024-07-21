@@ -15,8 +15,7 @@
 //#include <Wire.h>
 #include "stdio.h"
 #include "stdint.h"
-#include "stm32h7xx_hal_gpio.h"
-#include "spi.h"
+#include "mspi.hpp"
 
 //Open this macro and you can see the details of the program
 #define ENABLE_DBG
@@ -1267,7 +1266,7 @@ private:
 
 class DFRobot_ICM42688_SPI:public DFRobot_ICM42688{
 public:
-  DFRobot_ICM42688_SPI(GPIO_TypeDef * gpiox, uint16_t csPin, SPI_HandleTypeDef* spix);
+  DFRobot_ICM42688_SPI();
   /**
    * @fn begin
    * @brief Init function
@@ -1299,9 +1298,8 @@ protected:
   virtual uint8_t readReg(uint8_t reg, void* pBuf, size_t size) override;
 
 private:
-  SPI_HandleTypeDef *_pSpi;
-  uint16_t _csPin;
-  GPIO_TypeDef* _gpiox;
+  mDev::mSpi* mspi = nullptr;
 };
 DFRobot_ICM42688_SPI* getIcm42688Driver();
+int init42688();
 #endif
