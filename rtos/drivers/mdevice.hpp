@@ -15,6 +15,9 @@ public:
     mDevice& operator=(const mDevice&) = delete;
     mDevice& operator=(mDevice&&) = delete;
     const char* getDeviceName() const {return _devname;}
+
+    virtual mResult init(){return M_RESULT_EOK;}
+    virtual mResult deInit(){return M_RESULT_EOK;}
 protected:
     const char* _devname = nullptr;
 private:

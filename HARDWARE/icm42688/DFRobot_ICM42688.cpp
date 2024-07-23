@@ -735,7 +735,7 @@ bool DFRobot_ICM42688::setUIFilter(uint8_t who,uint8_t filterOrder ,uint8_t UIFi
   return ret;
 }
 
-DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI()
+DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI():mDevice("icm42688")
 {
   mspi = reinterpret_cast<mDev::mSpi*> (mDev::mPlatform::getInstance()->getDevice("spi4"));
   if(!mspi)
@@ -789,7 +789,6 @@ uint8_t DFRobot_ICM42688_SPI::readReg(uint8_t reg, void* pBuf, size_t size)
   return ret;
 }
 
-static DFRobot_ICM42688_SPI* icm42688 = nullptr;
 void getAccelGyroData(DFRobot_ICM42688_SPI* dev)
 {
   if(dev)
@@ -890,13 +889,8 @@ void interruptMode(DFRobot_ICM42688_SPI* dev)
 
 int init42688()
 {
-  icm42688 = new DFRobot_ICM42688_SPI();
+  static DFRobot_ICM42688_SPI* icm42688 = new DFRobot_ICM42688_SPI();
   getDataByFIFO(icm42688);
   return 0;
 }
 INIT_EXPORT(init42688, "3");
-
-DFRobot_ICM42688_SPI* getIcm42688Driver()
-{
-  return icm42688;
-}

@@ -1,5 +1,5 @@
 #include "stm32h7xx_hal.h"
-#include "led.h"
+#include "mled.hpp"
 #include "mthread.h"
 #include <math.h>
 #include <list>
@@ -16,13 +16,15 @@ int main(void)
 {
     //printf("WHOAMI:%x\r\n",bsp_WhoAmi());
     
-    DFRobot_ICM42688_SPI* icm42688 = getIcm42688Driver();
+    DFRobot_ICM42688_SPI* icm42688 = (DFRobot_ICM42688_SPI*)mDev::mPlatform::getInstance()->getDevice("icm42688");
+    mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
+    mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
     mthread* th3 = mthread::create("th3",512,0,20,[&](){
         float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
         {
             mthread::threadDelay(20);
-            led1Toggle();
+            led1->toggle();
             #if 1
             icm42688->getFIFOData();
             tempData= icm42688->getTemperature();
@@ -73,9 +75,9 @@ int main(void)
     while(1)
     {
        mthread::threadSleep(1000);
-       led0On();
+       led0->on();
        mthread::threadSleep(1000);
-       led0Off();
+       led0->off();
        //HAL_Delay(200);
        //delay_ms(200);
        //printf("thread run now\r\n");

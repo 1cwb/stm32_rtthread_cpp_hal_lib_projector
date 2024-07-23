@@ -1264,9 +1264,11 @@ private:
 };
 
 
-class DFRobot_ICM42688_SPI:public DFRobot_ICM42688{
+class DFRobot_ICM42688_SPI:public DFRobot_ICM42688, public mDev::mDevice
+{
 public:
   DFRobot_ICM42688_SPI();
+  virtual ~DFRobot_ICM42688_SPI() = default;
   /**
    * @fn begin
    * @brief Init function
@@ -1297,9 +1299,9 @@ protected:
    */
   virtual uint8_t readReg(uint8_t reg, void* pBuf, size_t size) override;
 
+  virtual mResult init(){return M_RESULT_EOK;}
+  virtual mResult deInit(){return M_RESULT_EOK;}
 private:
   mDev::mSpi* mspi = nullptr;
 };
-DFRobot_ICM42688_SPI* getIcm42688Driver();
-int init42688();
 #endif
