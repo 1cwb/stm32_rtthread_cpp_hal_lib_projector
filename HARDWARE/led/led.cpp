@@ -36,7 +36,7 @@ void ledx::toggle()
 {
     HAL_GPIO_TogglePin(_gpiox, _pin);
 }
-
+#if 0
 int led0Init()
 {
     static ledx*  led0 = new ledx("led0",GPIOE,GPIO_PIN_9,[](){__HAL_RCC_GPIOE_CLK_ENABLE();});
@@ -52,3 +52,4 @@ int led1Init()
     return 0;
 }
 INIT_EXPORT(led1Init, "0.1");
+#endif

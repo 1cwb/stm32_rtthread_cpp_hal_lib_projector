@@ -5,7 +5,7 @@ namespace mDev
 class mLed : public mDevice
 {
 public: 
-    mLed(const char* name) : mDevice(name){}
+    explicit mLed(const char* name) : mDevice(name){}
     ~mLed() = default;
     virtual void on(){}
     virtual void off(){}

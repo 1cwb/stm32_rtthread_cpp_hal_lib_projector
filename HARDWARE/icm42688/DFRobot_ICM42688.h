@@ -1299,8 +1299,11 @@ protected:
    */
   virtual uint8_t readReg(uint8_t reg, void* pBuf, size_t size) override;
 
-  virtual mResult init(){return M_RESULT_EOK;}
+  virtual mResult init();
   virtual mResult deInit(){return M_RESULT_EOK;}
+  void getAccelGyroData();
+  void getDataByFIFO();
+  void interruptMode();
 private:
   mDev::mSpi* mspi = nullptr;
 };

@@ -5,7 +5,7 @@ namespace mDev
 class mDevice
 {
 public:
-    mDevice(const char* name):_devname(name)
+    explicit mDevice(const char* name):_devname(name)
     {
         mPlatform::getInstance()->registerDevice(_devname,this);
     }

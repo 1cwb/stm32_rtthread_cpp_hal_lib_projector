@@ -48,7 +48,7 @@ CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys -fno-rtti -std=c++11 -fcheck-new -fno-exce
 ASM_COMPILE_FLAGS 	:= -x assembler-with-cpp -Wa,-mimplicit-it=thumb
 #################################################################################################
 EXTRA_LINK_FLAGS	:= -g -gdwarf-2 -lc -lm -lstdc++ -lnosys -T$(LINK_FILES) \
-						-Wl,-Map=$(OUTPUTDIR)/$(TARGET).map,--cref,--no-warn-mismatch \
+						-Wl,-u_printf_float,-Map=$(OUTPUTDIR)/$(TARGET).map,--cref,--no-warn-mismatch \
 						-specs=nano.specs -specs=nosys.specs
 
 #################################################################################################

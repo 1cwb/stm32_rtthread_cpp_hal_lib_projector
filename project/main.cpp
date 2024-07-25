@@ -15,11 +15,11 @@
 int main(void)
 {
     //printf("WHOAMI:%x\r\n",bsp_WhoAmi());
-    
+    printf("tony %f\r\n",0.01);
     DFRobot_ICM42688_SPI* icm42688 = (DFRobot_ICM42688_SPI*)mDev::mPlatform::getInstance()->getDevice("icm42688");
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
-    mthread* th3 = mthread::create("th3",512,0,20,[&](){
+    mthread* th3 = mthread::create("th3",1024,0,20,[&](){
         float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
         {
@@ -35,12 +35,12 @@ int main(void)
             gyroDataY= icm42688->getGyroDataY();
             gyroDataZ= icm42688->getGyroDataZ();
             //printf("Temperature: %d C ",(int32_t)tempData);
-            printf("Accel_X: %d mg ",(int32_t)accelDataX);
-            printf("Accel_Y: %d mg ",(int32_t)accelDataY);
-            printf("Accel_Z: %d mg ",(int32_t)accelDataZ);
-            printf("Gyro_X: %d dps ",(int32_t)gyroDataX);
-            printf("Gyro_Y: %d dps ",(int32_t)gyroDataY);
-            printf("Gyro_Z: %d dps\r\n",(int32_t)gyroDataZ);
+            printf("A_X: %lf mg ",accelDataX);
+            printf("A_Y: %lf mg ",accelDataY);
+            printf("A_Z: %lf mg ",accelDataZ);
+            printf("G_X: %lf dps ",gyroDataX);
+            printf("G_Y: %lf dps ",gyroDataY);
+            printf("G_Z: %lf dps\r\n",gyroDataZ);
             #endif
             //bsp_IcmGetRawData(&stAccData,&stGyroData);
 			//printf("AccX:%d--AccY:%d--AccZ:%d----GyroX:%d--GyroY:%d--GyroZ:%d\r\n",stAccData.x,stAccData.y,stAccData.z,stGyroData.x,stGyroData.y,stGyroData.z);

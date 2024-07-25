@@ -32,12 +32,11 @@ int DFRobot_ICM42688::begin(void)
   writeReg(ICM42688_REG_BANK_SEL,&bank,1);
   delay_ms(100);
   uint8_t id=0;
-  if(readReg(ICM42688_WHO_AM_I,&id,1) == 0){
-    DBG("bus data access error");
-    //return ERR_DATA_BUS;
-  }
+  readReg(ICM42688_WHO_AM_I,&id,1);
+
   DBG("real sensor id= %d\r\n",id)
   if(id != DFRobot_ICM42688_ID){
+    DBG("bus data access error");
     return ERR_IC_VERSION;
   }
   uint8_t reset = 0;
@@ -789,19 +788,16 @@ uint8_t DFRobot_ICM42688_SPI::readReg(uint8_t reg, void* pBuf, size_t size)
   return ret;
 }
 
-void getAccelGyroData(DFRobot_ICM42688_SPI* dev)
+void DFRobot_ICM42688_SPI::getAccelGyroData()
 {
-  if(dev)
-  {
-    dev->setODRAndFSR(/* who= */GYRO,/* ODR= */ODR_1KHZ, /* FSR = */FSR_0);
-    dev->setODRAndFSR(/* who= */ACCEL,/* ODR= */ODR_500HZ, /* FSR = */FSR_0);
-    dev->startTempMeasure();
-    dev->startGyroMeasure(/* mode= */LN_MODE);
-    dev->startAccelMeasure(/* mode= */LN_MODE);
-  }
+    setODRAndFSR(/* who= */GYRO,/* ODR= */ODR_1KHZ, /* FSR = */FSR_0);
+    setODRAndFSR(/* who= */ACCEL,/* ODR= */ODR_500HZ, /* FSR = */FSR_0);
+    startTempMeasure();
+    startGyroMeasure(/* mode= */LN_MODE);
+    startAccelMeasure(/* mode= */LN_MODE);
 }
 
-void getDataByFIFO(DFRobot_ICM42688_SPI* dev)
+void DFRobot_ICM42688_SPI::getDataByFIFO()
 {
   /**
    * Set ODR and Full-scale range of gyroscope or accelerometer
@@ -836,8 +832,8 @@ void getDataByFIFO(DFRobot_ICM42688_SPI* dev)
    * Note：
    * In FIFO mode, set gyroscope and accelerometer ODR to be the same and the selected ODR should be no more than 8KHz. Otherwise, the temperature data integration rate will not match reading rate.
   */
-  dev->setODRAndFSR(/* who= */GYRO,/* ODR= */ODR_1KHZ, /* FSR = */FSR_0);
-  dev->setODRAndFSR(/* who= */ACCEL,/* ODR= */ODR_1KHZ, /* FSR = */FSR_0);
+  setODRAndFSR(/* who= */GYRO,/* ODR= */ODR_1KHZ, /* FSR = */FSR_0);
+  setODRAndFSR(/* who= */ACCEL,/* ODR= */ODR_1KHZ, /* FSR = */FSR_0);
   /**
    * Set gyroscope and accelerometer working mode
    * mode 
@@ -846,13 +842,13 @@ void getDataByFIFO(DFRobot_ICM42688_SPI* dev)
    *      LP_MODE_ONLY_ACCEL  2     Set low-power mode, only support accelerometer
    *      LN_MODE  3                Set low-noise mode
    */
-  dev->startTempMeasure();
-  dev->startGyroMeasure(/* mode= */LN_MODE);
-  dev->startAccelMeasure(/* mode= */LN_MODE);
-  dev->startFIFOMode();  //Enable FIFO
+  startTempMeasure();
+  startGyroMeasure(/* mode= */LN_MODE);
+  startAccelMeasure(/* mode= */LN_MODE);
+  startFIFOMode();  //Enable FIFO
 }
 
-void interruptMode(DFRobot_ICM42688_SPI* dev)
+void DFRobot_ICM42688_SPI::interruptMode()
 {
   /**
    * Set interrupt mode
@@ -861,11 +857,11 @@ void interruptMode(DFRobot_ICM42688_SPI* dev)
    * INTPolarity Interrupt output level polarity, 0 represents interrupt pin polarity is LOW when producing interrupt, 1 represents interrupt pin polarity is HIGH when producing interrupt
    * INTDriveCircuit  0 represents Open drain  1 represents Push pull
    */
-  dev->setINTMode(/*INTPin=*/1, /*INTmode=*/0, /*INTPolarity=*/0, /*INTDriveCircuit=*/1);
+  setINTMode(/*INTPin=*/1, /*INTmode=*/0, /*INTPolarity=*/0, /*INTDriveCircuit=*/1);
   /**
    * @brief Wake on motion init
    */
-  dev->wakeOnMotionInit();
+  wakeOnMotionInit();
 
   /**
    * Set wake on motion interrupt threshold of axis accelerometer
@@ -876,7 +872,7 @@ void interruptMode(DFRobot_ICM42688_SPI* dev)
    *       ALL
    * threshold  Range(0-255) [WoM thresholds are expressed in fixed “mg” independent of the selected Range [0g : 1g]; Resolution 1g/256=~3.9mg]
    */
-  dev->setWOMTh(/*axis=*/ALL,/*threshold=*/98);
+  setWOMTh(/*axis=*/ALL,/*threshold=*/98);
 
   /**
    * Set essential motion detection mode and enable SMD interrupt
@@ -884,13 +880,19 @@ void interruptMode(DFRobot_ICM42688_SPI* dev)
    *       2 : SMD short (1 sec wait) An SMD event is detected when two WOM are detected 1 sec apart
    *       3 : SMD long (3 sec wait) An SMD event is detected when two WOM are detected 3 sec apart
    */
-  dev->enableSMDInterrupt(/*mode=*/3);
+  enableSMDInterrupt(/*mode=*/3);
 }
-
+mResult DFRobot_ICM42688_SPI::init()
+{
+    getDataByFIFO();
+    return M_RESULT_EOK;
+}
+# if 0
 int init42688()
 {
   static DFRobot_ICM42688_SPI* icm42688 = new DFRobot_ICM42688_SPI();
-  getDataByFIFO(icm42688);
+  icm42688->getDataByFIFO();
   return 0;
 }
 INIT_EXPORT(init42688, "3");
+#endif

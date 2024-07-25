@@ -112,7 +112,7 @@ mResult mSpi4::read(uint8_t* buff, size_t len)
     }
     return M_RESULT_EOK;
 }
-
+#if 0
 static mSpi4* spi4 = nullptr;
 int spi4InitFunc()
 {
@@ -125,3 +125,4 @@ int spi4InitFunc()
     return 0;
 }
 INIT_EXPORT(spi4InitFunc, "1");
+#endif
