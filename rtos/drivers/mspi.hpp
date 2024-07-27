@@ -6,9 +6,10 @@ class mSpi : public mDevice
 {
 public:
     mSpi() = delete;
-    explicit mSpi(const char* name) : mDevice(name){}
+    explicit mSpi(const char* name, const mDev::initCallbackExt& cb) : mDevice(name, cb){}
     virtual ~mSpi() = default;
-
+    virtual mResult init(){return mDevice::init();}
+    virtual mResult deInit(){return mDevice::deInit();}
     inline virtual void csEnable(){}
     inline virtual void csDisable(){}
     virtual mResult write(const uint8_t* buff, size_t len){return M_RESULT_EOK;}

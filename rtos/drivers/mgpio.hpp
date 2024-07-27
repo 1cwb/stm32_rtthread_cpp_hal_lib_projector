@@ -1,10 +1,26 @@
 #pragma once
 #include "mdevice.hpp"
+#include <functional>
 namespace mDev
 {
 class mGpio : public mDevice
 {
-    explicit mGpio(const char* name) : mDevice(name) {}
+public:
+    enum GPIOLEVEL
+    {
+        LEVEL_LOW = 0,
+        LEVEL_HIGH = 1
+    };
+
+    explicit mGpio(const char* name, const mDev::initCallbackExt& cb) : mDevice(name, cb) {}
     virtual ~mGpio() = default;
+    virtual void setLevel(GPIOLEVEL level){}
+    virtual GPIOLEVEL getLevel(){return LEVEL_LOW;}
+    virtual void toggle(){}
+    virtual mResult interruptEnable(bool benable){return M_RESULT_EOK;}
+    virtual mResult init(){return mDevice::init();}
+    virtual mResult deInit(){return mDevice::deInit();}
+private:
+    
 };
 }

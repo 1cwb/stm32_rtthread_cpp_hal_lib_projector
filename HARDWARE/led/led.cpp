@@ -4,14 +4,7 @@
 mResult ledx::init()
 {
     GPIO_InitTypeDef GPIO_Initure;
-    if(_rccEanbleFunc)
-    {
-        _rccEanbleFunc();
-    }
-    else
-    {
-        printf("Warning: make sure the Clock is enabled\r\n");
-    }
+    mDev::mLed::init();
     GPIO_Initure.Pin=_pin; //PC9
     GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP; //推挽输出
     GPIO_Initure.Pull=GPIO_NOPULL; //上拉
@@ -21,6 +14,7 @@ mResult ledx::init()
 }
 mResult ledx::deInit()
 {
+    mDev::mLed::deInit();
     HAL_GPIO_DeInit(_gpiox, _pin);
     return M_RESULT_EOK;
 }

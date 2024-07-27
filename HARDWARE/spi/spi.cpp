@@ -1,5 +1,5 @@
 #include "spi.hpp"
-mSpi4::mSpi4(const char* name) : mSpi(name)
+mSpi4::mSpi4(const char* name, const mDev::initCallbackExt &cb) : mSpi(name, cb)
 {
 
 }
@@ -78,12 +78,14 @@ mResult mSpi4::init()
     HAL_GPIO_Init(GPIOE,&GPIO_InitStruct); //初始化、
     _spiGpioCs = GPIO_PIN_11;
     _spiGpioGroup = GPIOE;
+    mDev::mSpi::init();
     return M_RESULT_EOK;
 }
 mResult mSpi4::deInit()
 {
     __HAL_RCC_SPI4_CLK_DISABLE();
     HAL_GPIO_DeInit(GPIOE, GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14);
+    mDev::mSpi::deInit();
     return M_RESULT_EOK;
 }
 void mSpi4::csEnable()

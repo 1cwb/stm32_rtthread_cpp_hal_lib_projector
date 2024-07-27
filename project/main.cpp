@@ -35,12 +35,14 @@ int main(void)
             gyroDataY= icm42688->getGyroDataY();
             gyroDataZ= icm42688->getGyroDataZ();
             //printf("Temperature: %d C ",(int32_t)tempData);
+            #if 0
             printf("A_X: %lf mg ",accelDataX);
             printf("A_Y: %lf mg ",accelDataY);
             printf("A_Z: %lf mg ",accelDataZ);
             printf("G_X: %lf dps ",gyroDataX);
             printf("G_Y: %lf dps ",gyroDataY);
             printf("G_Z: %lf dps\r\n",gyroDataZ);
+            #endif
             #endif
             //bsp_IcmGetRawData(&stAccData,&stGyroData);
 			//printf("AccX:%d--AccY:%d--AccZ:%d----GyroX:%d--GyroY:%d--GyroZ:%d\r\n",stAccData.x,stAccData.y,stAccData.z,stGyroData.x,stGyroData.y,stGyroData.z);

@@ -5,7 +5,7 @@ class mSpi4 : public mDev::mSpi
 {
 public:
     mSpi4() = delete;
-    explicit mSpi4(const char* name);
+    explicit mSpi4(const char* name, const mDev::initCallbackExt &cb);
     virtual ~mSpi4();
     virtual mResult init();
     virtual mResult deInit();
