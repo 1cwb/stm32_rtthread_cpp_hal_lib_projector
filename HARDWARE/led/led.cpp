@@ -3,8 +3,8 @@
 #include "containers.hpp"
 mResult ledx::init()
 {
-    GPIO_InitTypeDef GPIO_Initure;
     mDev::mLed::init();
+    GPIO_InitTypeDef GPIO_Initure;
     GPIO_Initure.Pin=_pin; //PC9
     GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP; //推挽输出
     GPIO_Initure.Pull=GPIO_NOPULL; //上拉

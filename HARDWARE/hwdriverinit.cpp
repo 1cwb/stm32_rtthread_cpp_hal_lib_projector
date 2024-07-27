@@ -11,14 +11,9 @@
 int initAllDevice()
 {
     mDev::mDevice* led0 = new ledx("led0",GPIOE,GPIO_PIN_9,[](bool benable){ if(benable) __HAL_RCC_GPIOE_CLK_ENABLE(); else __HAL_RCC_GPIOE_CLK_DISABLE();});
-    led0->init();
     mDev::mDevice* led1 = new ledx("led1",GPIOA,GPIO_PIN_7,[](bool benable){if(benable) __HAL_RCC_GPIOA_CLK_ENABLE(); else __HAL_RCC_GPIOA_CLK_DISABLE();});
-    led1->init();
     mDev::mDevice* spi4 = new mSpi4("spi4",[](bool b){});
-    spi4->init();
     mDev::mDevice* df42688 = new DFRobot_ICM42688_SPI();
-    df42688->init();
-
     mDev::mDevice* gpiob0 = new gpiox("gpiob0",[](bool benable){
         if(benable)
         {
@@ -30,10 +25,9 @@ int initAllDevice()
             HAL_NVIC_EnableIRQ(EXTI0_IRQn);
         }
     },GPIOB,GPIO_PIN_0,GPIO_MODE_IT_RISING,GPIO_PULLDOWN);
-    gpiob0->init();
     gpiob0->registerInterruptCb([](mDev::mDevice* dev){
-        gpiox* gpiob0 = reinterpret_cast<gpiox*>(dev);
-        __HAL_GPIO_EXTI_CLEAR_IT(gpiob0->getPin());
+        gpiox* gpio0 = reinterpret_cast<gpiox*>(dev);
+        __HAL_GPIO_EXTI_CLEAR_IT(gpio0->getPin());
         printf("worinimabi\r\n");
     });
     return 0;
@@ -42,7 +36,6 @@ INIT_EXPORT(initAllDevice, "1");
 
 extern "C" void EXTI0_IRQHandler(void)
 {
-    printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\r\n");
     mDev::mDevice* dev = nullptr;
     if((dev = mDev::mPlatform::getInstance()->getDevice("gpiob0")) != nullptr)
     {

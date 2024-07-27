@@ -1,7 +1,7 @@
 #include "spi.hpp"
 mSpi4::mSpi4(const char* name, const mDev::initCallbackExt &cb) : mSpi(name, cb)
 {
-
+    mSpi4::init();
 }
 mSpi4::~mSpi4()
 {
@@ -14,7 +14,7 @@ mResult mSpi4::init()
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
     PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PCLK2;
     HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-
+    mDev::mSpi::init();
     __HAL_RCC_SPI4_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
 
@@ -78,7 +78,6 @@ mResult mSpi4::init()
     HAL_GPIO_Init(GPIOE,&GPIO_InitStruct); //初始化、
     _spiGpioCs = GPIO_PIN_11;
     _spiGpioGroup = GPIOE;
-    mDev::mSpi::init();
     return M_RESULT_EOK;
 }
 mResult mSpi4::deInit()

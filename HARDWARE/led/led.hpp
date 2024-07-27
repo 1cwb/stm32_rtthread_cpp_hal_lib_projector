@@ -7,7 +7,10 @@ class ledx : public mDev::mLed
 {
 public:
     ledx(const char* name, GPIO_TypeDef* gpiox, uint16_t _pin, const mDev::initCallbackExt initcb, bool highIsoff = true):
-    mLed(name, initcb), _gpiox(gpiox), _pin(_pin), _highIsoff(highIsoff){}
+    mLed(name, initcb), _gpiox(gpiox), _pin(_pin), _highIsoff(highIsoff)
+    {
+        init();
+    }
     virtual ~ledx(){}
     virtual mResult init();
     virtual mResult deInit();

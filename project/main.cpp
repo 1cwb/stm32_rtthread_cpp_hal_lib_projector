@@ -23,7 +23,7 @@ int main(void)
         float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
         {
-            mthread::threadDelay(20);
+            mthread::threadDelay(500);
             led1->toggle();
             #if 1
             icm42688->getFIFOData();

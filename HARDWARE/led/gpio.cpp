@@ -4,6 +4,7 @@ gpiox::gpiox(const char* name, const mDev::initCallbackExt initcb, GPIO_TypeDef 
 _gpiox(gpiox),
 _pin(pin)
 {
+    gpiox::init();
     GPIO_InitTypeDef GPIO_Initure;
     GPIO_Initure.Pin=_pin;
     GPIO_Initure.Mode=mode;

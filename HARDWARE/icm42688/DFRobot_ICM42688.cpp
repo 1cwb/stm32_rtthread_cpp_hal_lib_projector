@@ -741,6 +741,7 @@ DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI():mDevice("icm42688", [](bool enable)
   {
     printf("Error: spi4 not init yet\r\n");
   }
+  init();
   begin();
 }
 
@@ -884,6 +885,7 @@ void DFRobot_ICM42688_SPI::interruptMode()
 }
 mResult DFRobot_ICM42688_SPI::init()
 {
+    mDev::mDevice::init();
     getDataByFIFO();
     return M_RESULT_EOK;
 }
