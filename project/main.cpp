@@ -23,7 +23,7 @@ int main(void)
         float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
         {
-            mthread::threadDelay(500);
+            mthread::threadDelay(20);
             led1->toggle();
             #if 1
             icm42688->getFIFOData();
@@ -35,7 +35,7 @@ int main(void)
             gyroDataY= icm42688->getGyroDataY();
             gyroDataZ= icm42688->getGyroDataZ();
             //printf("Temperature: %d C ",(int32_t)tempData);
-            #if 0
+            #if 1
             printf("A_X: %lf mg ",accelDataX);
             printf("A_Y: %lf mg ",accelDataY);
             printf("A_Z: %lf mg ",accelDataZ);

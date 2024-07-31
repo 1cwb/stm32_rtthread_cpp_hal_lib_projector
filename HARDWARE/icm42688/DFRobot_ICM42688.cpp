@@ -734,9 +734,9 @@ bool DFRobot_ICM42688::setUIFilter(uint8_t who,uint8_t filterOrder ,uint8_t UIFi
   return ret;
 }
 
-DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI():mDevice("icm42688", [](bool enable){})
+DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI():mDevice("icm42688")
 {
-  mspi = reinterpret_cast<mDev::mSpi*> (mDev::mPlatform::getInstance()->getDevice("spi4"));
+  mspi = reinterpret_cast<mDev::mSpi*> (mDev::mPlatform::getInstance()->getDevice("spi1"));
   if(!mspi)
   {
     printf("Error: spi4 not init yet\r\n");
@@ -885,7 +885,6 @@ void DFRobot_ICM42688_SPI::interruptMode()
 }
 mResult DFRobot_ICM42688_SPI::init()
 {
-    mDev::mDevice::init();
     getDataByFIFO();
     return M_RESULT_EOK;
 }

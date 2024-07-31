@@ -1,29 +1,41 @@
 #include "gpio.hpp"
-gpiox::gpiox(const char* name, const mDev::initCallbackExt initcb, GPIO_TypeDef * gpiox, uint16_t pin, uint32_t mode, uint32_t pull, uint32_t speed, uint32_t alternate)
-:mGpio(name, initcb),
-_gpiox(gpiox),
-_pin(pin)
+gpiox::gpiox(const char* name)
+:mGpio(name)
 {
-    gpiox::init();
-    GPIO_InitTypeDef GPIO_Initure;
+
+}
+gpiox::~gpiox()
+{
+
+}
+mResult gpiox::init(const mDev::initCallbackExt& cb, GPIO_TypeDef * gpiox,
+    uint16_t pin, uint32_t mode, uint32_t pull,
+    uint32_t speed, uint32_t alternate)
+{
+    GPIO_InitTypeDef GPIO_Initure = {0};
+    _initcb = cb;
+    if(_initcb)
+    {
+        _initcb(true);
+    }
+    _gpiox = gpiox;
+    _pin = pin;
     GPIO_Initure.Pin=_pin;
     GPIO_Initure.Mode=mode;
     GPIO_Initure.Pull=pull;
     GPIO_Initure.Speed= speed;
+    GPIO_Initure.Alternate = alternate;
     HAL_GPIO_Init(_gpiox,&GPIO_Initure);
-}
-gpiox::~gpiox()
-{
-    mDev::mGpio::deInit();
-    HAL_GPIO_DeInit(_gpiox, _pin);
-}
-mResult gpiox::init()
-{
-    return mDev::mGpio::init();
+    return M_RESULT_EOK;
 }
 mResult gpiox::deInit()
 {
-    return mDev::mGpio::deInit();
+    if(_initcb)
+    {
+        _initcb(false);
+    }
+    HAL_GPIO_DeInit(_gpiox, _pin);
+    return M_RESULT_EOK;
 }
 void gpiox::setLevel(mDev::mGpio::GPIOLEVEL level)
 {

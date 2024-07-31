@@ -1,24 +1,27 @@
 #include "spi.hpp"
-mSpi4::mSpi4(const char* name, const mDev::initCallbackExt &cb) : mSpi(name, cb)
-{
-    mSpi4::init();
-}
-mSpi4::~mSpi4()
+spix::spix(const char* name) : mSpi(name),_spiCs(std::string(name).append("cs").c_str())
 {
 
 }
-mResult mSpi4::init()
+spix::~spix()
+{
+
+}
+#if 0
+mResult spix::init()
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
-    PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PCLK2;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
+    PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI1CLKSOURCE_CLKP;
     HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
     mDev::mSpi::init();
-    __HAL_RCC_SPI4_CLK_ENABLE();
-    __HAL_RCC_GPIOE_CLK_ENABLE();
+    __HAL_RCC_SPI1_CLK_ENABLE();
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOD_CLK_ENABLE();
 
-    _spixHandle.Instance = SPI4;
+    _spixHandle.Instance = SPI1;
     _spixHandle.Init.Mode = SPI_MODE_MASTER;
     _spixHandle.Init.Direction = SPI_DIRECTION_2LINES;
     _spixHandle.Init.DataSize = SPI_DATASIZE_8BIT;
@@ -49,53 +52,77 @@ mResult mSpi4::init()
     PE13     ------> SPI4_MISO
     PE12     ------> SPI4_SCK
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_12;
+    GPIO_InitStruct.Pin = GPIO_PIN_5;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF5_SPI4;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_13;
+    GPIO_InitStruct.Pin = GPIO_PIN_6;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF5_SPI4;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = GPIO_PIN_14;
+    GPIO_InitStruct.Pin = GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF5_SPI4;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 
-    GPIO_InitStruct.Pin = GPIO_PIN_11; //CS
+    GPIO_InitStruct.Pin = GPIO_PIN_15; //CS
     GPIO_InitStruct.Mode=GPIO_MODE_OUTPUT_PP; //复用推挽输出
     GPIO_InitStruct.Pull=GPIO_PULLUP; //上拉
     GPIO_InitStruct.Speed=GPIO_SPEED_FREQ_VERY_HIGH; //高速
-    HAL_GPIO_Init(GPIOE,&GPIO_InitStruct); //初始化、
-    _spiGpioCs = GPIO_PIN_11;
-    _spiGpioGroup = GPIOE;
+    HAL_GPIO_Init(GPIOC,&GPIO_InitStruct); //初始化、
+    _spiGpioCs = GPIO_PIN_15;
+    _spiGpioGroup = GPIOC;
     return M_RESULT_EOK;
 }
-mResult mSpi4::deInit()
+mResult spix::deInit()
 {
-    __HAL_RCC_SPI4_CLK_DISABLE();
-    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14);
+    //__HAL_RCC_SPI4_CLK_DISABLE();
+    //HAL_GPIO_DeInit(GPIOE, GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14);
     mDev::mSpi::deInit();
     return M_RESULT_EOK;
 }
-void mSpi4::csEnable()
+#endif
+mResult spix::init(const mDev::initCallbackExt& cb ,SPI_HandleTypeDef* spihandle ,GPIO_TypeDef* csgpiox, uint16_t cspin)
 {
-    HAL_GPIO_WritePin(_spiGpioGroup, _spiGpioCs, GPIO_PIN_RESET);
+    memcpy(&_spixHandle, spihandle, sizeof(SPI_HandleTypeDef));
+    _initcb = cb;
+    if(_initcb)
+    {
+        _initcb(true);
+    }
+    if(HAL_SPI_Init(&_spixHandle) != HAL_OK)
+    {
+        return M_RESULT_ERROR;
+    }
+    _spiCs.init(mDev::initCallbackExt(),csgpiox,cspin,GPIO_MODE_OUTPUT_PP,GPIO_PULLUP);
+    return M_RESULT_EOK;
 }
-void mSpi4::csDisable()
+mResult spix::deInit()
 {
-    HAL_GPIO_WritePin(_spiGpioGroup, _spiGpioCs, GPIO_PIN_SET);
+    if(_initcb)
+    {
+        _initcb(false);
+    }
+    return M_RESULT_EOK;
 }
-mResult mSpi4::write(const uint8_t* buff, size_t len)
+void spix::csEnable()
+{
+    _spiCs.setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+}
+void spix::csDisable()
+{
+    _spiCs.setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+}
+mResult spix::write(const uint8_t* buff, size_t len)
 {
     if(HAL_SPI_Transmit(&_spixHandle, buff, len, 5000) != HAL_OK)
     {
@@ -104,7 +131,7 @@ mResult mSpi4::write(const uint8_t* buff, size_t len)
     }
     return M_RESULT_EOK;
 }
-mResult mSpi4::read(uint8_t* buff, size_t len)
+mResult spix::read(uint8_t* buff, size_t len)
 {
     if(HAL_SPI_Receive(&_spixHandle, buff, len, 5000) != HAL_OK)
     {
@@ -114,10 +141,10 @@ mResult mSpi4::read(uint8_t* buff, size_t len)
     return M_RESULT_EOK;
 }
 #if 0
-static mSpi4* spi4 = nullptr;
+static spix* spi4 = nullptr;
 int spi4InitFunc()
 {
-    spi4 = new mSpi4("spi4");
+    spi4 = new spix("spi4");
     if(!spi4)
     {
         return -1;

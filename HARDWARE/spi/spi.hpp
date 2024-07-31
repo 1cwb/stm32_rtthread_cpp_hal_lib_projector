@@ -1,20 +1,20 @@
 #pragma once
 #include "mspi.hpp"
 #include "stm32h7xx_hal_conf.h"
-class mSpi4 : public mDev::mSpi
+#include "gpio.hpp"
+class spix : public mDev::mSpi
 {
 public:
-    mSpi4() = delete;
-    explicit mSpi4(const char* name, const mDev::initCallbackExt &cb);
-    virtual ~mSpi4();
-    virtual mResult init();
-    virtual mResult deInit();
+    spix() = delete;
+    explicit spix(const char* name);
+    virtual ~spix();
+    mResult init(const mDev::initCallbackExt& cb ,SPI_HandleTypeDef* spihandle ,GPIO_TypeDef* csgpiox, uint16_t cspin);
+    mResult deInit();
     inline virtual void csEnable();
     inline virtual void csDisable();
     virtual mResult write(const uint8_t* buff, size_t len);
     virtual mResult read(uint8_t* buff, size_t len);
 private:
     SPI_HandleTypeDef _spixHandle;
-    uint16_t _spiGpioCs;
-    GPIO_TypeDef* _spiGpioGroup;
+    gpiox _spiCs;
 };

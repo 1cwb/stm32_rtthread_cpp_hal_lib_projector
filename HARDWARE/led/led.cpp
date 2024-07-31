@@ -1,10 +1,18 @@
 #include "led.hpp"
 #include "mbase.h"
 #include "containers.hpp"
-mResult ledx::init()
+mResult ledx::init(const mDev::initCallbackExt& cb ,GPIO_TypeDef* gpiox, uint16_t pin ,bool highIsoff)
 {
-    mDev::mLed::init();
     GPIO_InitTypeDef GPIO_Initure;
+    _initcb = cb;
+    if(_initcb)
+    {
+        _initcb(true);
+    }
+    _gpiox = gpiox;
+    _pin = pin;
+    _highIsoff = highIsoff;
+        
     GPIO_Initure.Pin=_pin; //PC9
     GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP; //推挽输出
     GPIO_Initure.Pull=GPIO_NOPULL; //上拉
@@ -14,7 +22,10 @@ mResult ledx::init()
 }
 mResult ledx::deInit()
 {
-    mDev::mLed::deInit();
+    if(_initcb)
+    {
+        _initcb(false);
+    }
     HAL_GPIO_DeInit(_gpiox, _pin);
     return M_RESULT_EOK;
 }
