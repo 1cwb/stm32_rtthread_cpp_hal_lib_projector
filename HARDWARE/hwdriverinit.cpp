@@ -7,7 +7,7 @@
 #include "mgpio.hpp"
 #include "gpio.hpp"
 #include "mplatform.hpp"
-
+#include "timer.hpp"
 
 #if 0
 int initAllDevice()
@@ -51,6 +51,8 @@ int initAllDevice()
     led0->init([](bool benable){ if(benable) __HAL_RCC_GPIOE_CLK_ENABLE(); else __HAL_RCC_GPIOE_CLK_DISABLE();},GPIOE,GPIO_PIN_3);
     ledx* led1 = new ledx("led1");
     led1->init([](bool benable){ if(benable) __HAL_RCC_GPIOE_CLK_ENABLE(); else __HAL_RCC_GPIOE_CLK_DISABLE();},GPIOE,GPIO_PIN_4);
+    gpiox* bz = new gpiox("bz");
+    bz->init([](bool b){if(b)__HAL_RCC_GPIOA_CLK_ENABLE();}, GPIOA, GPIO_PIN_15);
     spix* spi1 = new spix("spi1");
     SPI_HandleTypeDef spixHandle;
     spixHandle.Instance = SPI1;
@@ -84,18 +86,37 @@ int initAllDevice()
             HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
             __HAL_RCC_SPI1_CLK_ENABLE();
             __HAL_RCC_GPIOC_CLK_ENABLE();
-            __HAL_RCC_GPIOA_CLK_ENABLE();
-            __HAL_RCC_GPIOD_CLK_ENABLE();
         }
     },&spixHandle,GPIOC,GPIO_PIN_15);
     gpiox* spi1mosi = new gpiox("spi1mosi");
-    spi1mosi->init(mDev::initCallbackExt(),GPIOA, GPIO_PIN_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);
+    spi1mosi->init([](bool b){if(b)__HAL_RCC_GPIOA_CLK_ENABLE();},GPIOA, GPIO_PIN_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);
     gpiox* spi1miso = new gpiox("spi1miso");
-    spi1miso->init(mDev::initCallbackExt(),GPIOA, GPIO_PIN_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);
+    spi1miso->init([](bool b){if(b)__HAL_RCC_GPIOA_CLK_ENABLE();},GPIOA, GPIO_PIN_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);
     gpiox* spi1sck = new gpiox("spi1sck");
-    spi1sck->init(mDev::initCallbackExt(),GPIOD, GPIO_PIN_7, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);
+    spi1sck->init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_7, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);
     mDev::mDevice* df42688 = new DFRobot_ICM42688_SPI();
-
+    timerx* timer1 = new timerx("timer1");
+    timer1->init([](bool b){
+        if(b)
+        {
+            __HAL_RCC_TIM1_CLK_ENABLE();
+            HAL_NVIC_SetPriority(TIM1_UP_IRQn, 3, 0);
+            HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
+        }
+    }, TIM1, 2, TIM_COUNTERMODE_UP, 1);
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
+
+extern "C" void TIM1_UP_IRQHandler(void)
+{
+    timerx* timx = nullptr;
+    if((timx = (timerx*)mDev::mPlatform::getInstance()->getDevice("timer1")) != nullptr)
+    {
+        if(__HAL_TIM_GET_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE))
+        {
+            __HAL_TIM_CLEAR_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE);
+            timx->runInterruptCb();
+        }
+    }
+}

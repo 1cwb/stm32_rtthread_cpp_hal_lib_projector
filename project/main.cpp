@@ -8,6 +8,8 @@
 #include "waitqueue.hpp"
 #include "DFRobot_ICM42688.h"
 #include "mplatform.hpp"
+#include "mgpio.hpp"
+#include "mtimer.hpp"
 //using namespace std;
 	//int16_t iTemperature = 0;
 	//icm42688RawData_t stAccData;
@@ -15,10 +17,18 @@
 int main(void)
 {
     //printf("WHOAMI:%x\r\n",bsp_WhoAmi());
+    mEvent mevent;
+    mevent.init("mEvnet1", IPC_FLAG_FIFO);
     printf("tony %f\r\n",0.01);
     DFRobot_ICM42688_SPI* icm42688 = (DFRobot_ICM42688_SPI*)mDev::mPlatform::getInstance()->getDevice("icm42688");
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
+    mDev::mGpio* bz = (mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("bz");
+    mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer1");
+    timer1->registerInterruptCb([&](mDev::mDevice* dev){
+        mevent.send(0X01);
+    });
+    timer1->start();
     mthread* th3 = mthread::create("th3",1024,0,20,[&](){
         float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
@@ -54,9 +64,12 @@ int main(void)
     }
 
     mthread* th4 = mthread::create("th4",512,0,20,[&](){
+        uint32_t test;
         while(1)
         {
-            mthread::threadDelay(2000);
+            //mthread::threadDelay(2000);
+            mevent.recv(0x01,EVENT_FLAG_AND|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
+            led0->toggle();
         }
     });
     if(th4)
@@ -74,12 +87,16 @@ int main(void)
         tim1->setTimerAndStart(200);
     });
     tim1->start();
+    mthread::threadSleep(5000);
+    timer1->updateFreq(20);
     while(1)
     {
        mthread::threadSleep(1000);
-       led0->on();
+       //led0->on();
+       bz->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
        mthread::threadSleep(1000);
-       led0->off();
+       //led0->off();
+       bz->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
        //HAL_Delay(200);
        //delay_ms(200);
        //printf("thread run now\r\n");
