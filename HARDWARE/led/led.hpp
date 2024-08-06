@@ -13,9 +13,9 @@ public:
     virtual ~ledx(){}
     mResult init(const mDev::initCallbackExt& cb ,GPIO_TypeDef* gpiox, uint16_t pin, bool highIsoff = true);
     mResult deInit();
-    virtual void on();
-    virtual void off();
-    virtual void toggle();
+    virtual void on()override;
+    virtual void off()override;
+    virtual void toggle()override;
 private:
     GPIO_TypeDef * _gpiox;
     uint16_t _pin;

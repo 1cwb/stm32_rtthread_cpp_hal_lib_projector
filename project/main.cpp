@@ -29,6 +29,7 @@ int main(void)
         mevent.send(0X01);
     });
     timer1->start();
+    printf("timer frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOut());
     mthread* th3 = mthread::create("th3",1024,0,20,[&](){
         float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
@@ -45,7 +46,7 @@ int main(void)
             gyroDataY= icm42688->getGyroDataY();
             gyroDataZ= icm42688->getGyroDataZ();
             //printf("Temperature: %d C ",(int32_t)tempData);
-            #if 1
+            #if 0
             printf("A_X: %lf mg ",accelDataX);
             printf("A_Y: %lf mg ",accelDataY);
             printf("A_Z: %lf mg ",accelDataZ);

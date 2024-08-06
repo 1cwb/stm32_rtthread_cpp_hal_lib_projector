@@ -10,10 +10,10 @@ public:
     virtual ~spix();
     mResult init(const mDev::initCallbackExt& cb ,SPI_HandleTypeDef* spihandle ,GPIO_TypeDef* csgpiox, uint16_t cspin);
     mResult deInit();
-    inline virtual void csEnable();
-    inline virtual void csDisable();
-    virtual mResult write(const uint8_t* buff, size_t len);
-    virtual mResult read(uint8_t* buff, size_t len);
+    inline virtual void csEnable()override;
+    inline virtual void csDisable()override;
+    virtual mResult write(const uint8_t* buff, size_t len)override;
+    virtual mResult read(uint8_t* buff, size_t len)override;
 private:
     SPI_HandleTypeDef _spixHandle;
     gpiox _spiCs;

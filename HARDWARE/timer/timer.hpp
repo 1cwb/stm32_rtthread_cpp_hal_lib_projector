@@ -7,16 +7,26 @@ class timerx : public mDev::mTimer
 public:
     timerx(const char* name):mDev::mTimer(name){};
     ~timerx() = default;
-    mResult init(const mDev::initCallbackExt& cb, TIM_TypeDef* TIMx, uint32_t timefreq, uint32_t countMode = TIM_COUNTERMODE_UP, 
-        uint32_t repetCount = 0, uint32_t div = TIM_CLOCKDIVISION_DIV1, bool autoReload = true);
-    mResult deInit();
-    virtual void start();
-    virtual void stop();
-    virtual void updateFreq(uint32_t timefreq);
-    virtual uint32_t getTimeOut();
+    mResult baseInit(const mDev::initCallbackExt& cb, TIM_HandleTypeDef* TimHandle);
+    mResult baseDeInit();
+    mResult ocInit(const mDev::initCallbackExt& cb, TIM_HandleTypeDef* TimHandle);
+    mResult ocDeInit();
+    mResult pwmInit(const mDev::initCallbackExt& cb, TIM_HandleTypeDef* TimHandle);
+    mResult pwmDeInit();
+    mResult icInit(const mDev::initCallbackExt& cb, TIM_HandleTypeDef* TimHandle);
+    mResult icDeInit();
+    mResult onePulseInit(const mDev::initCallbackExt& cb, TIM_HandleTypeDef* TimHandle, uint32_t OnePulseMode);
+    mResult onePulseDeInit();
+    mResult encoderInit(const mDev::initCallbackExt& cb, TIM_HandleTypeDef* TimHandle, TIM_Encoder_InitTypeDef *sConfig);
+    mResult encoderDeInit();
+    void calcPeriodAndPrescalerByFreq(TIM_HandleTypeDef* TimHandle, uint32_t timefreqd);
+    virtual void start() override;
+    virtual void stop() override;
+    virtual void updateFreq(uint32_t timefreq) override;
+    virtual uint32_t getTimeOut() override;
     TIM_HandleTypeDef* getTimHandle()
     {
-        return &TimHandle;
+        return &_TimHandle;
     }
 private:
     uint32_t getInputClk(TIM_TypeDef* TIMx)
@@ -52,5 +62,5 @@ private:
         UNUSED(&pFLatency);
         return uiTIMxCLK;
     }
-    TIM_HandleTypeDef TimHandle = {0};
+    TIM_HandleTypeDef _TimHandle = {0};
 };

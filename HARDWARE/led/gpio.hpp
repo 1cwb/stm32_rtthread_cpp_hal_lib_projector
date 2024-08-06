@@ -11,10 +11,10 @@ public:
         uint16_t pin, uint32_t mode = GPIO_MODE_OUTPUT_PP, uint32_t pull = GPIO_NOPULL,
         uint32_t speed = GPIO_SPEED_FREQ_HIGH, uint32_t alternate = 0);
     mResult deInit();
-    virtual void setLevel(mDev::mGpio::GPIOLEVEL level);
-    virtual mDev::mGpio::GPIOLEVEL getLevel();
-    virtual void toggle();
-    virtual mResult interruptEnable(bool benable){return M_RESULT_EOK;}
+    virtual void setLevel(mDev::mGpio::GPIOLEVEL level)override;
+    virtual mDev::mGpio::GPIOLEVEL getLevel()override;
+    virtual void toggle()override;
+    virtual mResult interruptEnable(bool benable)override{return M_RESULT_EOK;}
     GPIO_TypeDef* getGpiox() {return _gpiox;}
     uint16_t getPin() const {return _pin;}
 private:

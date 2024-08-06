@@ -95,15 +95,24 @@ int initAllDevice()
     gpiox* spi1sck = new gpiox("spi1sck");
     spi1sck->init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_7, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);
     mDev::mDevice* df42688 = new DFRobot_ICM42688_SPI();
+
+    TIM_HandleTypeDef timerst;
+    timerst.Instance = TIM1;
+    timerst.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    timerst.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    timerst.Init.CounterMode = TIM_COUNTERMODE_UP;
+    timerst.Init.RepetitionCounter = 0;
+
     timerx* timer1 = new timerx("timer1");
-    timer1->init([](bool b){
+    timer1->calcPeriodAndPrescalerByFreq(&timerst,2);
+    timer1->baseInit([](bool b){
         if(b)
         {
             __HAL_RCC_TIM1_CLK_ENABLE();
             HAL_NVIC_SetPriority(TIM1_UP_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
         }
-    }, TIM1, 2, TIM_COUNTERMODE_UP, 1);
+    }, &timerst);
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");

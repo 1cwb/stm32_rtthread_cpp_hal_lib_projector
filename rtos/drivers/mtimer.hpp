@@ -13,8 +13,9 @@ public:
     virtual uint32_t getTimeOut() {return 0;}
     virtual void start(){}
     virtual void stop(){}
-
+    bool isInited() {return _btimerInited;}
 protected:
     uint32_t _timeFreq = 0;
+    bool _btimerInited = false;
 };
 }
