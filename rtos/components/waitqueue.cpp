@@ -18,8 +18,8 @@ void mWqueue::remove(wqueueNode_t* node)
 mResult mWqueue::wait(int condition, int timeout)
 {
     int tick;
-    thread_t* tid = mthread::threadSelf();
-    mTimer_t* tmr = reinterpret_cast<mthread*>(tid)->getThTimer_t();
+    thread_t* tid = nullptr;
+    mTimer_t* tmr = nullptr;
     wqueueNode __wait(mWqueue::defaultWake);
     long level;
 
@@ -30,6 +30,8 @@ mResult mWqueue::wait(int condition, int timeout)
         return M_RESULT_EOK;
     }
     level = HW::hwInterruptDisable();
+    tid = mthread::threadSelf();
+    tmr = reinterpret_cast<mthread*>(tid)->getThTimer_t();
     do 
     {
         if(queue_.flag == WQFLAGS::WQ_FLAG_WAKEUP)
@@ -38,6 +40,7 @@ mResult mWqueue::wait(int condition, int timeout)
             break;
         }
         add(&__wait);
+        printf("+\r\n");
         mthread::threadSuspend(tid);
         if(tick != WAITING_FOREVER)
         {

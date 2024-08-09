@@ -14,7 +14,12 @@ public:
     inline virtual void csDisable()override;
     virtual mResult write(const uint8_t* buff, size_t len)override;
     virtual mResult read(uint8_t* buff, size_t len)override;
-private:
+    SPI_HandleTypeDef* spixHandle()
+    {
+        return &_spixHandle;
+    }
     SPI_HandleTypeDef _spixHandle;
+private:
+    
     gpiox _spiCs;
 };

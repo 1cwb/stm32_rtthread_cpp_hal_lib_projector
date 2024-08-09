@@ -14,6 +14,7 @@
 	//int16_t iTemperature = 0;
 	//icm42688RawData_t stAccData;
 	//icm42688RawData_t stGyroData;
+
 int main(void)
 {
     //printf("WHOAMI:%x\r\n",bsp_WhoAmi());
@@ -22,14 +23,27 @@ int main(void)
     printf("tony %f\r\n",0.01);
     DFRobot_ICM42688_SPI* icm42688 = (DFRobot_ICM42688_SPI*)mDev::mPlatform::getInstance()->getDevice("icm42688");
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
+    led0->off();
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
-    mDev::mGpio* bz = (mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("bz");
-    mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer1");
-    timer1->registerInterruptCb([&](mDev::mDevice* dev){
+    
+    mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
+    mDev::mPlatform::getInstance()->getDevice("timer2")->registerInterruptCb([&](mDev::mDevice* dev){
         mevent.send(0X01);
     });
+    timer2->start(mDev::CHANNEL_1);
+    mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer1");
+    timer1->registerInterruptCb([&](mDev::mDevice* dev){
+        
+    });
     timer1->start();
-    printf("timer frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOut());
+    
+    //mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
+    //timer2->registerInterruptCb([&](mDev::mDevice* dev){
+        //mevent.send(0X01);
+    //});
+    //timer2->start();
+    printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOut());
+    printf("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOut());
     mthread* th3 = mthread::create("th3",1024,0,20,[&](){
         float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
@@ -79,28 +93,36 @@ int main(void)
     }
 
     int i = 0;
-    mTimer* tim1 = mTimer::create("tim1", 100, TIMER_FLAG_PERIODIC, [&](){
+    mTimer* tim1 = mTimer::create("tim1", 3000, TIMER_FLAG_PERIODIC, [&](){
         i++;
-        if(i == 4)
-        {
-            i = 0;
-        }
-        tim1->setTimerAndStart(200);
+        timer2->updateFreq(i*20);
+        printf("update freq = %lu\r\n",i*20);
+        //tim1->setTimerAndStart(3000);
     });
     tim1->start();
-    mthread::threadSleep(5000);
     timer1->updateFreq(20);
+    int m = 0;
+    printf("total  =  %lu\r\n",timer2->pwmGetMaxPulse());
     while(1)
     {
-       mthread::threadSleep(1000);
+       timer2->pwmSetDutyCycle(m,mDev::CHANNEL_1);
+       //printf("total  =  %lu, cur = %lu\r\n",bzpwm->getMaxPulse(), bzpwm->getCurPulse());
+       m++;
+       if(m >= 100)
+       {
+        m = 0;
+       }
+       //mthread::threadSleep(1000);
+       //bzpwm->setDutyCycle(10.00);
        //led0->on();
-       bz->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-       mthread::threadSleep(1000);
+       //bz->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+       mthread::threadSleep(40);
+       //bzpwm->setDutyCycle(99.00);
        //led0->off();
-       bz->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+       //bz->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
        //HAL_Delay(200);
        //delay_ms(200);
-       //printf("thread run now\r\n");
+       //printf("thread run now++++++++++++\r\n");
     }
     return 0;
 }

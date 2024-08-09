@@ -135,6 +135,7 @@ void mSchedule::schedule(void)
         {
             printf("Error: all thread sleep\r\n");
             printf("Error: do not use threadSleep in idle thread\r\n");
+            printf("Error: do not use ipc func in interrupt\r\n");
             while(1);
         }
         toThread = listEntry(threadPriorityTable_[highestReadyPriority].next, struct thread_t, tlist);

@@ -13,7 +13,10 @@ public:
     {
         mPlatform::getInstance()->registerDevice(_devname.c_str(),this);
     }
-    virtual ~mDevice() = default;
+    virtual ~mDevice()
+    {
+        mPlatform::getInstance()->unregisterDevice(_devname.c_str());
+    }
     mDevice(const mDevice&) = delete;
     mDevice(mDevice&&) = delete;
     mDevice& operator=(const mDevice&) = delete;
@@ -23,6 +26,7 @@ public:
     void registerInterruptCb(const interruptCallback& cb){_cb = cb;}
     void unregisterInterrupt(){_cb = interruptCallback();}
     void runInterruptCb(){if(_cb)_cb(this);}
+    void runInitCallback(bool binit){if(_initcb)_initcb(binit);}
 protected:
     std::string _devname;
     initCallbackExt _initcb;
