@@ -2,6 +2,7 @@
 #include "spi.hpp"
 #include "led.hpp"
 #include "DFRobot_ICM42688.h"
+#include "DFRobot_ICM42605.h"
 #include "mdevice.hpp"
 #include "containers.hpp"
 #include "mgpio.hpp"
@@ -50,6 +51,7 @@ ledx* led1 = nullptr;
 timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
 spix* spi1 = nullptr;
+spix* spi4 = nullptr;
 int initAllDevice()
 {
     led0 = new ledx("led0");
@@ -84,18 +86,17 @@ int initAllDevice()
     timerst.Init.CounterMode = TIM_COUNTERMODE_UP;
     timerst.Init.RepetitionCounter = 0;
     timer2 = new timerx("timer2");
-    timer2->calcPeriodAndPrescalerByFreq(&timerst,20000);
+    timer2->calcPeriodAndPrescalerByFreq(&timerst,1000);
     timer2->pwmTimeInit([](bool b){
         if(b)
         {
             __HAL_RCC_TIM2_CLK_ENABLE();
             gpiox bz("bz");
             bz.init([](bool b){if(b)__HAL_RCC_GPIOA_CLK_ENABLE();}, GPIOA, GPIO_PIN_15,GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF1_TIM2);//TIM2 CH1 AF1
-            printf("PWM2TIM2CH1 GPIO INIT ... \r\n");
             HAL_NVIC_SetPriority(TIM2_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(TIM2_IRQn);
         }
-    }, &timerst);
+    }, &timerst /*, mDev::TIMESTARTMODE::TIMESTARTMODE_IT*/);
 
     TIM_OC_InitTypeDef ocinit;
     ocinit.OCFastMode = TIM_OCFAST_DISABLE;
@@ -141,7 +142,6 @@ int initAllDevice()
             PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
             PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI1CLKSOURCE_CLKP;
             HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
-            printf("run callback init now\r\n");
             __HAL_RCC_SPI1_CLK_ENABLE();
             __HAL_RCC_GPIOC_CLK_ENABLE();
             gpiox spi1mosi("spi1mosi");
@@ -155,6 +155,53 @@ int initAllDevice()
 
     mDev::mDevice* df42688 = new DFRobot_ICM42688_SPI();
 
+
+    //SPI4 init
+    #if 1
+    spi4 = new spix("spi4");
+    memset(&spixHandle, 0, sizeof(SPI_HandleTypeDef));
+    spixHandle.Instance = SPI4;
+    spixHandle.Init.Mode = SPI_MODE_MASTER;
+    spixHandle.Init.Direction = SPI_DIRECTION_2LINES;
+    spixHandle.Init.DataSize = SPI_DATASIZE_8BIT;
+    spixHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
+    spixHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
+    spixHandle.Init.NSS = SPI_NSS_SOFT;
+    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    spixHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
+    spixHandle.Init.TIMode = SPI_TIMODE_DISABLE;
+    spixHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+    spixHandle.Init.CRCPolynomial = 0x0;
+    spixHandle.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+    spixHandle.Init.NSSPolarity = SPI_NSS_POLARITY_LOW;
+    spixHandle.Init.FifoThreshold = SPI_FIFO_THRESHOLD_01DATA;
+    spixHandle.Init.TxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+    spixHandle.Init.RxCRCInitializationPattern = SPI_CRC_INITIALIZATION_ALL_ZERO_PATTERN;
+    spixHandle.Init.MasterSSIdleness = SPI_MASTER_SS_IDLENESS_15CYCLE;
+    spixHandle.Init.MasterInterDataIdleness = SPI_MASTER_INTERDATA_IDLENESS_15CYCLE;
+    spixHandle.Init.MasterReceiverAutoSusp = SPI_MASTER_RX_AUTOSUSP_DISABLE;
+    spixHandle.Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+    spixHandle.Init.IOSwap = SPI_IO_SWAP_DISABLE;
+    spi4->init([](bool b){
+        if(b)
+        {
+            RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+            PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI4;
+            PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_PCLK2;
+            HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+            __HAL_RCC_SPI4_CLK_ENABLE();
+            __HAL_RCC_GPIOC_CLK_ENABLE();
+            gpiox spi1mosi("spi4mosi");
+            spi1mosi.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_14, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI4);
+            gpiox spi1miso("spi4miso");
+            spi1miso.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_13, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI4);
+            gpiox spi1sck("spi4sck");
+            spi1sck.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_12, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI4);
+        }
+    },&spixHandle,GPIOC,GPIO_PIN_13);
+
+    mDev::mDevice* df42605 = new DFRobot_ICM42605_SPI();
+    #endif
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
