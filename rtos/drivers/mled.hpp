@@ -6,7 +6,7 @@ class mLed : public mDevice
 {
 public: 
     explicit mLed(const char* name) : mDevice(name){}
-    ~mLed() = default;
+    virtual ~mLed() = default;
     virtual void on(){}
     virtual void off(){}
     virtual void toggle(){}

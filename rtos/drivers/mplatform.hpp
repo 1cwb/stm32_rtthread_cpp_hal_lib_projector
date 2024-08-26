@@ -81,6 +81,7 @@ public:
             }
         }
         _mutex.mutexRelease();
+        printf("Error:\r\nthe device %s is nullptr\r\n",name);
         return nullptr;
     }
 private:

@@ -16,13 +16,12 @@ int main(void)
     mEvent mevent;
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
     printf("tony %f\r\n",0.01);
-    DFRobot_ICM42688_SPI* icm42688 = (DFRobot_ICM42688_SPI*)mDev::mPlatform::getInstance()->getDevice("icm42688");
-    DFRobot_ICM42688_SPI* icm42605 = (DFRobot_ICM42688_SPI*)mDev::mPlatform::getInstance()->getDevice("icm42605");
-
+    mDev::mImu* icm42688 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("icm42688");
+    mDev::mImu* icm42605 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("icm42605");
+    if(!icm42688)printf("Error icm42688 = nullptr\r\n");
+    if(!icm42605)printf("Error icm42605 = nullptr\r\n");
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
-    led0->off();
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
-    
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
     mDev::mPlatform::getInstance()->getDevice("timer2")->registerInterruptCb([&](mDev::mDevice* dev){
         mevent.send(0X01);
@@ -48,14 +47,14 @@ int main(void)
             mthread::threadDelay(20);
             led1->toggle();
             #if 1
-            icm42688->getFIFOData();
-            tempData= icm42688->getTemperature();
-            accelDataX = icm42688->getAccelDataX();
-            accelDataY= icm42688->getAccelDataY();
-            accelDataZ= icm42688->getAccelDataZ();
-            gyroDataX= icm42688->getGyroDataX();
-            gyroDataY= icm42688->getGyroDataY();
-            gyroDataZ= icm42688->getGyroDataZ();
+            icm42688->updateData();
+            tempData= icm42688->getTemp();
+            accelDataX = icm42688->getAccelX();
+            accelDataY= icm42688->getAccelY();
+            accelDataZ= icm42688->getAccelZ();
+            gyroDataX= icm42688->getGyroX();
+            gyroDataY= icm42688->getGyroY();
+            gyroDataZ= icm42688->getGyroZ();
             #if 1
             printf("4A_X: %lf mg ",accelDataX);
             printf("A_Y: %lf mg ",accelDataY);
@@ -64,14 +63,14 @@ int main(void)
             printf("G_Y: %lf dps ",gyroDataY);
             printf("G_Z: %lf dps\r\n",gyroDataZ);
             #endif
-            icm42605->getFIFOData();
-            tempData= icm42605->getTemperature();
-            accelDataX = icm42605->getAccelDataX();
-            accelDataY= icm42605->getAccelDataY();
-            accelDataZ= icm42605->getAccelDataZ();
-            gyroDataX= icm42605->getGyroDataX();
-            gyroDataY= icm42605->getGyroDataY();
-            gyroDataZ= icm42605->getGyroDataZ();
+            icm42605->updateData();
+            tempData= icm42605->getTemp();
+            accelDataX = icm42605->getAccelX();
+            accelDataY= icm42605->getAccelY();
+            accelDataZ= icm42605->getAccelZ();
+            gyroDataX= icm42605->getGyroX();
+            gyroDataY= icm42605->getGyroY();
+            gyroDataZ= icm42605->getGyroZ();
             //printf("Temperature: %d C ",(int32_t)tempData);
             #if 1
             printf("5A_X: %lf mg ",accelDataX);

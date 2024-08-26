@@ -153,7 +153,7 @@ int initAllDevice()
         }
     },&spixHandle,GPIOC,GPIO_PIN_15);
 
-    mDev::mDevice* df42688 = new DFRobot_ICM42688_SPI();
+    mDev::mDevice* df42688 = new DFRobot_ICM42688_SPI("icm42688");
 
 
     //SPI4 init
@@ -200,7 +200,7 @@ int initAllDevice()
         }
     },&spixHandle,GPIOC,GPIO_PIN_13);
 
-    mDev::mDevice* df42605 = new DFRobot_ICM42605_SPI();
+    mDev::mDevice* df42605 = new DFRobot_ICM42605_SPI("icm42605");
     #endif
     return 0;
 }

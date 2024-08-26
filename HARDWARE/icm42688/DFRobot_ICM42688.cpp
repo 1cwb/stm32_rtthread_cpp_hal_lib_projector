@@ -734,7 +734,7 @@ bool DFRobot_ICM42688::setUIFilter(uint8_t who,uint8_t filterOrder ,uint8_t UIFi
   return ret;
 }
 
-DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI():mDevice("icm42688")
+DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI(const char* name):mImu(name)
 {
   mspi = reinterpret_cast<mDev::mSpi*> (mDev::mPlatform::getInstance()->getDevice("spi1"));
   if(!mspi)

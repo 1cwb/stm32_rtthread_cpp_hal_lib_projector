@@ -16,7 +16,7 @@
 #include "stdio.h"
 #include "stdint.h"
 #include "mspi.hpp"
-
+#include "mimu.hpp"
 //Open this macro and you can see the details of the program
 #define ENABLE_DBG
 
@@ -1264,10 +1264,10 @@ private:
 };
 
 
-class DFRobot_ICM42605_SPI:public DFRobot_ICM42605, public mDev::mDevice
+class DFRobot_ICM42605_SPI:public DFRobot_ICM42605, public mDev::mImu
 {
 public:
-  DFRobot_ICM42605_SPI();
+  DFRobot_ICM42605_SPI(const char* name);
   virtual ~DFRobot_ICM42605_SPI() = default;
   /**
    * @fn begin
@@ -1278,6 +1278,18 @@ public:
    * @retval ERR_IC_VERSION The read sensor ID is wrong
    */
   int begin(void);
+  virtual float getTemp(){return DFRobot_ICM42605::getTemperature();};
+  virtual float getAccelX(){return DFRobot_ICM42605::getAccelDataX();};
+  virtual float getAccelY(){return DFRobot_ICM42605::getAccelDataY();};
+  virtual float getAccelZ(){return DFRobot_ICM42605::getAccelDataZ();};
+  virtual float getGyroX(){return DFRobot_ICM42605::getGyroDataX();};
+  virtual float getGyroY(){return DFRobot_ICM42605::getGyroDataY();};
+  virtual float getGyroZ(){return DFRobot_ICM42605::getGyroDataZ();};
+  virtual bool updateData()
+  {
+      DFRobot_ICM42605::getFIFOData();
+      return true;
+  }
 protected:
 
   /**
