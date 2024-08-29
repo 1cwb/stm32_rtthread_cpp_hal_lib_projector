@@ -394,6 +394,7 @@ void DFRobot_ICM42688::getFIFOData()
   _gyroZ = (uint16_t)data[11]<<8 | (uint16_t)data[12];
   //DBG("_gyroZ");DBG(_gyroZ);
   _temp = (uint8_t)data[13];
+  //printf("ax(%d), ay(%d), az(%d), gx[%d], gy[%d], gz[%d] t{%d}\r\n",_accelX,_accelY,_accelZ,_gyroX,_gyroY,_gyroZ,_temp);
   //DBG("_temp");DBG(data[13]);
 }
 void DFRobot_ICM42688::sotpFIFOMode()

@@ -22,6 +22,7 @@
 
 HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, uint32_t pllq, uint32_t pllr);
 void hwInit();
+void SoftReset(void);
 #ifdef __cplusplus
 }
 #endif

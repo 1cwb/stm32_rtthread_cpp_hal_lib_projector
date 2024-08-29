@@ -16,6 +16,9 @@ public:
     virtual float getGyroY(){return 0.0f;};
     virtual float getGyroZ(){return 0.0f;};
     virtual bool updateData(){return true;}
+    virtual float getYaw() {return 0.0f;}
+    virtual float getPitch() {return 0.0f;}
+    virtual float getRoll() {return 0.0f;}
 private:
 
 };

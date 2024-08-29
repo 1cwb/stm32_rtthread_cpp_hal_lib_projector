@@ -10,6 +10,7 @@
 #include "mplatform.hpp"
 #include "mgpio.hpp"
 #include "mtimer.hpp"
+#include "delay.h"
 
 int main(void)
 {
@@ -24,14 +25,13 @@ int main(void)
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
     mDev::mPlatform::getInstance()->getDevice("timer2")->registerInterruptCb([&](mDev::mDevice* dev){
-        mevent.send(0X01);
+        
     });
     timer2->start(mDev::CHANNEL_1);
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer1");
     timer1->registerInterruptCb([&](mDev::mDevice* dev){
-        
+        mevent.send(0X01);
     });
-    timer1->start();
     
     //mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
     //timer2->registerInterruptCb([&](mDev::mDevice* dev){
@@ -40,47 +40,12 @@ int main(void)
     //timer2->start();
     printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOut());
     printf("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOut());
+    delay_ms(3000);
     mthread* th3 = mthread::create("th3",1024,0,20,[&](){
-        float accelDataX,accelDataY,accelDataZ,gyroDataX,gyroDataY,gyroDataZ,tempData;
         while(1)
         {
             mthread::threadDelay(20);
             led1->toggle();
-            #if 1
-            icm42688->updateData();
-            tempData= icm42688->getTemp();
-            accelDataX = icm42688->getAccelX();
-            accelDataY= icm42688->getAccelY();
-            accelDataZ= icm42688->getAccelZ();
-            gyroDataX= icm42688->getGyroX();
-            gyroDataY= icm42688->getGyroY();
-            gyroDataZ= icm42688->getGyroZ();
-            #if 1
-            printf("4A_X: %lf mg ",accelDataX);
-            printf("A_Y: %lf mg ",accelDataY);
-            printf("A_Z: %lf mg ",accelDataZ);
-            printf("G_X: %lf dps ",gyroDataX);
-            printf("G_Y: %lf dps ",gyroDataY);
-            printf("G_Z: %lf dps\r\n",gyroDataZ);
-            #endif
-            icm42605->updateData();
-            tempData= icm42605->getTemp();
-            accelDataX = icm42605->getAccelX();
-            accelDataY= icm42605->getAccelY();
-            accelDataZ= icm42605->getAccelZ();
-            gyroDataX= icm42605->getGyroX();
-            gyroDataY= icm42605->getGyroY();
-            gyroDataZ= icm42605->getGyroZ();
-            //printf("Temperature: %d C ",(int32_t)tempData);
-            #if 1
-            printf("5A_X: %lf mg ",accelDataX);
-            printf("A_Y: %lf mg ",accelDataY);
-            printf("A_Z: %lf mg ",accelDataZ);
-            printf("G_X: %lf dps ",gyroDataX);
-            printf("G_Y: %lf dps ",gyroDataY);
-            printf("G_Z: %lf dps\r\n",gyroDataZ);
-            #endif
-            #endif
         }
     });
     if(th3)
@@ -88,12 +53,18 @@ int main(void)
         th3->startup();
     }
 
-    mthread* th4 = mthread::create("th4",512,0,20,[&](){
+    mthread* th4 = mthread::create("th4",1024,0,20,[&](){
         uint32_t test;
         while(1)
         {
             //mthread::threadDelay(2000);
             mevent.recv(0x01,EVENT_FLAG_AND|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
+            #if 1
+                icm42688->updateData();
+                printf("YAW:%8f ROLL:%8f PITCH:%8f\r\n",icm42688->getYaw(),icm42688->getRoll(),icm42688->getPitch());
+                icm42605->updateData();
+                printf("YAW:%8f ROLL:%8f PITCH:%8f\r\n",icm42605->getYaw(),icm42605->getRoll(),icm42605->getPitch());
+            #endif
         }
     });
     if(th4)
@@ -105,7 +76,7 @@ int main(void)
         //tim1->setTimerAndStart(3000);
     });
     tim1->start();
-    timer1->updateFreq(20);
+    timer1->start();
     printf("total  =  %lu\r\n",timer2->pwmGetMaxPulse());
     while(1)
     {

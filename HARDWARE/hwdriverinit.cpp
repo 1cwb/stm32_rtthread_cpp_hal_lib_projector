@@ -9,7 +9,6 @@
 #include "gpio.hpp"
 #include "mplatform.hpp"
 #include "timer.hpp"
-
 #if 0
 int initAllDevice()
 {
@@ -69,7 +68,7 @@ int initAllDevice()
     timerst.Init.RepetitionCounter = 0;
 
     timer1 = new timerx("timer1");
-    timer1->calcPeriodAndPrescalerByFreq(&timerst,2);
+    timer1->calcPeriodAndPrescalerByFreq(&timerst,100);
     timer1->baseTimeInit([](bool b){
         if(b)
         {
@@ -77,7 +76,7 @@ int initAllDevice()
             HAL_NVIC_SetPriority(TIM1_UP_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
         }
-    }, &timerst);
+    }, &timerst,mDev::TIMESTARTMODE_IT);
     //TIM2 INIT
     memset(&timerst, 0, sizeof(TIM_HandleTypeDef));
     timerst.Instance = TIM2;
@@ -154,10 +153,10 @@ int initAllDevice()
     },&spixHandle,GPIOC,GPIO_PIN_15);
 
     mDev::mDevice* df42688 = new DFRobot_ICM42688_SPI("icm42688");
-
+    //ICM42688_FIFO* icm42688x = new ICM42688_FIFO("icm42688",*spi1);
+	//icm42688x->enableFifo(true, true, true);
 
     //SPI4 init
-    #if 1
     spi4 = new spix("spi4");
     memset(&spixHandle, 0, sizeof(SPI_HandleTypeDef));
     spixHandle.Instance = SPI4;
@@ -201,7 +200,8 @@ int initAllDevice()
     },&spixHandle,GPIOC,GPIO_PIN_13);
 
     mDev::mDevice* df42605 = new DFRobot_ICM42605_SPI("icm42605");
-    #endif
+    //ICM42605_FIFO* icm42605x = new ICM42605_FIFO("icm42605",*spi4);
+	//icm42605x->enableFifo(true, true, true);
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");

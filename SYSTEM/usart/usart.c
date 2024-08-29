@@ -1,6 +1,7 @@
 #include "usart.h"
 #include "delay.h"
 #include <string.h>
+#include "sys.h"
 int _read (int fd, char *pBuffer, int size)  
 {  
     for (int i = 0; i < size; i++)  
@@ -78,7 +79,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			}
 			else
 			{	
-				if(aRxBuffer[0]==0x0d){USART_RX_STA|=0x4000;HAL_UART_Transmit(huart,(const uint8_t*)"hello world\r\n",strlen("hello world\r\n"),2000);}
+				if(aRxBuffer[0]==0x0d){USART_RX_STA|=0x4000;HAL_UART_Transmit(huart,(const uint8_t*)"hello world\r\n",strlen("hello world\r\n"),2000);SoftReset();}
 				else
 				{
 					USART_RX_BUF[USART_RX_STA&0X3FFF]=aRxBuffer[0] ;

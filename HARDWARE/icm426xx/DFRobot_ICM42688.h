@@ -1,15 +1,15 @@
 /*!
- * @file DFRobot_ICM42605.h
- * @brief Define the basic structure of DFRobot_ICM42605 class
+ * @file DFRobot_ICM42688.h
+ * @brief Define the basic structure of DFRobot_ICM42688 class
  * @copyright	Copyright (c) 2010 DFRobot Co.Ltd (http://www.dfrobot.com)
  * @license     The MIT License (MIT)
  * @author [yangfeng]<feng.yang@dfrobot.com>
  * @version V1.0
  * @date 2021-05-13
- * @url  https://github.com/DFRobot/DFRobot_ICM42605
+ * @url  https://github.com/DFRobot/DFRobot_ICM42688
  */
-#ifndef __DFRobot_ICM42605_H
-#define __DFRobot_ICM42605_H
+#ifndef __DFRobot_ICM42688_H
+#define __DFRobot_ICM42688_H
 
 //#include <Arduino.h>
 //#include <Wire.h>
@@ -17,6 +17,7 @@
 #include "stdint.h"
 #include "mspi.hpp"
 #include "mimu.hpp"
+#include "mahony.hpp"
 //Open this macro and you can see the details of the program
 #define ENABLE_DBG
 
@@ -26,165 +27,165 @@
 #define DBG(...)
 #endif
 
-//#define DFRobot_ICM42605_SPI_L_ADDR 0x68 
-//#define DFRobot_ICM42605_SPI_H_ADDR 0x69
-#define DFRobot_ICM42605_ID  0x42 
+#define DFRobot_ICM42688_SPI_L_ADDR 0x68 
+#define DFRobot_ICM42688_SPI_H_ADDR 0x69
+#define DFRobot_ICM42688_ID  0x47 
 
-#define ICM42605_DEVICE_CONFIG          0x11
-#define ICM42605_DRIVE_CONFIG           0x13
+#define ICM42688_DEVICE_CONFIG          0x11
+#define ICM42688_DRIVE_CONFIG           0x13
 
-#define ICM42605_SIGNAL_PATH_RESET      0x4B
+#define ICM42688_SIGNAL_PATH_RESET      0x4B
 
-#define ICM42605_PWR_MGMT0              0x4E
+#define ICM42688_PWR_MGMT0              0x4E
 
-#define ICM42605_INT_CONFIG             0x14
-#define ICM42605_INT_STATUS             0x2D
-#define ICM42605_INT_STATUS2            0x37
-#define ICM42605_INT_STATUS3            0x38
-#define ICM42605_INT_CONFIG0            0x63
-#define ICM42605_INT_CONFIG1            0x64
-#define ICM42605_INT_SOURCE0            0x65
-#define ICM42605_INT_SOURCE1            0x66
-#define ICM42605_INT_SOURCE3            0x68
-#define ICM42605_INT_SOURCE4            0x69
-#define ICM42605_INT_SOURCE6            0x4D
-#define ICM42605_INT_SOURCE7            0x4E
-#define ICM42605_INT_SOURCE8            0x4F
-#define ICM42605_INT_SOURCE9            0x50
-#define ICM42605_INT_SOURCE10           0x51
+#define ICM42688_INT_CONFIG             0x14
+#define ICM42688_INT_STATUS             0x2D
+#define ICM42688_INT_STATUS2            0x37
+#define ICM42688_INT_STATUS3            0x38
+#define ICM42688_INT_CONFIG0            0x63
+#define ICM42688_INT_CONFIG1            0x64
+#define ICM42688_INT_SOURCE0            0x65
+#define ICM42688_INT_SOURCE1            0x66
+#define ICM42688_INT_SOURCE3            0x68
+#define ICM42688_INT_SOURCE4            0x69
+#define ICM42688_INT_SOURCE6            0x4D
+#define ICM42688_INT_SOURCE7            0x4E
+#define ICM42688_INT_SOURCE8            0x4F
+#define ICM42688_INT_SOURCE9            0x50
+#define ICM42688_INT_SOURCE10           0x51
 
-#define ICM42605_TEMP_DATA1             0x1D
-#define ICM42605_TEMP_DATA0             0x1E
-#define ICM42605_ACCEL_DATA_X1          0x1F
-#define ICM42605_ACCEL_DATA_X0          0x20
-#define ICM42605_ACCEL_DATA_Y1          0x21
-#define ICM42605_ACCEL_DATA_Y0          0x22
-#define ICM42605_ACCEL_DATA_Z1          0x23
-#define ICM42605_ACCEL_DATA_Z0          0x24
-#define ICM42605_GYRO_DATA_X1           0x25
-#define ICM42605_GYRO_DATA_X0           0x26
-#define ICM42605_GYRO_DATA_Y1           0x27
-#define ICM42605_GYRO_DATA_Y0           0x28
-#define ICM42605_GYRO_DATA_Z1           0x29
-#define ICM42605_GYRO_DATA_Z0           0x30
+#define ICM42688_TEMP_DATA1             0x1D
+#define ICM42688_TEMP_DATA0             0x1E
+#define ICM42688_ACCEL_DATA_X1          0x1F
+#define ICM42688_ACCEL_DATA_X0          0x20
+#define ICM42688_ACCEL_DATA_Y1          0x21
+#define ICM42688_ACCEL_DATA_Y0          0x22
+#define ICM42688_ACCEL_DATA_Z1          0x23
+#define ICM42688_ACCEL_DATA_Z0          0x24
+#define ICM42688_GYRO_DATA_X1           0x25
+#define ICM42688_GYRO_DATA_X0           0x26
+#define ICM42688_GYRO_DATA_Y1           0x27
+#define ICM42688_GYRO_DATA_Y0           0x28
+#define ICM42688_GYRO_DATA_Z1           0x29
+#define ICM42688_GYRO_DATA_Z0           0x30
 
-#define ICM42605_TMST_FSYNCH            0x43
-#define ICM42605_TMST_FSYNCL            0x44
+#define ICM42688_TMST_FSYNCH            0x43
+#define ICM42688_TMST_FSYNCL            0x44
 
-#define ICM42605_GYRO_CONFIG_STATIC2    0x0B
-#define ICM42605_GYRO_CONFIG_STATIC3    0x0C
-#define ICM42605_GYRO_CONFIG_STATIC4    0x0D
-#define ICM42605_GYRO_CONFIG_STATIC5    0x0E
-#define ICM42605_GYRO_CONFIG_STATIC6    0x0F
-#define ICM42605_GYRO_CONFIG_STATIC7    0x10
-#define ICM42605_GYRO_CONFIG_STATIC8    0x11
-#define ICM42605_GYRO_CONFIG_STATIC9    0x12
-#define ICM42605_GYRO_CONFIG_STATIC10   0x13
+#define ICM42688_GYRO_CONFIG_STATIC2    0x0B
+#define ICM42688_GYRO_CONFIG_STATIC3    0x0C
+#define ICM42688_GYRO_CONFIG_STATIC4    0x0D
+#define ICM42688_GYRO_CONFIG_STATIC5    0x0E
+#define ICM42688_GYRO_CONFIG_STATIC6    0x0F
+#define ICM42688_GYRO_CONFIG_STATIC7    0x10
+#define ICM42688_GYRO_CONFIG_STATIC8    0x11
+#define ICM42688_GYRO_CONFIG_STATIC9    0x12
+#define ICM42688_GYRO_CONFIG_STATIC10   0x13
 
 
     
-#define ICM42605_GYRO_CONFIG0           0x4F
-#define ICM42605_ACCEL_CONFIG0          0x50
-#define ICM42605_GYRO_CONFIG1           0x51
-#define ICM42605_GYRO_ACCEL_CONFIG0     0x52
-#define ICM42605_ACCEL_CONFIG1          0x53
+#define ICM42688_GYRO_CONFIG0           0x4F
+#define ICM42688_ACCEL_CONFIG0          0x50
+#define ICM42688_GYRO_CONFIG1           0x51
+#define ICM42688_GYRO_ACCEL_CONFIG0     0x52
+#define ICM42688_ACCEL_CONFIG1          0x53
     
-#define ICM42605_TMST_CONFIG            0x54
-    
-
-#define ICM42605_SMD_CONFIG             0x57
-
-#define ICM42605_FIFO_CONFIG            0x16
-#define ICM42605_FIFO_COUNTH            0x2E
-#define ICM42605_FIFO_COUNTL            0x2F
-#define ICM42605_FIFO_DATA              0x30
-#define ICM42605_FIFO_CONFIG1           0x5F
-#define ICM42605_FIFO_CONFIG2           0x60
-#define ICM42605_FIFO_CONFIG3           0x61
-#define ICM42605_FIFO_LOST_PKT0         0x6C
-#define ICM42605_FIFO_LOST_PKT1         0x6D
-
-#define ICM42605_FSYNC_CONFIG           0x62
+#define ICM42688_TMST_CONFIG            0x54
     
 
+#define ICM42688_SMD_CONFIG             0x57
+
+#define ICM42688_FIFO_CONFIG            0x16
+#define ICM42688_FIFO_COUNTH            0x2E
+#define ICM42688_FIFO_COUNTL            0x2F
+#define ICM42688_FIFO_DATA              0x30
+#define ICM42688_FIFO_CONFIG1           0x5F
+#define ICM42688_FIFO_CONFIG2           0x60
+#define ICM42688_FIFO_CONFIG3           0x61
+#define ICM42688_FIFO_LOST_PKT0         0x6C
+#define ICM42688_FIFO_LOST_PKT1         0x6D
+
+#define ICM42688_FSYNC_CONFIG           0x62
     
 
-#define ICM42605_SELF_TEST_CONFIG       0x70
-#define ICM42605_WHO_AM_I               0x75
-#define ICM42605_REG_BANK_SEL           0x76   
-#define ICM42605_SENSOR_CONFIG0         0x03
+    
+
+#define ICM42688_SELF_TEST_CONFIG       0x70
+#define ICM42688_WHO_AM_I               0x75
+#define ICM42688_REG_BANK_SEL           0x76   
+#define ICM42688_SENSOR_CONFIG0         0x03
 
 
 
-#define ICM42605_XG_ST_DATA             0x5F
-#define ICM42605_YG_ST_DATA             0x60
-#define ICM42605_ZG_ST_DATA             0x61
+#define ICM42688_XG_ST_DATA             0x5F
+#define ICM42688_YG_ST_DATA             0x60
+#define ICM42688_ZG_ST_DATA             0x61
 
-#define ICM42605_TMSTVAL0               0x62
-#define ICM42605_TMSTVAL1               0x63
-#define ICM42605_TMSTVAL2               0x64
+#define ICM42688_TMSTVAL0               0x62
+#define ICM42688_TMSTVAL1               0x63
+#define ICM42688_TMSTVAL2               0x64
 
-#define ICM42605_INTF_CONFIG0           0x4C
-#define ICM42605_INTF_CONFIG1           0x4D
-#define ICM42605_INTF_CONFIG4           0x7A
-#define ICM42605_INTF_CONFIG5           0x7B
-#define ICM42605_INTF_CONFIG6           0x7C
+#define ICM42688_INTF_CONFIG0           0x4C
+#define ICM42688_INTF_CONFIG1           0x4D
+#define ICM42688_INTF_CONFIG4           0x7A
+#define ICM42688_INTF_CONFIG5           0x7B
+#define ICM42688_INTF_CONFIG6           0x7C
 
-#define ICM42605_ACCEL_CONFIG_STATIC2   0x03
-#define ICM42605_ACCEL_CONFIG_STATIC3   0x04
-#define ICM42605_ACCEL_CONFIG_STATIC4   0x05
+#define ICM42688_ACCEL_CONFIG_STATIC2   0x03
+#define ICM42688_ACCEL_CONFIG_STATIC3   0x04
+#define ICM42688_ACCEL_CONFIG_STATIC4   0x05
 
-#define ICM42605_XA_ST_DATA             0x3B
-#define ICM42605_YA_ST_DATA             0x3C
-#define ICM42605_ZA_ST_DATA             0x3D
+#define ICM42688_XA_ST_DATA             0x3B
+#define ICM42688_YA_ST_DATA             0x3C
+#define ICM42688_ZA_ST_DATA             0x3D
 
-#define ICM42605_APEX_DATA0             0x31
-#define ICM42605_APEX_DATA1             0x32
-#define ICM42605_APEX_DATA2             0x33
-#define ICM42605_APEX_DATA3             0x34
-#define ICM42605_APEX_DATA4             0x35
-#define ICM42605_APEX_DATA5             0x36
-#define ICM42605_APEX_CONFIG0           0x56
-#define ICM42605_APEX_CONFIG1           0x40 
-#define ICM42605_APEX_CONFIG2           0x41
-#define ICM42605_APEX_CONFIG3           0x42
-#define ICM42605_APEX_CONFIG4           0x43
-#define ICM42605_APEX_CONFIG5           0x44
-#define ICM42605_APEX_CONFIG6           0x45
-#define ICM42605_APEX_CONFIG7           0x46
-#define ICM42605_APEX_CONFIG8           0x47
-#define ICM42605_APEX_CONFIG9           0x48
+#define ICM42688_APEX_DATA0             0x31
+#define ICM42688_APEX_DATA1             0x32
+#define ICM42688_APEX_DATA2             0x33
+#define ICM42688_APEX_DATA3             0x34
+#define ICM42688_APEX_DATA4             0x35
+#define ICM42688_APEX_DATA5             0x36
+#define ICM42688_APEX_CONFIG0           0x56
+#define ICM42688_APEX_CONFIG1           0x40 
+#define ICM42688_APEX_CONFIG2           0x41
+#define ICM42688_APEX_CONFIG3           0x42
+#define ICM42688_APEX_CONFIG4           0x43
+#define ICM42688_APEX_CONFIG5           0x44
+#define ICM42688_APEX_CONFIG6           0x45
+#define ICM42688_APEX_CONFIG7           0x46
+#define ICM42688_APEX_CONFIG8           0x47
+#define ICM42688_APEX_CONFIG9           0x48
 
-#define ICM42605_ACCEL_WOM_X_THR        0x4A
-#define ICM42605_ACCEL_WOM_Y_THR        0x4B
-#define ICM42605_ACCEL_WOM_Z_THR        0x4C
+#define ICM42688_ACCEL_WOM_X_THR        0x4A
+#define ICM42688_ACCEL_WOM_Y_THR        0x4B
+#define ICM42688_ACCEL_WOM_Z_THR        0x4C
 
-#define ICM42605_OFFSET_USER0           0x77
-#define ICM42605_OFFSET_USER1           0x78
-#define ICM42605_OFFSET_USER2           0x79
-#define ICM42605_OFFSET_USER3           0x7A
-#define ICM42605_OFFSET_USER4           0x7B
-#define ICM42605_OFFSET_USER5           0x7C
-#define ICM42605_OFFSET_USER6           0x7D
-#define ICM42605_OFFSET_USER7           0x7E
-#define ICM42605_OFFSET_USER8           0x7F
+#define ICM42688_OFFSET_USER0           0x77
+#define ICM42688_OFFSET_USER1           0x78
+#define ICM42688_OFFSET_USER2           0x79
+#define ICM42688_OFFSET_USER3           0x7A
+#define ICM42688_OFFSET_USER4           0x7B
+#define ICM42688_OFFSET_USER5           0x7C
+#define ICM42688_OFFSET_USER6           0x7D
+#define ICM42688_OFFSET_USER7           0x7E
+#define ICM42688_OFFSET_USER8           0x7F
 
-#define ICM42605_STEP_DET_INT           1<<5
-#define ICM42605_STEP_CNT_OVF_INT       1<<4
-#define ICM42605_TILT_DET_INT           1<<3
-#define ICM42605_WAKE_INT               1<<2
-#define ICM42605_SLEEP_INT              1<<1
-#define ICM42605_TAP_DET_INT            1
+#define ICM42688_STEP_DET_INT           1<<5
+#define ICM42688_STEP_CNT_OVF_INT       1<<4
+#define ICM42688_TILT_DET_INT           1<<3
+#define ICM42688_WAKE_INT               1<<2
+#define ICM42688_SLEEP_INT              1<<1
+#define ICM42688_TAP_DET_INT            1
 
-#define ICM42605_SMD_INT                1<<3
-#define ICM42605_WOM_Z_INT              1<<2
-#define ICM42605_WOM_Y_INT              1<<1
-#define ICM42605_WOM_X_INT              1
+#define ICM42688_SMD_INT                1<<3
+#define ICM42688_WOM_Z_INT              1<<2
+#define ICM42688_WOM_Y_INT              1<<1
+#define ICM42688_WOM_X_INT              1
 
-#define ICM42605_STATUS_WALK 1
-#define ICM42605_STATUS_RUN 2
+#define ICM42688_STATUS_WALK 1
+#define ICM42688_STATUS_RUN 2
 
-class DFRobot_ICM42605
+class DFRobot_ICM42688
 {
 public:
   #define ERR_OK             0      ///< No error
@@ -880,10 +881,10 @@ public:
 
 public:
   /**
-   * @fn DFRobot_ICM42605
+   * @fn DFRobot_ICM42688
    * @brief Constructor
    */
-  DFRobot_ICM42605();
+  DFRobot_ICM42688();
 
   /**
    * @fn begin
@@ -1020,8 +1021,8 @@ public:
    * @fn readInterruptStatus
    * @brief Read interrupt information and clear interrupt
    * @param reg Interrupt information register
-   * @n      ICM42605_INT_STATUS2    Obtain interrupt information of SMD_INT, WOM_X_INT, WOM_Y_INT, WOM_Z_INT and clear them
-   * @n      ICM42605_INT_STATUS3    Obtain interrupt information of STEP_DET_INT, STEP_CNT_OVF_INT, TILT_DET_INT, WAKE_INT, TAP_DET_INT and clear them
+   * @n      ICM42688_INT_STATUS2    Obtain interrupt information of SMD_INT, WOM_X_INT, WOM_Y_INT, WOM_Z_INT and clear them
+   * @n      ICM42688_INT_STATUS3    Obtain interrupt information of STEP_DET_INT, STEP_CNT_OVF_INT, TILT_DET_INT, WAKE_INT, TAP_DET_INT and clear them
    * @return Interrupt information, return 0 when no interrupt.
    */
   uint8_t readInterruptStatus(uint8_t reg);
@@ -1264,11 +1265,11 @@ private:
 };
 
 
-class DFRobot_ICM42605_SPI:public DFRobot_ICM42605, public mDev::mImu
+class DFRobot_ICM42688_SPI:public DFRobot_ICM42688, public mDev::mImu
 {
 public:
-  DFRobot_ICM42605_SPI(const char* name);
-  virtual ~DFRobot_ICM42605_SPI() = default;
+  DFRobot_ICM42688_SPI(const char* name);
+  virtual ~DFRobot_ICM42688_SPI() = default;
   /**
    * @fn begin
    * @brief Init function
@@ -1278,16 +1279,20 @@ public:
    * @retval ERR_IC_VERSION The read sensor ID is wrong
    */
   int begin(void);
-  virtual float getTemp(){return DFRobot_ICM42605::getTemperature();};
-  virtual float getAccelX(){return DFRobot_ICM42605::getAccelDataX();};
-  virtual float getAccelY(){return DFRobot_ICM42605::getAccelDataY();};
-  virtual float getAccelZ(){return DFRobot_ICM42605::getAccelDataZ();};
-  virtual float getGyroX(){return DFRobot_ICM42605::getGyroDataX();};
-  virtual float getGyroY(){return DFRobot_ICM42605::getGyroDataY();};
-  virtual float getGyroZ(){return DFRobot_ICM42605::getGyroDataZ();};
+  virtual float getTemp(){return DFRobot_ICM42688::getTemperature();};
+  virtual float getAccelX(){return DFRobot_ICM42688::getAccelDataX();};
+  virtual float getAccelY(){return DFRobot_ICM42688::getAccelDataY();};
+  virtual float getAccelZ(){return DFRobot_ICM42688::getAccelDataZ();};
+  virtual float getGyroX(){return DFRobot_ICM42688::getGyroDataX();};
+  virtual float getGyroY(){return DFRobot_ICM42688::getGyroDataY();};
+  virtual float getGyroZ(){return DFRobot_ICM42688::getGyroDataZ();};
+  virtual float getYaw() {return _mahony.getAngleZ();}
+  virtual float getPitch() {return _mahony.getAngleX();}
+  virtual float getRoll() {return _mahony.getAngleY();}
   virtual bool updateData()
   {
-      DFRobot_ICM42605::getFIFOData();
+      DFRobot_ICM42688::getFIFOData();
+      _mahony.MahonyUpdate(getGyroX()/57.3f,getGyroY()/57.3f,getGyroZ()/57.3f,getAccelX(),getAccelY(),getAccelZ());
       return true;
   }
 protected:
@@ -1318,5 +1323,6 @@ protected:
   void interruptMode();
 private:
   mDev::mSpi* mspi = nullptr;
+  Mahony _mahony;
 };
 #endif
