@@ -4,6 +4,7 @@
 #include "mi2c.hpp"
 #include "mimu.hpp"
 #include "mgpio.hpp"
+#include "mahony.hpp"
 class Bmi088Accel {
   public:
     enum Range {
@@ -82,7 +83,7 @@ class Bmi088Accel {
     const uint8_t SPI_READ = 0x80;
     const uint32_t SPI_CLOCK = 10000000; // 10 MHz
     // buffer for reading from sensor
-    uint8_t _buffer[10];
+    uint8_t _buffer[9];
     // constants
     static const uint8_t ACC_CHIP_ID = 0x1E;
     static const uint8_t ACC_RESET_CMD = 0xB6;
@@ -282,8 +283,8 @@ class Bmi088Gyro {
     static const uint8_t GYRO_INT4_DRDY_POS = 7;
     static const uint8_t GYRO_DATA_ADDR = 0x02;
     // transformation from sensor frame to right hand coordinate system
-    const int16_t tX[3] = {1, 0, 0};
-    const int16_t tY[3] = {0, -1, 0};
+    const int16_t tX[3] = {0, 1, 0};
+    const int16_t tY[3] = {-1, 0, 0};
     const int16_t tZ[3] = {0, 0, -1};
     // convert deg/s to rad/s
     const float D2R = 3.1415926 / 180.0f;
@@ -367,18 +368,16 @@ class Bmi088 : public mDev::mImu{
     virtual float getGyroX()override{return getGyroX_rads();};
     virtual float getGyroY()override{return getGyroY_rads();};
     virtual float getGyroZ()override{return getGyroZ_rads();};
-    //virtual float getYaw()override {return _mahony.getAngleZ();}
-    //virtual float getPitch()override {return _mahony.getAngleX();}
-    //virtual float getRoll()override {return _mahony.getAngleY();}
+    virtual float getYaw()override {return _mahony.getAngleZ();}
+    virtual float getPitch()override {return _mahony.getAngleY();}
+    virtual float getRoll()override {return _mahony.getAngleX();}
     virtual bool updateData()override
     {
         readSensor();
+        _mahony.MahonyUpdate(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
         return true;
     }
   private:
-    Bmi088Accel *accel;
-    Bmi088Gyro *gyro;
-    uint8_t drdy_pin;
     // constants
     static const uint8_t ACC_DISABLE = 0;
     static const uint8_t ACC_ENABLE = 1;
@@ -402,5 +401,9 @@ class Bmi088 : public mDev::mImu{
     static const uint8_t ACC_INT1_MAP_ADDR = 0x56;
     static const uint8_t ACC_INT2_MAP_ADDR = 0x57;
     bool writeFeatureConfig();  
-    void updateFeatureConfig(uint8_t addr, uint8_t count, const uint16_t *data);    
+    void updateFeatureConfig(uint8_t addr, uint8_t count, const uint16_t *data);
+    Bmi088Accel *accel;
+    Bmi088Gyro *gyro;
+    uint8_t drdy_pin;
+    Mahony _mahony;
 };

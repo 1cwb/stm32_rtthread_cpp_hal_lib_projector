@@ -681,7 +681,7 @@ int Bmi088Accel::begin()
 /* sets the BMI088 output data rate */
 bool Bmi088Accel::setOdr(Odr odr)
 {
-  uint8_t writeReg = 0, readReg[2] = {0}, value;
+  uint8_t writeReg = 0, readReg = 0, value;
   switch (odr) {
     case ODR_1600HZ_BW_280HZ: {
       value = (0x0A << 4) | 0x0C;
@@ -787,35 +787,35 @@ bool Bmi088Accel::setOdr(Odr odr)
   writeReg = SET_FIELD(writeReg,ACC_ODR,value);
   writeRegister(ACC_ODR_ADDR,writeReg);
   delay_ms(1);
-  readRegisters(ACC_ODR_ADDR,2,readReg);
-  return (readReg[1] == writeReg) ? true : false;
+  readRegisters(ACC_ODR_ADDR,1,&readReg);
+  return (readReg == writeReg) ? true : false;
 }
 
 /* sets the BMI088 range */
 bool Bmi088Accel::setRange(Range range)
 {
-  uint8_t writeReg = 0, readReg[2] = {0};
-  readRegisters(ACC_RANGE_ADDR,2,readReg);
-  writeReg = SET_FIELD(readReg[1],ACC_RANGE,range);
+  uint8_t writeReg = 0, readReg = 0;
+  readRegisters(ACC_RANGE_ADDR,1,&readReg);
+  writeReg = SET_FIELD(readReg,ACC_RANGE,range);
   writeRegister(ACC_RANGE_ADDR,writeReg);
   delay_ms(1);
-  readRegisters(ACC_RANGE_ADDR,2,readReg);
-  if (readReg[1] == writeReg) {
+  readRegisters(ACC_RANGE_ADDR,1,&readReg);
+  if (readReg == writeReg) {
     switch (range) {
       case RANGE_3G: {
-        accel_range_mss = 3.0f * G;
+        accel_range_mss = 6000.0f / 65536.0f;
         break;
       }
       case RANGE_6G: {
-        accel_range_mss = 6.0f * G;
+        accel_range_mss = 12000.0f / 65536.0f;
         break;
       }
       case RANGE_12G: {
-        accel_range_mss = 12.0f * G;
+        accel_range_mss = 24000.0f / 65536.0f;
         break;
       }
       case RANGE_24G: {
-        accel_range_mss = 24.0f * G;
+        accel_range_mss = 48000.0f / 65536.0f;
         break;
       }      
     }
@@ -840,33 +840,33 @@ bool Bmi088Accel::pinModeInt2(PinMode mode, PinLevel level)
 /* maps the data ready signal to the Int1 pin */
 bool Bmi088Accel::mapDrdyInt1(bool enable)
 {
-  uint8_t writeReg = 0, readReg[2] = {0};
-  readRegisters(ACC_INT1_DRDY_ADDR,2,readReg);
-  writeReg = SET_FIELD(readReg[1],ACC_INT1_DRDY,enable);
+  uint8_t writeReg = 0, readReg = 0;
+  readRegisters(ACC_INT1_DRDY_ADDR,1,&readReg);
+  writeReg = SET_FIELD(readReg,ACC_INT1_DRDY,enable);
   writeRegister(ACC_INT1_DRDY_ADDR,writeReg);
   delay_ms(1);
-  readRegisters(ACC_INT1_DRDY_ADDR,2,readReg);
-  return (readReg[1] == writeReg) ? true : false;  
+  readRegisters(ACC_INT1_DRDY_ADDR,1,&readReg);
+  return (readReg == writeReg) ? true : false;  
 }
 
 /* maps the data ready signal to the Int2 pin */
 bool Bmi088Accel::mapDrdyInt2(bool enable)
 {
-  uint8_t writeReg = 0, readReg[2] = {0};
-  readRegisters(ACC_INT2_DRDY_ADDR,2,readReg);
-  writeReg = SET_FIELD(readReg[1],ACC_INT2_DRDY,enable);
+  uint8_t writeReg = 0, readReg = 0;
+  readRegisters(ACC_INT2_DRDY_ADDR,1,&readReg);
+  writeReg = SET_FIELD(readReg,ACC_INT2_DRDY,enable);
   writeRegister(ACC_INT2_DRDY_ADDR,writeReg);
   delay_ms(1);
-  readRegisters(ACC_INT2_DRDY_ADDR,2,readReg);
-  return (readReg[1] == writeReg) ? true : false;
+  readRegisters(ACC_INT2_DRDY_ADDR,1,&readReg);
+  return (readReg == writeReg) ? true : false;
 }
 
 /* returns whether data is ready or not */
 bool Bmi088Accel::getDrdyStatus()
 {
-  uint8_t readReg[2] = {0};
-  readRegisters(ACC_DRDY_ADDR,2,readReg);
-  return (GET_FIELD(ACC_DRDY,readReg[1])) ? true : false;
+  uint8_t readReg = 0;
+  readRegisters(ACC_DRDY_ADDR,1,&readReg);
+  return (GET_FIELD(ACC_DRDY,readReg)) ? true : false;
 }
 
 /* reads the BMI088 accel */
@@ -875,20 +875,20 @@ void Bmi088Accel::readSensor()
   /* accel data */
   uint16_t temp_uint11;
   int16_t accel[3], temp_int11;
-  readRegisters(ACC_ACCEL_DATA_ADDR,10,_buffer);
-  accel[0] = (_buffer[2] << 8) | _buffer[1];
-  accel[1] = (_buffer[4] << 8) | _buffer[3];
-  accel[2] = (_buffer[6] << 8) | _buffer[5];
-  accel_mss[0] = (float) (accel[0] * tX[0] + accel[1] * tX[1] + accel[2] * tX[2]) / 32768.0f * accel_range_mss;
-  accel_mss[1] = (float) (accel[0] * tY[0] + accel[1] * tY[1] + accel[2] * tY[2]) / 32768.0f * accel_range_mss;
-  accel_mss[2] = (float) (accel[0] * tZ[0] + accel[1] * tZ[1] + accel[2] * tZ[2]) / 32768.0f * accel_range_mss;
+  readRegisters(ACC_ACCEL_DATA_ADDR,9,_buffer);
+  accel[0] = (_buffer[1] << 8) | _buffer[0];
+  accel[1] = (_buffer[3] << 8) | _buffer[2];
+  accel[2] = (_buffer[5] << 8) | _buffer[4];
+  accel_mss[0] = (float) (accel[0] * tX[0] + accel[1] * tX[1] + accel[2] * tX[2]) * accel_range_mss;
+  accel_mss[1] = (float) (accel[0] * tY[0] + accel[1] * tY[1] + accel[2] * tY[2]) * accel_range_mss;
+  accel_mss[2] = (float) (accel[0] * tZ[0] + accel[1] * tZ[1] + accel[2] * tZ[2]) * accel_range_mss;
   /* time data */
-  current_time_counter = (_buffer[9] << 16) | (_buffer[8] << 8) | _buffer[7];
+  current_time_counter = (_buffer[8] << 16) | (_buffer[7] << 8) | _buffer[6];
   time_counter = current_time_counter - prev_time_counter;
   prev_time_counter = current_time_counter;
   /* temperature data */
-  readRegisters(ACC_TEMP_DATA_ADDR,3,_buffer);
-  temp_uint11 = (_buffer[1] * 8) + (_buffer[2] / 32);
+  readRegisters(ACC_TEMP_DATA_ADDR,2,_buffer);
+  temp_uint11 = (_buffer[0] * 8) + (_buffer[1] / 32);
   if (temp_uint11 > 1023) {
     temp_int11 = temp_uint11 - 2048;
   } else {
@@ -930,9 +930,9 @@ uint64_t Bmi088Accel::getTime_ps()
 /* sets the Int1 pin configuration */
 bool Bmi088Accel::pinModeInt1(PinIO io, PinMode mode, PinLevel level)
 {
-  uint8_t writeReg = 0, readReg[2] = {0};
+  uint8_t writeReg = 0, readReg = 0;
   uint8_t pin_io, pin_mode, active_lvl;
-  readRegisters(ACC_INT1_IO_CTRL_ADDR,2,readReg);
+  readRegisters(ACC_INT1_IO_CTRL_ADDR,1,&readReg);
   switch (io) {
     case PIN_INPUT: {
       pin_io = ACC_INT_INPUT;
@@ -975,19 +975,19 @@ bool Bmi088Accel::pinModeInt1(PinIO io, PinMode mode, PinLevel level)
       break;      
     }
   }
-  writeReg = SET_FIELD(readReg[1],ACC_INT1_IO_CTRL,(pin_io | pin_mode | active_lvl));
+  writeReg = SET_FIELD(readReg,ACC_INT1_IO_CTRL,(pin_io | pin_mode | active_lvl));
   writeRegister(ACC_INT1_IO_CTRL_ADDR,writeReg);
   delay_ms(1);
-  readRegisters(ACC_INT1_IO_CTRL_ADDR,2,readReg);
-  return (readReg[1] == writeReg) ? true : false;  
+  readRegisters(ACC_INT1_IO_CTRL_ADDR,1,&readReg);
+  return (readReg == writeReg) ? true : false;  
 }
 
 /* sets the Int2 pin configuration */
 bool Bmi088Accel::pinModeInt2(PinIO io, PinMode mode, PinLevel level)
 {
-  uint8_t writeReg = 0, readReg[2] = {0};
+  uint8_t writeReg = 0, readReg = 0;
   uint8_t pin_io, pin_mode, active_lvl;
-  readRegisters(ACC_INT2_IO_CTRL_ADDR,2,readReg);
+  readRegisters(ACC_INT2_IO_CTRL_ADDR,1,&readReg);
   switch (io) {
     case PIN_INPUT: {
       pin_io = ACC_INT_INPUT;
@@ -1030,11 +1030,11 @@ bool Bmi088Accel::pinModeInt2(PinIO io, PinMode mode, PinLevel level)
       break;      
     }
   }
-  writeReg = SET_FIELD(readReg[1],ACC_INT2_IO_CTRL,(pin_io | pin_mode | active_lvl));
+  writeReg = SET_FIELD(readReg,ACC_INT2_IO_CTRL,(pin_io | pin_mode | active_lvl));
   writeRegister(ACC_INT2_IO_CTRL_ADDR,writeReg);
   delay_ms(1);
-  readRegisters(ACC_INT2_IO_CTRL_ADDR,2,readReg);
-  return (readReg[1] == writeReg) ? true : false;  
+  readRegisters(ACC_INT2_IO_CTRL_ADDR,1,&readReg);
+  return (readReg == writeReg) ? true : false;  
 }
 
 /* performs BMI088 accel self test */
@@ -1084,25 +1084,25 @@ bool Bmi088Accel::selfTest()
 /* sets whether the sensor is in active or suspend mode */
 bool Bmi088Accel::setMode(bool active)
 {
-  uint8_t writeReg = 0, readReg[2] = {0};
+  uint8_t writeReg = 0, readReg = 0;
   uint8_t value = (active) ? ACC_ACTIVE_MODE_CMD : ACC_SUSPEND_MODE_CMD;
   writeReg = SET_FIELD(writeReg,ACC_PWR_CONF,value);
   writeRegister(ACC_PWR_CONF_ADDR,writeReg);
   delay_ms(10); // 5 ms wait after power mode changes
-  readRegisters(ACC_PWR_CONF_ADDR,2,readReg);
-  return (readReg[1] == writeReg) ? true : false;
+  readRegisters(ACC_PWR_CONF_ADDR,1,&readReg);
+  return (readReg == writeReg) ? true : false;
 }
 
 /* sets whether the sensor is enabled or disabled */
 bool Bmi088Accel::setPower(bool enable)
 {
-  uint8_t writeReg = 0, readReg[2] = {0};
+  uint8_t writeReg = 0, readReg = 0;
   uint8_t value = (enable) ? ACC_ENABLE_CMD : ACC_DISABLE_CMD;
   writeReg = SET_FIELD(writeReg,ACC_PWR_CNTRL,value);
   writeRegister(ACC_PWR_CNTRL_ADDR,writeReg);
   delay_ms(10); // 5 ms wait after power mode changes
-  readRegisters(ACC_PWR_CNTRL_ADDR,2,readReg);
-  return (readReg[1] == writeReg) ? true : false;
+  readRegisters(ACC_PWR_CNTRL_ADDR,1,&readReg);
+  return (readReg == writeReg) ? true : false;
 }
 
 /* performs a soft reset */
@@ -1123,25 +1123,25 @@ void Bmi088Accel::softReset()
 /* checks the BMI088 for configuration errors */
 bool Bmi088Accel::isConfigErr()
 {
-  uint8_t readReg[2] = {0};
-  readRegisters(ACC_ERR_CODE_ADDR,2,readReg);
-  return (GET_FIELD(ACC_ERR_CODE,readReg[1])) ? true : false;
+  uint8_t readReg = 0;
+  readRegisters(ACC_ERR_CODE_ADDR,1,&readReg);
+  return (GET_FIELD(ACC_ERR_CODE,readReg)) ? true : false;
 }
 
 /* checks the BMI088 for fatal errors */
 bool Bmi088Accel::isFatalErr()
 {
-  uint8_t readReg[2] = {0};
-  readRegisters(ACC_FATAL_ERR_ADDR,2,readReg);
-  return (GET_FIELD(ACC_FATAL_ERR,readReg[1])) ? true : false;
+  uint8_t readReg = 0;
+  readRegisters(ACC_FATAL_ERR_ADDR,1,&readReg);
+  return (GET_FIELD(ACC_FATAL_ERR,readReg)) ? true : false;
 }
 
 /* checks the BMI088 accelerometer ID */
 bool Bmi088Accel::isCorrectId()
 {
-  uint8_t readReg[2] = {0};
-  readRegisters(ACC_CHIP_ID_ADDR,2,readReg);
-  return (GET_FIELD(ACC_CHIP_ID,readReg[1]) == ACC_CHIP_ID) ? true : false;
+  uint8_t readReg = 0;
+  readRegisters(ACC_CHIP_ID_ADDR,1,&readReg);
+  return (GET_FIELD(ACC_CHIP_ID,readReg) == ACC_CHIP_ID) ? true : false;
 }
 
 /* writes a byte to BMI088 register given a register address and data */
@@ -1167,12 +1167,14 @@ void Bmi088Accel::writeRegisters(uint8_t subAddress, uint8_t count, const uint8_
 /* reads registers from BMI088 given a starting register address, number of bytes, and a pointer to store data */
 void Bmi088Accel::readRegisters(uint8_t subAddress, uint8_t count, uint8_t* dest)
 {
+  uint8_t tempdata[count+1] = {0};
 	if (_useSPI)
     {
-        _spi->readReg(_csPin, subAddress, dest, count);
+        _spi->readReg(_csPin, subAddress, tempdata, count+1);
 	} else {
-        _i2c->readReg(_address, subAddress, dest, count);
+        _i2c->readReg(_address, subAddress, tempdata, count+1);
 	}
+  memcpy(dest, tempdata+1, count);
 }
 
 /* BMI088 object, input the I2C bus and address */
@@ -1238,23 +1240,23 @@ bool Bmi088Gyro::setRange(Range range)
   if (readReg == writeReg) {
     switch (range) {
       case RANGE_125DPS: {
-        gyro_range_rads = 125.0f * D2R;
+        gyro_range_rads = 250.0f / 65536.0f * (3.1415926f / 180.0f);
         break;
       }
       case RANGE_250DPS: {
-        gyro_range_rads = 250.0f * D2R;
+        gyro_range_rads = 500.0f / 65536.0f * (3.1415926f / 180.0f);
         break;
       }
       case RANGE_500DPS: {
-        gyro_range_rads = 500.0f * D2R;
+        gyro_range_rads = 1000.0f / 65536.0f * (3.1415926f / 180.0f);
         break;
       }
       case RANGE_1000DPS: {
-        gyro_range_rads = 1000.0f * D2R;
+        gyro_range_rads = 2000.0f / 65536.0f * (3.1415926f / 180.0f);
         break;
       }
       case RANGE_2000DPS: {
-        gyro_range_rads = 2000.0f * D2R;
+        gyro_range_rads = 4000.0f / 65536.0f * (3.1415926f / 180.0f);
         break;
       }       
     }
@@ -1387,9 +1389,9 @@ void Bmi088Gyro::readSensor()
   gyro[0] = (_buffer[1] << 8) | _buffer[0];
   gyro[1] = (_buffer[3] << 8) | _buffer[2];
   gyro[2] = (_buffer[5] << 8) | _buffer[4];
-  gyro_rads[0] = (float) (gyro[0] * tX[0] + gyro[1] * tX[1] + gyro[2] * tX[2]) / 32767.0f * gyro_range_rads;
-  gyro_rads[1] = (float) (gyro[0] * tY[0] + gyro[1] * tY[1] + gyro[2] * tY[2]) / 32767.0f * gyro_range_rads;
-  gyro_rads[2] = (float) (gyro[0] * tZ[0] + gyro[1] * tZ[1] + gyro[2] * tZ[2]) / 32767.0f * gyro_range_rads;
+  gyro_rads[0] = (float) (gyro[0] * tX[0] + gyro[1] * tX[1] + gyro[2] * tX[2])  * gyro_range_rads;
+  gyro_rads[1] = (float) (gyro[0] * tY[0] + gyro[1] * tY[1] + gyro[2] * tY[2])  * gyro_range_rads;
+  gyro_rads[2] = (float) (gyro[0] * tZ[0] + gyro[1] * tZ[1] + gyro[2] * tZ[2])  * gyro_range_rads;
 }
 
 /* returns the x gyro, rad/s */

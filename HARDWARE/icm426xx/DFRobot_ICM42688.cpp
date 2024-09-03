@@ -337,7 +337,7 @@ bool DFRobot_ICM42688::setODRAndFSR(uint8_t who,uint8_t ODR,uint8_t FSR)
       writeReg(ICM42688_ACCEL_CONFIG0,&accelConfig0,1);
       switch(FSR){
         case FSR_0:
-          _accelRange = 0.488f;
+          _accelRange = 0.488f;//
           break;
         case FSR_1:
           _accelRange = 0.244f;

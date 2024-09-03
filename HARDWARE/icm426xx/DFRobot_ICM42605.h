@@ -1288,8 +1288,8 @@ public:
   virtual float getGyroY()override{return DFRobot_ICM42605::getGyroDataY();};
   virtual float getGyroZ()override{return DFRobot_ICM42605::getGyroDataZ();};
   virtual float getYaw()override {return _mahony.getAngleZ();}
-  virtual float getPitch()override {return _mahony.getAngleX();}
-  virtual float getRoll()override {return _mahony.getAngleY();}
+  virtual float getPitch()override {return _mahony.getAngleY();}
+  virtual float getRoll()override {return _mahony.getAngleX();}
   virtual bool updateData()override
   {
       DFRobot_ICM42605::getFIFOData();

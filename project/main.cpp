@@ -56,15 +56,16 @@ int main(void)
                 if(imu1)
                 {
                     imu1->updateData();
-                    //printf("IMU1 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch());
-                    printf("iu1 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ(),imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ());
+                    printf("IMU1 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch());
+                    //printf("iu1 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ(),imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ());
+                    //printf("iu1 gx:%8f, gy:%8f, gz:%8f\r\n",imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ(),imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ());
                     
                 }
                 if(imu2)
                 {
                     imu2->updateData();
-                    //printf("IMU2 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch());
-                    printf("iu2 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu2->getAccelX(),imu2->getAccelY(),imu2->getAccelZ(),imu2->getGyroX(),imu2->getGyroY(),imu2->getGyroZ());
+                    printf("IMU2 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch());
+                    //printf("iu2 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu2->getAccelX(),imu2->getAccelY(),imu2->getAccelZ(),imu2->getGyroX(),imu2->getGyroY(),imu2->getGyroZ());
                 }
             }
         }
