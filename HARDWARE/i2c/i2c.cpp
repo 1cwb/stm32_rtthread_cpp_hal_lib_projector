@@ -23,11 +23,11 @@ mResult i2cx::deInit()
     HAL_I2C_DeInit(&_i2cxHandle);
     return M_RESULT_EOK;
 }
-mResult i2cx::write(uint16_t slaveAddr, uint8_t* buff, size_t len)
+mResult i2cx::write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
 {
     if(isMasterMode())
     {
-        if(HAL_I2C_Master_Transmit(&_i2cxHandle, slaveAddr, buff, len, 5000) != HAL_OK)
+        if(HAL_I2C_Master_Transmit(&_i2cxHandle, slaveAddr, (uint8_t*)buff, len, 5000) != HAL_OK)
         {
             printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
             return M_RESULT_ERROR;
@@ -35,7 +35,7 @@ mResult i2cx::write(uint16_t slaveAddr, uint8_t* buff, size_t len)
     }
     else
     {
-        if(HAL_I2C_Slave_Transmit(&_i2cxHandle, buff, len, 5000) != HAL_OK)
+        if(HAL_I2C_Slave_Transmit(&_i2cxHandle, (uint8_t*)buff, len, 5000) != HAL_OK)
         {
             printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
             return M_RESULT_ERROR;
@@ -63,9 +63,9 @@ mResult i2cx::read(uint16_t slaveAddr, uint8_t* buff, size_t len)
     }
     return M_RESULT_EOK;
 }
-mResult i2cx::writeReg(uint16_t slaveAddr, uint8_t reg, uint8_t* buff, size_t len)
+mResult i2cx::writeReg(uint16_t slaveAddr, uint8_t reg, const uint8_t* buff, size_t len)
 {
-    if(HAL_I2C_Mem_Write(&_i2cxHandle, slaveAddr, reg, I2C_MEMADD_SIZE_8BIT, buff, len, 5000) != HAL_OK)
+    if(HAL_I2C_Mem_Write(&_i2cxHandle, slaveAddr, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*)buff, len, 5000) != HAL_OK)
     {
         printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;

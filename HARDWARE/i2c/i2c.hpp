@@ -10,9 +10,9 @@ public:
     virtual ~i2cx();
     mResult init(const mDev::initCallbackExt& cb ,I2C_HandleTypeDef* i2chandle);
     mResult deInit();
-    virtual mResult write(uint16_t slaveAddr, uint8_t* buff, size_t len)override;
+    virtual mResult write(uint16_t slaveAddr, const uint8_t* buff, size_t len)override;
     virtual mResult read(uint16_t slaveAddr, uint8_t* buff, size_t len)override;
-    virtual mResult writeReg(uint16_t slaveAddr, uint8_t reg, uint8_t* buff, size_t len)override;
+    virtual mResult writeReg(uint16_t slaveAddr, uint8_t reg, const uint8_t* buff, size_t len)override;
     virtual mResult readReg(uint16_t slaveAddr, uint8_t reg, uint8_t* buff, size_t len)override;
     I2C_HandleTypeDef* i2cxHandle()
     {

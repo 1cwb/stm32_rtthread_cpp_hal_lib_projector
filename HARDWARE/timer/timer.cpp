@@ -331,9 +331,9 @@
         __HAL_TIM_SET_AUTORELOAD(&_TimHandle, usPeriod);
         HAL_TIM_GenerateEvent(&_TimHandle, TIM_EVENTSOURCE_UPDATE);
     }
-    uint32_t timerx::getTimeOut()
+    uint32_t timerx::getTimeOutUs()
     {
-        return _TimHandle.Init.Period*1000000000/(getInputClk(_TimHandle.Instance)/_TimHandle.Init.Prescaler);
+        return (_TimHandle.Init.Period+1)*1000000LU/(getInputClk(_TimHandle.Instance)/(_TimHandle.Init.Prescaler+1));
     }
 
 extern "C" 

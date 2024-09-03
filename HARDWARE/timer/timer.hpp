@@ -22,7 +22,7 @@ public:
     virtual void start(mDev::CHANNLE channel = mDev::CHANNLE::CHANNLE_INVALED, uint32_t* data1 = nullptr, uint32_t* data2 = nullptr, size_t len = 0) override;
     virtual void stop(mDev::CHANNLE channel) override;
     virtual void updateFreq(uint32_t timefreq) override;
-    virtual uint32_t getTimeOut() override;
+    virtual uint32_t getTimeOutUs() override;
 
     virtual void pwmUpdatePulse(uint32_t pulse, mDev::CHANNLE channel)override{__HAL_TIM_SET_COMPARE(&_TimHandle,remapChannelToTimChannel(channel),pulse);}
     virtual uint32_t pwmGetMaxPulse()override{return _TimHandle.Init.Period;}

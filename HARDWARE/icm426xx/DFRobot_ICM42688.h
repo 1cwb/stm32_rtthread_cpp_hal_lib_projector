@@ -18,6 +18,7 @@
 #include "mspi.hpp"
 #include "mimu.hpp"
 #include "mahony.hpp"
+#include "mgpio.hpp"
 //Open this macro and you can see the details of the program
 #define ENABLE_DBG
 
@@ -1268,7 +1269,7 @@ private:
 class DFRobot_ICM42688_SPI:public DFRobot_ICM42688, public mDev::mImu
 {
 public:
-  DFRobot_ICM42688_SPI(const char* name);
+  DFRobot_ICM42688_SPI(const char* name, mDev::mGpio* cs);
   virtual ~DFRobot_ICM42688_SPI() = default;
   /**
    * @fn begin
@@ -1279,17 +1280,17 @@ public:
    * @retval ERR_IC_VERSION The read sensor ID is wrong
    */
   int begin(void);
-  virtual float getTemp(){return DFRobot_ICM42688::getTemperature();};
-  virtual float getAccelX(){return DFRobot_ICM42688::getAccelDataX();};
-  virtual float getAccelY(){return DFRobot_ICM42688::getAccelDataY();};
-  virtual float getAccelZ(){return DFRobot_ICM42688::getAccelDataZ();};
-  virtual float getGyroX(){return DFRobot_ICM42688::getGyroDataX();};
-  virtual float getGyroY(){return DFRobot_ICM42688::getGyroDataY();};
-  virtual float getGyroZ(){return DFRobot_ICM42688::getGyroDataZ();};
-  virtual float getYaw() {return _mahony.getAngleZ();}
-  virtual float getPitch() {return _mahony.getAngleX();}
-  virtual float getRoll() {return _mahony.getAngleY();}
-  virtual bool updateData()
+  virtual float getTemp()override{return DFRobot_ICM42688::getTemperature();};
+  virtual float getAccelX()override{return DFRobot_ICM42688::getAccelDataX();};
+  virtual float getAccelY()override{return DFRobot_ICM42688::getAccelDataY();};
+  virtual float getAccelZ()override{return DFRobot_ICM42688::getAccelDataZ();};
+  virtual float getGyroX()override{return DFRobot_ICM42688::getGyroDataX();};
+  virtual float getGyroY()override{return DFRobot_ICM42688::getGyroDataY();};
+  virtual float getGyroZ()override{return DFRobot_ICM42688::getGyroDataZ();};
+  virtual float getYaw()override {return _mahony.getAngleZ();}
+  virtual float getPitch()override {return _mahony.getAngleX();}
+  virtual float getRoll()override {return _mahony.getAngleY();}
+  virtual bool updateData()override
   {
       DFRobot_ICM42688::getFIFOData();
       _mahony.MahonyUpdate(getGyroX()/57.3f,getGyroY()/57.3f,getGyroZ()/57.3f,getAccelX(),getAccelY(),getAccelZ());
@@ -1324,5 +1325,6 @@ protected:
 private:
   mDev::mSpi* mspi = nullptr;
   Mahony _mahony;
+  mDev::mGpio* _cs = nullptr;
 };
 #endif

@@ -735,7 +735,7 @@ bool DFRobot_ICM42688::setUIFilter(uint8_t who,uint8_t filterOrder ,uint8_t UIFi
   return ret;
 }
 
-DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI(const char* name):mImu(name)
+DFRobot_ICM42688_SPI::DFRobot_ICM42688_SPI(const char* name, mDev::mGpio* cs):mImu(name),_cs(cs)
 {
   mspi = reinterpret_cast<mDev::mSpi*> (mDev::mPlatform::getInstance()->getDevice("spi1"));
   if(!mspi)
@@ -750,7 +750,7 @@ int DFRobot_ICM42688_SPI::begin(void)
 {
   if(mspi)
   {
-    mspi->csDisable();
+    mspi->csDisable(_cs);
   }
   return DFRobot_ICM42688::begin();
 }
@@ -765,7 +765,7 @@ void DFRobot_ICM42688_SPI::writeReg(uint8_t reg, void* pBuf, size_t size)
     printf("Error: spi4 not init yet\r\n");
     return;
   }
-  if(mspi->writeReg(reg, (uint8_t*)pBuf, size) != M_RESULT_EOK)
+  if(mspi->writeReg(_cs, reg, (uint8_t*)pBuf, size) != M_RESULT_EOK)
   {
     printf("ERROR: SPI WRITE REG ERROR\r\n");
   }
@@ -782,7 +782,7 @@ uint8_t DFRobot_ICM42688_SPI::readReg(uint8_t reg, void* pBuf, size_t size)
     printf("Error: spi4 not init yet\r\n");
     return 0;
   }
-  ret = (uint8_t)mspi->readReg(reg, (uint8_t*)pBuf, size);
+  ret = (uint8_t)mspi->readReg(_cs, reg, (uint8_t*)pBuf, size);
   if(ret != (uint8_t)M_RESULT_EOK)
   {
     printf("ERROR: SPI READ REG ERROR\r\n");

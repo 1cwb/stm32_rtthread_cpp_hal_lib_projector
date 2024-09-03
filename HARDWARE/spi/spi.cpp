@@ -1,5 +1,5 @@
 #include "spi.hpp"
-spix::spix(const char* name) : mSpi(name),_spiCs(std::string(name).append("cs").c_str())
+spix::spix(const char* name) : mSpi(name)
 {
 
 }
@@ -7,7 +7,7 @@ spix::~spix()
 {
 
 }
-mResult spix::init(const mDev::initCallbackExt& cb ,SPI_HandleTypeDef* spihandle ,GPIO_TypeDef* csgpiox, uint16_t cspin)
+mResult spix::init(const mDev::initCallbackExt& cb ,SPI_HandleTypeDef* spihandle)
 {
     _initcb = cb;
     memcpy(&_spixHandle, spihandle, sizeof(SPI_HandleTypeDef));
@@ -16,7 +16,7 @@ mResult spix::init(const mDev::initCallbackExt& cb ,SPI_HandleTypeDef* spihandle
     {
         return M_RESULT_ERROR;
     }
-    _spiCs.init(mDev::initCallbackExt(),csgpiox,cspin,GPIO_MODE_OUTPUT_PP,GPIO_PULLUP);
+    //_spiCs.init(mDev::initCallbackExt(),csgpiox,cspin,GPIO_MODE_OUTPUT_PP,GPIO_PULLUP);
     return M_RESULT_EOK;
 }
 mResult spix::deInit()
@@ -24,13 +24,27 @@ mResult spix::deInit()
     HAL_SPI_DeInit(&_spixHandle);
     return M_RESULT_EOK;
 }
-void spix::csEnable()
+void spix::csEnable(mDev::mGpio* cspin)
 {
-    _spiCs.setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+    if(cspin)
+    {
+        cspin->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+    }
+    else
+    {
+        printf("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
+    }
 }
-void spix::csDisable()
+void spix::csDisable(mDev::mGpio* cspin)
 {
-    _spiCs.setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+    if(cspin)
+    {
+        cspin->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+    }
+    else
+    {
+        printf("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
+    }
 }
 mResult spix::write(const uint8_t* buff, size_t len)
 {

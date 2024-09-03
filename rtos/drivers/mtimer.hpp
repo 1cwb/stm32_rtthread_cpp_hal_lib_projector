@@ -34,7 +34,7 @@ public:
     ~mTimer() = default;
     virtual void updateFreq(uint32_t timefreq){}
     virtual uint32_t getFreq() const {return _timeFreq;}
-    virtual uint32_t getTimeOut() {return 0;}
+    virtual uint32_t getTimeOutUs() {return 0;}
     virtual void start(mDev::CHANNLE channel = mDev::CHANNLE::CHANNLE_INVALED, uint32_t* data1 = nullptr, uint32_t* data2 = nullptr, size_t len = 0){}
     virtual void stop(mDev::CHANNLE channel){}
     virtual void pwmUpdatePulse(uint32_t pulse, CHANNLE channel){}
