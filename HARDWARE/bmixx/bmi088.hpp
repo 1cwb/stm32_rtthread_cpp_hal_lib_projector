@@ -146,9 +146,9 @@ class Bmi088Accel {
     static const uint8_t ACC_ACCEL_DATA_ADDR = 0x12;
     static const uint8_t ACC_TEMP_DATA_ADDR = 0x22;
     // transformation from sensor frame to right hand coordinate system
-    const int16_t tX[3] = {1, 0, 0};
-    const int16_t tY[3] = {0, -1, 0};
-    const int16_t tZ[3] = {0, 0, -1};
+    const int16_t tX[3] = {0, -1, 0};
+    const int16_t tY[3] = {1, 0, 0};
+    const int16_t tZ[3] = {0, 0, 1};
     // convert G to m/s/s
     const float G = 9.807f;
     // accel full scale range
@@ -283,9 +283,9 @@ class Bmi088Gyro {
     static const uint8_t GYRO_INT4_DRDY_POS = 7;
     static const uint8_t GYRO_DATA_ADDR = 0x02;
     // transformation from sensor frame to right hand coordinate system
-    const int16_t tX[3] = {0, 1, 0};
-    const int16_t tY[3] = {-1, 0, 0};
-    const int16_t tZ[3] = {0, 0, -1};
+    const int16_t tX[3] = {0, -1, 0};
+    const int16_t tY[3] = {1, 0, 0};
+    const int16_t tZ[3] = {0, 0, 1};
     // convert deg/s to rad/s
     const float D2R = 3.1415926 / 180.0f;
     // gyro full scale range
