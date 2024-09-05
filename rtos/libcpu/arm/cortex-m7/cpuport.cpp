@@ -77,10 +77,6 @@ void CPUPORT::hwHardFaultException(exceptionInfo_t *exceptionInfo)
     if (exceptionInfo->excReturn & (1 << 2))
     {
         printf("hard fault on thread: %s\r\n\r\n", mthread::threadSelf()->name);
-
-#ifdef RT_USING_FINSH
-        list_thread();
-#endif
     }
     else
     {
@@ -91,10 +87,7 @@ void CPUPORT::hwHardFaultException(exceptionInfo_t *exceptionInfo)
     {
         printf("FPU active!\r\n");
     }
-
-#ifdef RT_USING_FINSH
-    hard_fault_track();
-#endif /* RT_USING_FINSH */
-
+    printf("you can use the command to find whitch line caused this fault: \r\n");
+    printf("arm-none-eabi-addr2line -e xxx.elf -a -f %lx\r\n",context->exceptionStackFrame.pc);
     while (1);
 }
