@@ -6,7 +6,7 @@ class i2cx : public mDev::mI2c
 {
 public:
     i2cx() = delete;
-    explicit i2cx(const char* name, mDev::I2C_TYPE type);
+    explicit i2cx(const char* name, mDev::I2C_TYPE type = mDev::I2C_TYPE::I2C_TYPE_MASTER);
     virtual ~i2cx();
     mResult init(const mDev::initCallbackExt& cb ,I2C_HandleTypeDef* i2chandle);
     mResult deInit();

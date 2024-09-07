@@ -12,11 +12,15 @@
 #include "bmi088.hpp"
 #include "delay.h"
 #include "mplatform.hpp"
+#include "i2c.hpp"
+#include "qmc5883.hpp"
+#include "spl06.hpp"
 timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
 spix* spi1 = nullptr;
 spix* spi4 = nullptr;
-
+gpiox* imu1drdy = nullptr;
+gpiox* pd12 = nullptr;
 #if 1
 int initAllDevice()
 {
@@ -99,7 +103,10 @@ int initAllDevice()
 
     Bmi088* imu1 = new Bmi088("imu1",*spi1,*imu1acs,*imu1gcs);
     imu1->begin();
-
+    imu1->mapSync(Bmi088::SyncPin::PIN_3);//将gyro和acc的同步引脚连到pin3，以gyro的输出频率为基准同步。
+    imu1->mapDrdy(Bmi088::DrdyPin::PIN_1);//将rdy引脚接到中断
+    imu1->pinModeDrdy(Bmi088::PUSH_PULL,Bmi088::ACTIVE_HIGH);
+    
     //SPI4 init
     spi4 = new spix("spi4");
     memset(&spixHandle, 0, sizeof(SPI_HandleTypeDef));
@@ -153,14 +160,125 @@ int initAllDevice()
 
     Bmi088* imu2 = new Bmi088("imu2",*spi4,*imu2acs,*imu2gcs);
     imu2->begin();
+
+    imu1drdy = new gpiox("imu1drdy");
+    imu1drdy->init([](bool b){if(b){
+            __HAL_RCC_GPIOA_CLK_ENABLE();
+            HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
+            HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+        }},GPIOA,GPIO_PIN_0,GPIO_MODE_IT_RISING,GPIO_PULLDOWN);
+
+    #if 0
+    pd12 = new gpiox("pd12");
+    pd12->init([](bool b){if(b){
+            __HAL_RCC_GPIOD_CLK_ENABLE();
+            HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
+            HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+        }},GPIOD,GPIO_PIN_12,GPIO_MODE_IT_FALLING,GPIO_PULLUP);
+
+    gpiox* imu1grd = new gpiox("imu1grd");
+    imu1grd->init([](bool b){if(b){
+            __HAL_RCC_GPIOA_CLK_ENABLE();
+            HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 0);
+            HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+        }},GPIOA,GPIO_PIN_1,GPIO_MODE_IT_RISING,GPIO_PULLDOWN);
+    #endif
+
+    I2C_HandleTypeDef I2C_Handle = {0};
+    memset(&I2C_Handle, 0, sizeof(I2C_Handle));
+    /* I2C 配置 */
+    I2C_Handle.Instance = I2C4;
+    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
+    I2C_Handle.Init.OwnAddress1      = 0;
+    I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
+    I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
+    I2C_Handle.Init.OwnAddress2      = 0;
+    I2C_Handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
+    I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
+
+    i2cx* i2c4 = new i2cx("i2c4");
+    i2c4->init([&](bool b){
+        if(b)
+        {
+            __HAL_RCC_I2C4_CLK_ENABLE();
+            gpiox i2c4scl("i2c4scl");
+            i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_12, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
+            gpiox i2c4sda("i2c4sda");
+            i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_13, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
+        }
+    },&I2C_Handle);
+    QMC5883LCompass* qmc5883l = new QMC5883LCompass("mag1",i2c4);
+    qmc5883l->init();
+
+    I2C_Handle.Instance = I2C1;
+    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
+    I2C_Handle.Init.OwnAddress1      = 0;
+    I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
+    I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
+    I2C_Handle.Init.OwnAddress2      = 0;
+    I2C_Handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
+    I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
+
+    i2cx* i2c1 = new i2cx("i2c1");
+    i2c1->init([&](bool b){
+        if(b)
+        {
+            __HAL_RCC_I2C1_CLK_ENABLE();
+            gpiox i2c4scl("i2c1scl");
+            i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_6, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C1);
+            gpiox i2c4sda("i2c1sda");
+            i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_7, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C1);
+            gpiox i22d("i22d");
+            i22d.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_5, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
+            i22d.setLevel(mDev::mGpio::LEVEL_HIGH);
+        }
+    },&I2C_Handle);
+
+    ArtronShop_SPL06_001* barometor = new ArtronShop_SPL06_001(i2c1);
+    barometor->begin();
+    while (1)
+    {
+        barometor->measure();
+        printf("pres = %8f tmp = %8f\r\n",barometor->pressure(),barometor->temperature());
+        delay_ms(200);
+    }
+    
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
 
 extern "C" void EXTI0_IRQHandler(void)
 {
+    printf("data-ready\r\n");
+    if(imu1drdy)
+    {
+        if(__HAL_GPIO_EXTI_GET_IT(imu1drdy->getPin()) != 0X00)
+        {
+            __HAL_GPIO_EXTI_CLEAR_IT(imu1drdy->getPin());
+            
+        }
+    }
+}
+extern "C" void EXTI1_IRQHandler(void)
+{
 
 }
+#if 0
+extern "C" void EXTI15_10_IRQHandler(void)
+{
+    printf("data-ready\r\n");
+    if(pd12)
+    {
+        if(__HAL_GPIO_EXTI_GET_IT(pd12->getPin()) != 0X00)
+        {
+            __HAL_GPIO_EXTI_CLEAR_IT(pd12->getPin());
+            
+        }
+    }
+}
+#endif
 #else
 int initAllDevice()
 {

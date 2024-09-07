@@ -1,5 +1,5 @@
 #include "i2c.hpp"
-i2cx::i2cx(const char* name, mDev::I2C_TYPE type = mDev::I2C_TYPE_MASTER) : mDev::mI2c(name, type)
+i2cx::i2cx(const char* name, mDev::I2C_TYPE type) : mDev::mI2c(name, type)
 {
 
 }
@@ -14,8 +14,11 @@ mResult i2cx::init(const mDev::initCallbackExt& cb ,I2C_HandleTypeDef* i2chandle
     _i2cxHandle.State = HAL_I2C_STATE_RESET;
     if(HAL_I2C_Init(&_i2cxHandle) != HAL_OK)
     {
+        printf("Error: %s()%d i2c init fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
+    HAL_I2CEx_ConfigAnalogFilter(&_i2cxHandle, I2C_ANALOGFILTER_ENABLE);
+    HAL_I2CEx_ConfigDigitalFilter(&_i2cxHandle, 0);
     return M_RESULT_EOK;
 }
 mResult i2cx::deInit()
