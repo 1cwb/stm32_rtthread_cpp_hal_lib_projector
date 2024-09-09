@@ -1,4 +1,5 @@
 #pragma once
+#include "mbarometor.hpp"
 #include "mi2c.hpp"
 
 #define SPL06_001_ADDR0 (0x77)
@@ -24,7 +25,7 @@ enum Oversampling_Rate_t {
     _128_TIMES,
 };
 
-class ArtronShop_SPL06_001 {
+class ArtronShop_SPL06_001 : public mDev::mBarometor{
     private:
         const uint8_t _addr = SPL06_001_ADDR0;
         mDev::mI2c *_wire = nullptr;
@@ -47,10 +48,13 @@ class ArtronShop_SPL06_001 {
         bool status(Sensor_Status_t *status) ;
 
     public:
-        ArtronShop_SPL06_001(mDev::mI2c *wire) ;
+        ArtronShop_SPL06_001(const char* name, mDev::mI2c *wire) ;
+        virtual ~ArtronShop_SPL06_001() = default;
         bool begin() ;
         bool measure() ;
         float pressure() ;
         float temperature() ;
-
+        virtual float getTemp() override {return temperature();};
+        virtual bool updateData() override {return measure();}
+        virtual float getPressure() override {return pressure();}
 };

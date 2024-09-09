@@ -35,7 +35,7 @@
 #define REG_COEF_C30a (0x20)
 #define REG_COEF_C30b (0x21)
 
-ArtronShop_SPL06_001::ArtronShop_SPL06_001(mDev::mI2c *wire) : _wire(wire) {
+ArtronShop_SPL06_001::ArtronShop_SPL06_001(const char* name, mDev::mI2c *wire) :mDev::mBarometor(name) , _wire(wire) {
     // -----
 }
 
@@ -69,7 +69,11 @@ bool ArtronShop_SPL06_001::begin() {
     delay_ms(50); // wait sensor ready and coefficients are available 
     Sensor_Status_t status;
     this->status(&status);
-    status.SENSOR_RDY && status.COEF_RDY; // Check sensor ready and coefficients are available flag
+    if((!status.SENSOR_RDY) || (!status.COEF_RDY)) // Check sensor ready and coefficients are available flag
+    {
+        printf("Error: Sensor not ready\r\n");
+        return false;
+    }
     this->write_reg(REG_MEAS_CFG, 0b111); // Set measurement mode: Continuous pressure and temperature measurement
     this->write_reg(REG_PSR_CFG, 0b01000000 | (this->p_oversampling_rate & 0x07)); // Pressure measurement rate: 100 - 16 measurements pr. sec., Pressure oversampling rate: ....
     this->write_reg(REG_TMP_CFG, 0b11000000 | (this->t_oversampling_rate & 0x07)); // Temperature measurement rate: 100 - 16 measurements pr. sec., Temperature oversampling rate: ...

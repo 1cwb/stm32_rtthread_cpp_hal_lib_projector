@@ -87,7 +87,7 @@ public:
 	bool _smoothUse = false;
 	uint8_t _smoothSteps = 5;
 	bool _smoothAdvanced = false;
-    uint8_t _ADDR = 0x1A;//0x0D;
+    uint8_t _ADDR = 0x0D;
 	int _vRaw[3] = {0,0,0};
 	int _vHistory[10][3];
 	int _vScan = 0;

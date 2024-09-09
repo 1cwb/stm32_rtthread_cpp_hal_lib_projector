@@ -236,7 +236,7 @@ int initAllDevice()
         }
     },&I2C_Handle);
 
-    ArtronShop_SPL06_001* barometor = new ArtronShop_SPL06_001(i2c1);
+    ArtronShop_SPL06_001* barometor = new ArtronShop_SPL06_001("baro1", i2c1);
     barometor->begin();
     while (1)
     {
