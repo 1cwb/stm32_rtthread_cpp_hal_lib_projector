@@ -1,7 +1,6 @@
 #pragma once
-#include "mi2c.hpp"
+#include "mi2cdrv.hpp"
 #include "stm32h7xx_hal_conf.h"
-#include "gpio.hpp"
 class i2cx : public mDev::mI2c
 {
 public:

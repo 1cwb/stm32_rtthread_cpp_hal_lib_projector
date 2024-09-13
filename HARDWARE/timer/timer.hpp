@@ -1,5 +1,5 @@
 #pragma once
-#include "mtimer.hpp"
+#include "mtimerdrv.hpp"
 #include "stm32h7xx_hal_conf.h"
 
 class timerx : public mDev::mTimer

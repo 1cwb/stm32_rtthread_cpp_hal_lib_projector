@@ -1,4 +1,4 @@
-#include "mirq.h"
+#include "mirq.hpp"
 uint8_t mIrq::getInterruptNestWithoutDisableIsr() const
 {
     return interruptNest_;

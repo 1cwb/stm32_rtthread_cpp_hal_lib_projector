@@ -1,6 +1,6 @@
 #pragma once
-#include "rtoscommon.h"
-#include "mipc.h"
+#include "rtoscommon.hpp"
+#include "mipc.hpp"
 
 struct heapMem_t
 {

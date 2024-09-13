@@ -1,11 +1,11 @@
 #pragma once
-#include "rtoscommon.h"
-#include "mobject.h"
-#include "cpuport.h"
-#include "mclock.h"
+#include "rtoscommon.hpp"
+#include "mobject.hpp"
+#include "cpuport.hpp"
+#include "mclock.hpp"
 #include <functional>
-#include <mtimer.h>
-#include "mmem.h"
+#include <mtimer.hpp>
+#include "mmem.hpp"
 
 class mthread
 {

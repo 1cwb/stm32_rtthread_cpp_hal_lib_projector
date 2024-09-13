@@ -1,6 +1,6 @@
 #pragma once
-#include "rtoscommon.h"
-#include "mhw.h"
+#include "rtoscommon.hpp"
+#include "mhw.hpp"
 class mIrq
 {
 public:

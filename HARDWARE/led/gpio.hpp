@@ -1,5 +1,5 @@
 #pragma once
-#include "mgpio.hpp"
+#include "mgpiodrv.hpp"
 #include "stm32h7xx_hal_conf.h"
 #include <functional>
 class gpiox : public mDev::mGpio

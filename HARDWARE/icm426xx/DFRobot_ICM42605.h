@@ -15,10 +15,10 @@
 //#include <Wire.h>
 #include "stdio.h"
 #include "stdint.h"
-#include "mspi.hpp"
-#include "mimu.hpp"
+#include "mspidrv.hpp"
+#include "mimudrv.hpp"
 #include "mahony.hpp"
-#include "mgpio.hpp"
+#include "mgpiodrv.hpp"
 //Open this macro and you can see the details of the program
 #define ENABLE_DBG
 

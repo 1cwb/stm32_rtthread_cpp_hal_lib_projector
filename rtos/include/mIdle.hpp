@@ -1,6 +1,6 @@
 #pragma once
-#include "mthread.h"
-#include "mmem.h"
+#include "mthread.hpp"
+#include "mmem.hpp"
 #define IDLE_THREAD_STACK_SIZE  1024
 
 class mIdle

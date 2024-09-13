@@ -1,8 +1,8 @@
 #pragma once
-#include "rtoscommon.h"
-#include "mscheduler.h"
-#include "mhw.h"
-#include "mipc.h"
+#include "rtoscommon.hpp"
+#include "mscheduler.hpp"
+#include "mhw.hpp"
+#include "mipc.hpp"
 
 
 enum mObjectInfoType

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <cstring>
 #include <limits>
-#include "mbase.h"
+#include "mbase.hpp"
 
 #define NAME_MAX 8
 #define THREAD_PRIORITY_MAX 8

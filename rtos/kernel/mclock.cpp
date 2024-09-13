@@ -1,6 +1,6 @@
-#include "mclock.h"
-#include "mhw.h"
-#include "mscheduler.h"
+#include "mclock.hpp"
+#include "mhw.hpp"
+#include "mscheduler.hpp"
 /**
  * This function will return current tick from operating system startup
  *

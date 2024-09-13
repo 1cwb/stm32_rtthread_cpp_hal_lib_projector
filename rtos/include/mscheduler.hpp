@@ -1,8 +1,8 @@
 #pragma once
-#include "rtoscommon.h"
-#include "mirq.h"
-#include "mkservice.h"
-#include "mhw.h"
+#include "rtoscommon.hpp"
+#include "mirq.hpp"
+#include "mkservice.hpp"
+#include "mhw.hpp"
 
 class mSchedule
 {

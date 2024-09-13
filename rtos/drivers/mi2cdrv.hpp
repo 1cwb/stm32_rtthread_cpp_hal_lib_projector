@@ -1,5 +1,7 @@
 #pragma once
 #include "mdevice.hpp"
+#include "mipc.hpp"
+
 namespace mDev
 {
 enum I2C_TYPE

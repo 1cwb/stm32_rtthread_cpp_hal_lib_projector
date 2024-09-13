@@ -1,17 +1,17 @@
 #include "stm32h7xx_hal.h"
-#include "mled.hpp"
-#include "mthread.h"
+#include "mleddrv.hpp"
+#include "mthread.hpp"
 #include <math.h>
 #include <list>
 #include "containers.hpp"
-#include "atomic.h"
+#include "atomic.hpp"
 #include "waitqueue.hpp"
 #include "DFRobot_ICM42688.h"
 #include "mplatform.hpp"
-#include "mgpio.hpp"
-#include "mtimer.hpp"
+#include "mgpiodrv.hpp"
+#include "mtimerdrv.hpp"
 #include "delay.h"
-#include "mmagnetmetor.hpp"
+#include "mmagnetmetordrv.hpp"
 
 int main(void)
 {

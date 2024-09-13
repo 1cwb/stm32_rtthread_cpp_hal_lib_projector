@@ -1,7 +1,7 @@
 #pragma once
 #include "sys.h"
-#include "mi2c.hpp"
-#include "mmagnetmetor.hpp"
+#include "mi2cdrv.hpp"
+#include "mmagnetmetordrv.hpp"
 
 /* Register numbers */
 #define QMC5883L_X_LSB 0

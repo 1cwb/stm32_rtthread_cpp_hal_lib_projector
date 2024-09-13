@@ -51,7 +51,7 @@ OVER SAMPLE RATIO (OSR)
 */
 
 #include "qmc5883.hpp"
-#include "mclock.h"
+#include "mclock.hpp"
 
 QMC5883LCompass::QMC5883LCompass(const char*name, mDev::mI2c* i2cx):mDev::mMagnetmetor(name),_i2cx(i2cx) {
 }

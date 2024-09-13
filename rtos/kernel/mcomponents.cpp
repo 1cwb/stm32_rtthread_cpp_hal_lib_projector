@@ -1,11 +1,11 @@
 //#pragma once 
-#include "rtoscommon.h"
-#include "mthread.h"
-#include "mirq.h"
-#include "mobject.h"
-#include "mscheduler.h"
-#include "mIdle.h"
-#include "board.h"
+#include "rtoscommon.hpp"
+#include "mthread.hpp"
+#include "mirq.hpp"
+#include "mobject.hpp"
+#include "mscheduler.hpp"
+#include "mIdle.hpp"
+#include "board.hpp"
 #include "sys.h"
 
 static int initStart(void)

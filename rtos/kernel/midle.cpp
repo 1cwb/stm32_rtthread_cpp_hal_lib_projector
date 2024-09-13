@@ -1,5 +1,5 @@
-#include "mIdle.h"
-#include "rtoscommon.h"
+#include "mIdle.hpp"
+#include "rtoscommon.hpp"
 ALIGN(M_ALIGN_SIZE) uint8_t mIdle::threadStack[IDLE_THREAD_STACK_SIZE];
 
 void mIdle::threadIdleInit(void)

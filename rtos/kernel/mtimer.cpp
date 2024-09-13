@@ -1,4 +1,4 @@
-#include "mtimer.h"
+#include "mtimer.hpp"
 mList_t mTimer::timerListTotal[TIMER_SKIP_LIST_LEVEL];
 
 void mTimer::mTimerCommonCallbackFunc(void* p)

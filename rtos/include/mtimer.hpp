@@ -1,8 +1,8 @@
 #pragma once
-#include "rtoscommon.h"
-#include "mhw.h"
-#include "mobject.h"
-#include "mclock.h"
+#include "rtoscommon.hpp"
+#include "mhw.hpp"
+#include "mobject.hpp"
+#include "mclock.hpp"
 #include <functional>
 
 class mTimer

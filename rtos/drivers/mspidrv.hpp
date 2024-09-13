@@ -1,6 +1,6 @@
 #pragma once
 #include "mdevice.hpp"
-#include "mgpio.hpp"
+#include "mgpiodrv.hpp"
 namespace mDev
 {
 class mSpi : public mDevice

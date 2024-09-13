@@ -1,5 +1,5 @@
 #pragma once
-#include "mhw.h"
+#include "mhw.hpp"
 template <typename T>
 class mAtomic
 {

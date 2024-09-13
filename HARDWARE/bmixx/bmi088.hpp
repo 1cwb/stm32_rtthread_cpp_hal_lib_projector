@@ -1,9 +1,9 @@
 #pragma once
 #include <stdint.h>
-#include "mspi.hpp"
-#include "mi2c.hpp"
-#include "mimu.hpp"
-#include "mgpio.hpp"
+#include "mspidrv.hpp"
+#include "mi2cdrv.hpp"
+#include "mimudrv.hpp"
+#include "mgpiodrv.hpp"
 #include "mahony.hpp"
 class Bmi088Accel {
   public:

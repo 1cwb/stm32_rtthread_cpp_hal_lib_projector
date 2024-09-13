@@ -1,6 +1,6 @@
 #pragma once
-#include "mbarometor.hpp"
-#include "mi2c.hpp"
+#include "mbarometordrv.hpp"
+#include "mi2cdrv.hpp"
 
 #define SPL06_001_ADDR0 (0x77)
 #define SPL06_001_ADDR1 (0x76)

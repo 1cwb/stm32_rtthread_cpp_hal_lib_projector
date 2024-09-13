@@ -1,6 +1,6 @@
 #pragma once
-#include "rtoscommon.h"
-#include "mthread.h"
+#include "rtoscommon.hpp"
+#include "mthread.hpp"
 #include <functional>
 
 enum class WQFLAGS

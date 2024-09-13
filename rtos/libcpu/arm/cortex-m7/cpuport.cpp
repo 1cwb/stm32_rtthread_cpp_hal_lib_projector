@@ -1,6 +1,6 @@
-#include "rtoscommon.h"
-#include "cpuport.h"
-#include "mthread.h"
+#include "rtoscommon.hpp"
+#include "cpuport.hpp"
+#include "mthread.hpp"
 
 #if               ( /* GNU */(defined ( __GNUC__ ) && defined ( __VFP_FP__ ) && !defined(__SOFTFP__)))
 #define USE_FPU   1

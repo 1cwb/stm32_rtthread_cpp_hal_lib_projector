@@ -1,5 +1,5 @@
 #pragma once
-#include "rtoscommon.h"
+#include "rtoscommon.hpp"
 
 namespace HW
 {

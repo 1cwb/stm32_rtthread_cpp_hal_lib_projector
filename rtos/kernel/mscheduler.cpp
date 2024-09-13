@@ -1,4 +1,4 @@
-#include "mscheduler.h"
+#include "mscheduler.hpp"
 //#ifdef RT_USING_OVERFLOW_CHECK
 void mSchedule::schedulerStackCheck(thread_t *thread)
 {
