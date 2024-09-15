@@ -61,19 +61,22 @@ uint8_t ArtronShop_SPL06_001::read_reg(uint8_t reg) {
 #define bitRead(x, n)  ((x >> n) & (0x01))
 
 bool ArtronShop_SPL06_001::begin() {
-
-    printf("read_reg(REG_ID) = %x\r\n",read_reg(REG_ID));
-    this->read_reg(REG_ID);// Check Product and Revision ID
-
     this->write_reg(REG_RESET, 0b1001); // soft reset
-    delay_ms(50); // wait sensor ready and coefficients are available 
+    //delay_ms(100); // wait sensor ready and coefficients are available 
+
     Sensor_Status_t status;
-    this->status(&status);
-    if((!status.SENSOR_RDY) || (!status.COEF_RDY)) // Check sensor ready and coefficients are available flag
+    while(true)
     {
-        printf("Error: Sensor not ready\r\n");
-        return false;
+        delay_ms(50);
+        this->status(&status);
+        if((status.SENSOR_RDY) && (status.COEF_RDY)) // Check sensor ready and coefficients are available flag
+        {
+            printf("Sensor ready!\r\n");
+            printf("read_reg(REG_ID) = %x\r\n",read_reg(REG_ID));
+            break;
+        }
     }
+
     this->write_reg(REG_MEAS_CFG, 0b111); // Set measurement mode: Continuous pressure and temperature measurement
     this->write_reg(REG_PSR_CFG, 0b01000000 | (this->p_oversampling_rate & 0x07)); // Pressure measurement rate: 100 - 16 measurements pr. sec., Pressure oversampling rate: ....
     this->write_reg(REG_TMP_CFG, 0b11000000 | (this->t_oversampling_rate & 0x07)); // Temperature measurement rate: 100 - 16 measurements pr. sec., Temperature oversampling rate: ...

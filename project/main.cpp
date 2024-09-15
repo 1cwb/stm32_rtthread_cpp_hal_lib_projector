@@ -12,6 +12,7 @@
 #include "mtimerdrv.hpp"
 #include "delay.h"
 #include "mmagnetmetordrv.hpp"
+#include "mbarometordrv.hpp"
 
 int main(void)
 {
@@ -20,6 +21,7 @@ int main(void)
     mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu1");
     mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu2");
     mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
+    mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mPlatform::getInstance()->getDevice("baro1");
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
     mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led2");
@@ -72,7 +74,11 @@ int main(void)
                     printf("IMU2 YAW:%4d ROLL:%8f PITCH:%8f\r\n",mag,imu2->getRoll(),imu2->getPitch());
                     //printf("iu2 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu2->getAccelX(),imu2->getAccelY(),imu2->getAccelZ(),imu2->getGyroX(),imu2->getGyroY(),imu2->getGyroZ());
                 }
-
+                if(mb1)
+                {
+                    mb1->updateData();
+                    //printf("pres = %8f tmp = %8f\r\n",mb1->getPressure(),mb1->getTemp());
+                }
             }
         }
     });

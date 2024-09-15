@@ -13,8 +13,8 @@ class mI2c : public mDevice
 {
 public:
     mI2c() = delete;
-    explicit mI2c(const char* name, I2C_TYPE type = I2C_TYPE_MASTER) : mDevice(name), _type(type){}
-    virtual ~mI2c() = default;
+    explicit mI2c(const char* name, I2C_TYPE type = I2C_TYPE_MASTER) : mDevice(name), _type(type){_sem.init(getDeviceName(),1,IPC_FLAG_FIFO);}
+    virtual ~mI2c() {_sem.detach();};
     virtual mResult write(uint16_t slaveAddr, const uint8_t* buff, size_t len){return M_RESULT_EOK;}
     virtual mResult read(uint16_t slaveAddr, uint8_t* buff, size_t len){return M_RESULT_EOK;}
     virtual mResult writeReg(uint16_t slaveAddr, uint8_t reg, const uint8_t* buff, size_t len){return M_RESULT_EOK;}
@@ -25,5 +25,6 @@ public:
     }
 protected:
     I2C_TYPE _type = I2C_TYPE_MASTER;
+    mSemaphore _sem;
 };
 }

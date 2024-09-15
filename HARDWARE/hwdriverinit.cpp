@@ -238,13 +238,6 @@ int initAllDevice()
 
     ArtronShop_SPL06_001* barometor = new ArtronShop_SPL06_001("baro1", i2c1);
     barometor->begin();
-    while (1)
-    {
-        barometor->measure();
-        printf("pres = %8f tmp = %8f\r\n",barometor->pressure(),barometor->temperature());
-        delay_ms(200);
-    }
-    
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
