@@ -110,3 +110,7 @@ void USART1_IRQHandler(void)
 	 if(timeout>HAL_MAX_DELAY) break;	
 	}
 } 
+void transfer(const uint8_t *pData, uint16_t Size)
+{
+	HAL_UART_Transmit(&UART1_Handler,pData,Size,2000);
+}

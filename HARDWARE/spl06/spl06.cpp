@@ -124,7 +124,6 @@ bool ArtronShop_SPL06_001::measure() {
 
     Sensor_Status_t status;
     this->status(&status);
-    status.PRS_RDY && status.TMP_RDY;
 
     uint8_t buff[6];
     this->read_reg(REG_PSR_B2, buff, 6);

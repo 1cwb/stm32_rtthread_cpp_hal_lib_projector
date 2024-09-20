@@ -803,19 +803,19 @@ bool Bmi088Accel::setRange(Range range)
   if (readReg == writeReg) {
     switch (range) {
       case RANGE_3G: {
-        accel_range_mss = 6000.0f / 65536.0f;
+        accel_range_mss = 6000.0f*9.8 / 65536.0f;
         break;
       }
       case RANGE_6G: {
-        accel_range_mss = 12000.0f / 65536.0f;
+        accel_range_mss = 12000.0f*9.8 / 65536.0f;
         break;
       }
       case RANGE_12G: {
-        accel_range_mss = 24000.0f / 65536.0f;
+        accel_range_mss = 24000.0f*9.8 / 65536.0f;
         break;
       }
       case RANGE_24G: {
-        accel_range_mss = 48000.0f / 65536.0f;
+        accel_range_mss = 48000.0f*9.8 / 65536.0f;
         break;
       }      
     }
@@ -1512,7 +1512,8 @@ int Bmi088::begin()
   // set default drdy pin settings
   if (!pinModeDrdy(PUSH_PULL,ACTIVE_HIGH)) {
     return -6000;
-  } 
+  }
+  mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
   return 1;
 }
 

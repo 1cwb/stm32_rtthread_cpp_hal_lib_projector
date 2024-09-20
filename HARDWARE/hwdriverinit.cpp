@@ -31,6 +31,61 @@ int initAllDevice()
     ledx* led2 = new ledx("led2");
     led2->init([](bool benable){ if(benable) __HAL_RCC_GPIOD_CLK_ENABLE(); },GPIOD,GPIO_PIN_11);
 
+    I2C_HandleTypeDef I2C_Handle = {0};
+    memset(&I2C_Handle, 0, sizeof(I2C_Handle));
+    /* I2C 配置 */
+    I2C_Handle.Instance = I2C4;
+    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
+    I2C_Handle.Init.OwnAddress1      = 0;
+    I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
+    I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
+    I2C_Handle.Init.OwnAddress2      = 0;
+    I2C_Handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
+    I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
+
+    i2cx* i2c4 = new i2cx("i2c4");
+    i2c4->init([&](bool b){
+        if(b)
+        {
+            __HAL_RCC_I2C4_CLK_ENABLE();
+            gpiox i2c4scl("i2c4scl");
+            i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_12, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
+            gpiox i2c4sda("i2c4sda");
+            i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_13, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
+        }
+    },&I2C_Handle);
+    QMC5883LCompass* qmc5883l = new QMC5883LCompass("mag1",i2c4);
+    qmc5883l->init();
+
+    I2C_Handle.Instance = I2C1;
+    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
+    I2C_Handle.Init.OwnAddress1      = 0;
+    I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
+    I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
+    I2C_Handle.Init.OwnAddress2      = 0;
+    I2C_Handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+    I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
+    I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
+
+    i2cx* i2c1 = new i2cx("i2c1");
+    i2c1->init([&](bool b){
+        if(b)
+        {
+            __HAL_RCC_I2C1_CLK_ENABLE();
+            gpiox i2c4scl("i2c1scl");
+            i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_6, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C1);
+            gpiox i2c4sda("i2c1sda");
+            i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_7, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C1);
+            gpiox i22d("i22d");
+            i22d.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_5, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
+            i22d.setLevel(mDev::mGpio::LEVEL_HIGH);
+        }
+    },&I2C_Handle);
+
+    ArtronShop_SPL06_001* barometor = new ArtronShop_SPL06_001("baro1", i2c1);
+    barometor->begin();
+
     //TIM1 INIT
     TIM_HandleTypeDef timerst;
     memset(&timerst, 0, sizeof(TIM_HandleTypeDef));
@@ -41,7 +96,7 @@ int initAllDevice()
     timerst.Init.RepetitionCounter = 0;
 
     timer1 = new timerx("timer1");
-    timer1->calcPeriodAndPrescalerByFreq(&timerst,200);
+    timer1->calcPeriodAndPrescalerByFreq(&timerst,250);
     timer1->baseTimeInit([](bool b){
         if(b)
         {
@@ -183,61 +238,6 @@ int initAllDevice()
             HAL_NVIC_EnableIRQ(EXTI1_IRQn);
         }},GPIOA,GPIO_PIN_1,GPIO_MODE_IT_RISING,GPIO_PULLDOWN);
     #endif
-
-    I2C_HandleTypeDef I2C_Handle = {0};
-    memset(&I2C_Handle, 0, sizeof(I2C_Handle));
-    /* I2C 配置 */
-    I2C_Handle.Instance = I2C4;
-    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
-    I2C_Handle.Init.OwnAddress1      = 0;
-    I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
-    I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
-    I2C_Handle.Init.OwnAddress2      = 0;
-    I2C_Handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-    I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
-    I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
-
-    i2cx* i2c4 = new i2cx("i2c4");
-    i2c4->init([&](bool b){
-        if(b)
-        {
-            __HAL_RCC_I2C4_CLK_ENABLE();
-            gpiox i2c4scl("i2c4scl");
-            i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_12, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
-            gpiox i2c4sda("i2c4sda");
-            i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_13, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
-        }
-    },&I2C_Handle);
-    QMC5883LCompass* qmc5883l = new QMC5883LCompass("mag1",i2c4);
-    qmc5883l->init();
-
-    I2C_Handle.Instance = I2C1;
-    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
-    I2C_Handle.Init.OwnAddress1      = 0;
-    I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
-    I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
-    I2C_Handle.Init.OwnAddress2      = 0;
-    I2C_Handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-    I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
-    I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
-
-    i2cx* i2c1 = new i2cx("i2c1");
-    i2c1->init([&](bool b){
-        if(b)
-        {
-            __HAL_RCC_I2C1_CLK_ENABLE();
-            gpiox i2c4scl("i2c1scl");
-            i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_6, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C1);
-            gpiox i2c4sda("i2c1sda");
-            i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_7, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C1);
-            gpiox i22d("i22d");
-            i22d.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_5, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
-            i22d.setLevel(mDev::mGpio::LEVEL_HIGH);
-        }
-    },&I2C_Handle);
-
-    ArtronShop_SPL06_001* barometor = new ArtronShop_SPL06_001("baro1", i2c1);
-    barometor->begin();
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");

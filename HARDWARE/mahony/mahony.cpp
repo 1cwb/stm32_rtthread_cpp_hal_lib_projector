@@ -69,3 +69,106 @@ void Mahony::MahonyUpdate(float gx, float gy, float gz, float ax, float ay, floa
 	Q_ANGLE_Y = asin(-2 * q1 * q3 + 2 * q0* q2)*57.3; // pitch
 	Q_ANGLE_X = atan2(2 * q2 * q3 + 2 * q0 * q1,-2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3; // roll
 }
+#if 0
+        public MahonyAHRS(float samplePeriod, float kp, float ki)
+        {
+            SamplePeriod = samplePeriod;
+            Kp = kp;
+            Ki = ki;
+            Quaternion = new float[] { 1f, 0f, 0f, 0f };
+            eInt = new float[] { 0f, 0f, 0f };
+        }
+#endif        
+		void Mahony::Update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz)
+        {
+            //float q1 = Quaternion[0], q2 = Quaternion[1], q3 = Quaternion[2], q4 = Quaternion[3];   // short name local variable for readability
+            float norm;
+            float hx, hy, bx, bz;
+            float vx, vy, vz, wx, wy, wz;
+            float ex, ey, ez;
+            float pa, pb, pc;
+
+            // Auxiliary variables to avoid repeated arithmetic
+            float q0q0 = q0 * q0;
+            float q0q1 = q0 * q1;
+            float q0q2 = q0 * q2;
+            float q0q3 = q0 * q3;
+            float q1q1 = q1 * q1;
+            float q1q2 = q1 * q2;
+            float q1q3 = q1 * q3;
+            float q2q2 = q2 * q2;
+            float q2q3 = q2 * q3;
+            float q3q3 = q3 * q3;   
+
+            // Normalise accelerometer measurement
+            norm = sqrt(ax*ax + ay*ay + az*az);
+            if (norm == 0.0f) return; // handle NaN
+            norm = 1.0f / norm;        // use reciprocal for division
+            ax *= norm;
+            ay *= norm;
+            az *= norm;
+
+            // Normalise magnetometer measurement
+            norm = sqrt(mx * mx + my * my + mz * mz);
+            if (norm == 0.0f) return; // handle NaN
+            norm = 1.0f / norm;        // use reciprocal for division
+            mx *= norm;
+            my *= norm;
+            mz *= norm;
+
+            // Reference direction of Earth's magnetic field
+            hx = 2.0f * mx * (0.5f - q2q2 - q3q3) + 2.0f * my * (q1q2 - q0q3) + 2.0f * mz * (q1q3 + q0q2);
+            hy = 2.0f * mx * (q1q2 + q0q3) + 2.0f * my * (0.5f - q1q1 - q3q3) + 2.0f * mz * (q2q3 - q0q1);
+            bx = sqrt((hx * hx) + (hy * hy));
+            bz = 2.0f * mx * (q1q3 - q0q2) + 2.0f * my * (q2q3 + q0q1) + 2.0f * mz * (0.5f - q1q1 - q2q2);
+
+            // Estimated direction of gravity and magnetic field
+            vx = 2.0f * (q1q3 - q0q2);
+            vy = 2.0f * (q0q1 + q2q3);
+            vz = q0q0 - q1q1 - q2q2 + q3q3;
+            wx = 2.0f * bx * (0.5f - q2q2 - q3q3) + 2.0f * bz * (q1q3 - q0q2);
+            wy = 2.0f * bx * (q1q2 - q0q3) + 2.0f * bz * (q0q1 + q2q3);
+            wz = 2.0f * bx * (q0q2 + q1q3) + 2.0f * bz * (0.5f - q1q1 - q2q2);  
+
+            // Error is cross product between estimated direction and measured direction of gravity
+            ex = (ay * vz - az * vy) + (my * wz - mz * wy);
+            ey = (az * vx - ax * vz) + (mz * wx - mx * wz);
+            ez = (ax * vy - ay * vx) + (mx * wy - my * wx);
+            if (Ki > 0.0f)
+            {
+                exInt += ex;      // accumulate integral error
+                eyInt += ey;
+                ezInt += ez;
+            }
+            else
+            {
+                exInt = 0.0f;     // prevent integral wind up
+                eyInt = 0.0f;
+                ezInt = 0.0f;
+            }
+
+            // Apply feedback terms
+            gx = gx + Kp * ex + Ki * exInt;
+            gy = gy + Kp * ey + Ki * eyInt;
+            gz = gz + Kp * ez + Ki * ezInt;
+
+            // Integrate rate of change of quaternion
+            pa = q1;
+            pb = q2;
+            pc = q3;
+            q0 = q0 + (-q1 * gx - q2 * gy - q3 * gz) * halfT;//(0.5f * SamplePeriod);
+            q1 = pa + (q0 * gx + pb * gz - pc * gy) * halfT;//(0.5f * SamplePeriod);
+            q2 = pb + (q0 * gy - pa * gz + pc * gx) * halfT;//(0.5f * SamplePeriod);
+            q3 = pc + (q0 * gz + pa * gy - pb * gx) * halfT;//(0.5f * SamplePeriod);
+
+            // Normalise quaternion
+            norm = sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+            norm = 1.0f / norm;
+            q0 = q0 * norm;
+            q1 = q1 * norm;
+            q2 = q2 * norm;
+            q3 = q3 * norm;
+			Q_ANGLE_Z = atan2(2*(q1*q2 + q0*q3),q0*q0+q1*q1-q2*q2-q3*q3) * 57.3;
+			Q_ANGLE_Y = asin(-2 * q1 * q3 + 2 * q0* q2)*57.3; // pitch
+			Q_ANGLE_X = atan2(2 * q2 * q3 + 2 * q0 * q1,-2 * q1 * q1 - 2 * q2* q2 + 1)* 57.3; // roll
+        }

@@ -13,14 +13,16 @@
 #include "delay.h"
 #include "mmagnetmetordrv.hpp"
 #include "mbarometordrv.hpp"
-
+#include "MadgwickAHRS.hpp"
+#include "bmi088.hpp"
+#include "qmc5883.hpp"
 int main(void)
 {
     mEvent mevent;
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
     mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu1");
     mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu2");
-    mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
+    //mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
     mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mPlatform::getInstance()->getDevice("baro1");
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
@@ -47,7 +49,8 @@ int main(void)
 
     mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](){
         uint32_t test = 0;
-        int32_t mag = 0;
+        int n = 0;
+        int p = 0;
         while(1)
         {
             if(led1)
@@ -55,23 +58,29 @@ int main(void)
             mevent.recv(0x01,EVENT_FLAG_AND|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
             if(test == 0x01)
             {
-                if(mag1)
-                {
-                    mag1->updateData();
-                    mag = mag1->getAzimuth();
-                }
+                #if 1
                 if(imu1)
                 {
                     imu1->updateData();
-                    printf("IMU1 YAW:%4d ROLL:%8f PITCH:%8f\r\n",mag,imu1->getRoll(),imu1->getPitch());
+                    n++;
+                    if(n == 5)
+                    {
+                        n = 0;
+                        printf("IMU1 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch());
+                    }
+                    
                     //printf("iu1 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ(),imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ());
                     //printf("iu1 gx:%8f, gy:%8f, gz:%8f\r\n",imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ(),imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ());
-                    
                 }
                 if(imu2)
                 {
                     imu2->updateData();
-                    printf("IMU2 YAW:%4d ROLL:%8f PITCH:%8f\r\n",mag,imu2->getRoll(),imu2->getPitch());
+                    p++;
+                    if(p == 5)
+                    {
+                        p = 0;
+                    printf("IMU2 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch());
+                    }
                     //printf("iu2 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu2->getAccelX(),imu2->getAccelY(),imu2->getAccelZ(),imu2->getGyroX(),imu2->getGyroY(),imu2->getGyroZ());
                 }
                 if(mb1)
@@ -79,6 +88,7 @@ int main(void)
                     mb1->updateData();
                     //printf("pres = %8f tmp = %8f\r\n",mb1->getPressure(),mb1->getTemp());
                 }
+                #endif
             }
         }
     });

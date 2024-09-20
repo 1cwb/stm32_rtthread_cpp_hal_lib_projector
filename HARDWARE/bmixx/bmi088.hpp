@@ -4,7 +4,8 @@
 #include "mi2cdrv.hpp"
 #include "mimudrv.hpp"
 #include "mgpiodrv.hpp"
-#include "mahony.hpp"
+#include "MadgwickAHRS.hpp"
+#include "mmagnetmetordrv.hpp"
 class Bmi088Accel {
   public:
     enum Range {
@@ -368,13 +369,22 @@ class Bmi088 : public mDev::mImu{
     virtual float getGyroX()override{return getGyroX_rads();};
     virtual float getGyroY()override{return getGyroY_rads();};
     virtual float getGyroZ()override{return getGyroZ_rads();};
-    virtual float getYaw()override {return _mahony.getAngleZ();}
-    virtual float getPitch()override {return _mahony.getAngleY();}
-    virtual float getRoll()override {return _mahony.getAngleX();}
+    virtual float getYaw()override {return filter.getYaw();}
+    virtual float getPitch()override {return filter.getPitch();}
+    virtual float getRoll()override {return filter.getRoll();}
     virtual bool updateData()override
     {
         readSensor();
-        _mahony.MahonyUpdate(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
+        if(mag1)
+        {
+          mag1->updateData();
+        //_mahony.MahonyUpdate(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
+          filter.update(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ(),mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
+        }
+        else
+        {
+          filter.updateIMU(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
+        }
         return true;
     }
   private:
@@ -405,5 +415,6 @@ class Bmi088 : public mDev::mImu{
     Bmi088Accel *accel;
     Bmi088Gyro *gyro;
     uint8_t drdy_pin;
-    Mahony _mahony;
+    MadgMahony filter;
+    mDev::mMagnetmetor* mag1 = nullptr;//= (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
 };
