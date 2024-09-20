@@ -110,7 +110,48 @@ void USART1_IRQHandler(void)
 	 if(timeout>HAL_MAX_DELAY) break;	
 	}
 } 
-void transfer(const uint8_t *pData, uint16_t Size)
+
+#define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
+#define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
+#define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
+#define BYTE3(dwTemp)       ( *( (char *)(&dwTemp) + 3) )
+uint8_t data_to_send[50];
+void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed)
 {
-	HAL_UART_Transmit(&UART1_Handler,pData,Size,2000);
+	uint8_t _cnt=0;
+	int16_t _temp;
+	int32_t _temp2 = alt;
+	
+	data_to_send[_cnt++]=0xAA;
+	data_to_send[_cnt++]=0xAA;
+	data_to_send[_cnt++]=0x01;
+	data_to_send[_cnt++]=0;
+	
+	_temp = (int)(angle_rol*100);
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (int)(angle_pit*100);
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (int)(angle_yaw*100);
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	
+	data_to_send[_cnt++]=BYTE3(_temp2);
+	data_to_send[_cnt++]=BYTE2(_temp2);
+	data_to_send[_cnt++]=BYTE1(_temp2);
+	data_to_send[_cnt++]=BYTE0(_temp2);
+	
+	data_to_send[_cnt++] = fly_model;
+	
+	data_to_send[_cnt++] = armed;
+	
+	data_to_send[3] = _cnt-4;
+	
+	uint8_t sum = 0;
+	for(uint8_t i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	data_to_send[_cnt++]=sum;
+	
+	HAL_UART_Transmit(&UART1_Handler,data_to_send,_cnt,2000);
 }

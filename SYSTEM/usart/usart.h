@@ -14,7 +14,7 @@ extern UART_HandleTypeDef UART1_Handler;
 #define RXBUFFERSIZE   1
 extern uint8_t aRxBuffer[RXBUFFERSIZE];
 void uart_init(uint32_t bound);
-void transfer(const uint8_t *pData, uint16_t Size);
+void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed);
 #ifdef __cplusplus
 }
 #endif

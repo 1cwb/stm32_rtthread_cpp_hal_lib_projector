@@ -16,6 +16,7 @@
 #include "MadgwickAHRS.hpp"
 #include "bmi088.hpp"
 #include "qmc5883.hpp"
+#include "usart.h"
 int main(void)
 {
     mEvent mevent;
@@ -59,34 +60,31 @@ int main(void)
             if(test == 0x01)
             {
                 #if 1
-                if(imu1)
+                if(imu1 && imu2)
                 {
                     imu1->updateData();
+                    imu2->updateData();
                     n++;
-                    if(n == 5)
+                    //if(n == 5)
                     {
                         n = 0;
-                        printf("IMU1 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch());
+                        //printf("IMU1 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch());
+                        ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll())*0.5, (imu1->getPitch()+imu2->getPitch())*0.5, (imu1->getYaw()+imu1->getYaw())*0.5, 0, 0, 1);
                     }
-                    
-                    //printf("iu1 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ(),imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ());
-                    //printf("iu1 gx:%8f, gy:%8f, gz:%8f\r\n",imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ(),imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ());
                 }
                 if(imu2)
                 {
-                    imu2->updateData();
+                    
                     p++;
                     if(p == 5)
                     {
                         p = 0;
-                    printf("IMU2 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch());
+                    //printf("IMU2 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch());
                     }
-                    //printf("iu2 ax:%8f, ay:%8f, az:%8f, gx:%8f, gy:%8f, gz:%8f\r\n",imu2->getAccelX(),imu2->getAccelY(),imu2->getAccelZ(),imu2->getGyroX(),imu2->getGyroY(),imu2->getGyroZ());
                 }
                 if(mb1)
                 {
                     mb1->updateData();
-                    //printf("pres = %8f tmp = %8f\r\n",mb1->getPressure(),mb1->getTemp());
                 }
                 #endif
             }
