@@ -120,8 +120,6 @@ bool ArtronShop_SPL06_001::status(Sensor_Status_t *status) {
 }
 
 bool ArtronShop_SPL06_001::measure() {
-    this->Pcomp = this->Tcomp = -1.0f;
-
     Sensor_Status_t status;
     this->status(&status);
 

@@ -50,8 +50,7 @@ int main(void)
 
     mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](){
         uint32_t test = 0;
-        int n = 0;
-        int p = 0;
+        int i = 0;
         while(1)
         {
             if(led1)
@@ -62,27 +61,22 @@ int main(void)
                 #if 1
                 if(imu1 && imu2)
                 {
-                    ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+                    //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
                     imu1->updateData();
-                    imu2->updateData();
-                    ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-                    n++;
-                    //if(n == 5)
+                    //imu2->updateData();
+                    //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+                    if(++i == 4)
                     {
-                        n = 0;
-                        //printf("IMU1 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch());
-                        //ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll())*0.5, (imu1->getPitch()+imu2->getPitch())*0.5, (imu1->getYaw()+imu1->getYaw())*0.5, 0, 0, 1);
+                        ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
+                        //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+                        i = 0;
                     }
+
+                        //ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll())*0.5, (imu1->getPitch()+imu2->getPitch())*0.5, (imu1->getYaw()+imu1->getYaw())*0.5, 0, 0, 1);
                 }
                 if(imu2)
                 {
-                    
-                    p++;
-                    if(p == 5)
-                    {
-                        p = 0;
                     //printf("IMU2 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch());
-                    }
                 }
                 if(mb1)
                 {
@@ -102,9 +96,13 @@ int main(void)
         {
             if(mag1)
             {
-                ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+                //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
                 mag1->updateData();
-                ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+                //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+            }
+            if(mb1)
+            {
+                mb1->updateData();
             }
         }
         
