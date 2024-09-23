@@ -333,7 +333,7 @@
     }
     uint32_t timerx::getTimeOutUs()
     {
-        return (_TimHandle.Init.Period+1)*1000000LU/(getInputClk(_TimHandle.Instance)/(_TimHandle.Init.Prescaler+1));
+        return (uint32_t)(((float)((_TimHandle.Init.Period+1)*1000.0f))/((float)(getInputClk(_TimHandle.Instance)/(_TimHandle.Init.Prescaler+1))) * 1000U);
     }
 
 extern "C" 

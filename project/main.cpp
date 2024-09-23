@@ -23,7 +23,7 @@ int main(void)
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
     mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu1");
     mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu2");
-    //mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
+    mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
     mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mPlatform::getInstance()->getDevice("baro1");
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led0");
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
@@ -62,14 +62,16 @@ int main(void)
                 #if 1
                 if(imu1 && imu2)
                 {
+                    ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
                     imu1->updateData();
                     imu2->updateData();
+                    ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
                     n++;
                     //if(n == 5)
                     {
                         n = 0;
                         //printf("IMU1 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch());
-                        ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll())*0.5, (imu1->getPitch()+imu2->getPitch())*0.5, (imu1->getYaw()+imu1->getYaw())*0.5, 0, 0, 1);
+                        //ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll())*0.5, (imu1->getPitch()+imu2->getPitch())*0.5, (imu1->getYaw()+imu1->getYaw())*0.5, 0, 0, 1);
                     }
                 }
                 if(imu2)
@@ -84,7 +86,7 @@ int main(void)
                 }
                 if(mb1)
                 {
-                    mb1->updateData();
+                    //mb1->updateData();
                 }
                 #endif
             }
@@ -93,6 +95,23 @@ int main(void)
     if(IMUCALTHREAD)
     {
         IMUCALTHREAD->startup();
+    }
+
+    mthread* magexx = mthread::create("magexx",1024,1,20,[&](){
+        while (true)
+        {
+            if(mag1)
+            {
+                ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+                mag1->updateData();
+                ((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+            }
+        }
+        
+    });
+    if(magexx)
+    {
+        magexx->startup();
     }
 
 #if 0

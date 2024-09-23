@@ -375,7 +375,7 @@ class Bmi088 : public mDev::mImu{
     virtual bool updateData()override
     {
         readSensor();
-        if(mag1)
+        if(!mag1)
         {
           mag1->updateData();
         //_mahony.MahonyUpdate(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
