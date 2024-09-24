@@ -17,6 +17,7 @@
 #include "bmi088.hpp"
 #include "qmc5883.hpp"
 #include "usart.h"
+
 int main(void)
 {
     mEvent mevent;
@@ -42,6 +43,13 @@ int main(void)
     if(timer1)
     {
         timer1->registerInterruptCb([&](mDev::mDevice* dev){
+            static int timeCount = 0;
+            timeCount++;
+            if(timeCount == 5)
+            {
+                timeCount = 0;
+                mevent.send(0X02);
+            }
             mevent.send(0X01);
         });
         timer1->start();
@@ -50,66 +58,38 @@ int main(void)
 
     mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](){
         uint32_t test = 0;
-        int i = 0;
         while(1)
         {
             if(led1)
             led1->toggle();
-            mevent.recv(0x01,EVENT_FLAG_AND|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
-            if(test == 0x01)
+            mevent.recv(0x01|0x02,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
+            if(test & 0x02)
             {
-                #if 1
-                if(imu1 && imu2)
-                {
-                    //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
-                    imu1->updateData();
-                    //imu2->updateData();
-                    //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd9"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-                    if(++i == 4)
-                    {
-                        ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
-                        //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
-                        i = 0;
-                    }
-
-                        //ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll())*0.5, (imu1->getPitch()+imu2->getPitch())*0.5, (imu1->getYaw()+imu1->getYaw())*0.5, 0, 0, 1);
-                }
-                if(imu2)
-                {
-                    //printf("IMU2 YAW:%8f ROLL:%8f PITCH:%8f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch());
-                }
                 if(mb1)
                 {
-                    //mb1->updateData();
+                    mb1->updateData();
                 }
-                #endif
+                if(mag1)
+                {
+                    mag1->updateData();
+                }
+            }
+            else
+            {
+                if(imu1 && imu2)
+                {
+                    imu1->updateData();
+                    imu2->updateData();
+                    ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
+                    //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+                    //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
+                }
             }
         }
     });
     if(IMUCALTHREAD)
     {
         IMUCALTHREAD->startup();
-    }
-
-    mthread* magexx = mthread::create("magexx",1024,1,20,[&](){
-        while (true)
-        {
-            if(mag1)
-            {
-                //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
-                mag1->updateData();
-                //((mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pd8"))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-            }
-            if(mb1)
-            {
-                mb1->updateData();
-            }
-        }
-        
-    });
-    if(magexx)
-    {
-        magexx->startup();
     }
 
 #if 0

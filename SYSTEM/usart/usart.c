@@ -26,6 +26,48 @@ uint16_t USART_RX_STA=0;
 uint8_t aRxBuffer[RXBUFFERSIZE];
 UART_HandleTypeDef UART1_Handler;
 
+
+#define DEBUG_USART_DMA_CLK_ENABLE() __HAL_RCC_DMA2_CLK_ENABLE()//__DMA2_CLK_ENABLE()
+#define DEBUG_USART_DMA_CHANNEL DMA_CHANNEL_4 
+#define DEBUG_USART_DMA_STREAM DMA2_Stream7
+DMA_HandleTypeDef  DMA_Handle;
+void USART_DMA_Config(void)
+{
+	DEBUG_USART_DMA_CLK_ENABLE();
+	DMA_Handle.Instance = DEBUG_USART_DMA_STREAM;
+	/*usart1 tx 对应 dma2，通道 4，数据流 7*/
+	DMA_Handle.Init.Request = DMA_REQUEST_USART1_TX;
+	/* 方向：从内存到外设 */
+	DMA_Handle.Init.Direction= DMA_MEMORY_TO_PERIPH;
+	/* 外设地址不增 */
+	DMA_Handle.Init.PeriphInc = DMA_PINC_DISABLE;
+	/* 内存地址自增 */
+	DMA_Handle.Init.MemInc = DMA_MINC_ENABLE;
+	/* 外设数据单位 */
+	DMA_Handle.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+	/* 内存数据单位 8bit*/
+	DMA_Handle.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+	/*DMA 模式：不断循环 */
+	DMA_Handle.Init.Mode = DMA_CIRCULAR;
+	/* 优先级：中 */
+	DMA_Handle.Init.Priority = DMA_PRIORITY_MEDIUM;
+	/* 禁用 FIFO*/
+	DMA_Handle.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+	DMA_Handle.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+	/* 存储器突发传输 16 个节拍 */
+	DMA_Handle.Init.MemBurst = DMA_MBURST_SINGLE;
+	/* 外设突发传输 1 个节拍 */
+	DMA_Handle.Init.PeriphBurst = DMA_PBURST_SINGLE;
+	/* 配置 DMA2 的数据流 7*/
+	/* Deinitialize the stream for new transfer */
+	HAL_DMA_DeInit(&DMA_Handle);
+	/* Configure the DMA stream */
+	HAL_DMA_Init(&DMA_Handle);
+	/* Associate the DMA handle */
+	__HAL_LINKDMA(&UART1_Handler, hdmatx, DMA_Handle);
+}
+
+
 void uart_init(uint32_t bound)
 {
 	UART1_Handler.Instance=USART1;					  
@@ -59,6 +101,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 		GPIO_Initure.Pin=GPIO_PIN_10;		
 		HAL_GPIO_Init(GPIOA,&GPIO_Initure);	   
 
+		USART_DMA_Config();
 		HAL_NVIC_EnableIRQ(USART1_IRQn);
 		HAL_NVIC_SetPriority(USART1_IRQn,3,3);
 	}
@@ -115,7 +158,8 @@ void USART1_IRQHandler(void)
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
 #define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
 #define BYTE3(dwTemp)       ( *( (char *)(&dwTemp) + 3) )
-uint8_t data_to_send[50];
+uint8_t data_to_send[50] D2_MEM_ALIGN(4);
+//uint8_t data_to_send[50];
 void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed)
 {
 	uint8_t _cnt=0;
