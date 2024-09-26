@@ -1,7 +1,7 @@
 #include "mtask.hpp"
 #include "mclock.hpp"
 #define MAX_INIT_TIME (5000)
-
+#define TASK_TICKET (5)
 void mTaskManager::init()
 {
     extern int _task_start;
@@ -62,7 +62,7 @@ void mTaskManager::init()
                     _tid[i] = mthread::create(_taskTable[i].getName(),
                             _taskTable[i].getStackSize(),
                             _taskTable[i].getPriority(),
-                            1,
+                            TASK_TICKET,
                             _taskTable[i].getEnteryFunc(),
                             (void*)_taskTable[i].getParam()
                             );
@@ -238,7 +238,9 @@ printf("testxxxxx init  now \r\n"); return M_RESULT_EOK;
 void testEnter(void* p)
 {
     while(1)
-    printf("tony run entry+++++++++++\r\n");
+    {
+        printf("tony run entry+++++++++++\r\n");
+    }
 }
 TASK_EXPORT testx = {
     ._name = "TEST1",
