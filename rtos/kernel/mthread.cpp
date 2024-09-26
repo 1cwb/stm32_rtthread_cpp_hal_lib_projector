@@ -39,12 +39,13 @@ mthread* mthread::create(const char       *name,
                                 uint32_t         stackSize,
                                 uint8_t          priority,
                                 uint32_t         tick,
-                                const mthread::mThreadCallbackFunc& func)
+                                const mthread::mThreadCallbackFunc& func,
+                                void* callbackParam)
 {
     mthread* pth = new mthread;
     if(pth)
     {
-        if(pth->threadCreate(name, stackSize, priority, tick, std::move(func)) != M_RESULT_EOK)
+        if(pth->threadCreate(name, stackSize, priority, tick, std::move(func),callbackParam) != M_RESULT_EOK)
         {
             delete pth;
             return nullptr;
@@ -106,9 +107,11 @@ mResult mthread::init(const char       *name,
                 uint32_t         stackSize,
                 uint8_t          priority,
                 uint32_t         tick,
-                const mThreadCallbackFunc& func)
+                const mThreadCallbackFunc& func,
+                void* callbackParam)
 {
     cb_ = std::move(func);
+    callbackParam_ = callbackParam;
     return this->init(name, threadFunc, (void*)this, stackStart, stackSize,priority,tick);
 }
 mResult mthread::init(const char       *name,
@@ -681,9 +684,11 @@ mResult mthread::threadCreate(const char       *name,
                 uint32_t         stackSize,
                 uint8_t          priority,
                 uint32_t         tick,
-                const mThreadCallbackFunc& func)
+                const mThreadCallbackFunc& func,
+                void* callbackParam)
 {
     cb_ = std::move(func);
+    callbackParam_ = callbackParam;
     return this->threadCreate(name, threadFunc, (void*)this, stackSize,priority,tick);
 }
 /**
@@ -743,7 +748,7 @@ void mthread::threadFunc(void* p)
     {
         if(thread->cb_)
         {
-            thread->cb_();
+            thread->cb_(thread->callbackParam_);
         }
     }
 }

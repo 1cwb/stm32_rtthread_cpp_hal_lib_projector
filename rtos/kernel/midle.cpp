@@ -11,13 +11,13 @@ void mIdle::threadIdleInit(void)
                 sizeof(threadStack),
                 THREAD_PRIORITY_MAX - 1,
                 32,
-                []()
+                [](void* p)
                 {
                     while(true)
                     {
                         exec();
                     }
-                });
+                },nullptr);
 
     /* startup */
     idleThread_.startup();

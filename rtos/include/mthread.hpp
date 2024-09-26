@@ -9,7 +9,7 @@
 
 class mthread
 {
-    using mThreadCallbackFunc = std::function<void()>;
+    using mThreadCallbackFunc = std::function<void(void*)>;
 public:
     mthread()
     {
@@ -29,7 +29,8 @@ public:
                                     uint32_t         stackSize,
                                     uint8_t          priority,
                                     uint32_t         tick,
-                                    const mThreadCallbackFunc& func);
+                                    const mThreadCallbackFunc& func,
+                                    void* callbackParam);
     /**
      * This function will delete a thread. The thread object will be removed from
      * thread queue and deleted from system object management in the idle thread.
@@ -44,7 +45,8 @@ public:
                  uint32_t         stackSize,
                  uint8_t          priority,
                  uint32_t         tick,
-                 const mThreadCallbackFunc& func);
+                 const mThreadCallbackFunc& func,
+                 void* callbackParam);
     mResult init(const char       *name,
                  void (*entry)(void *parameter),
                  void             *parameter,
@@ -193,7 +195,8 @@ private:
                  uint32_t         stackSize,
                  uint8_t          priority,
                  uint32_t         tick,
-                 const mThreadCallbackFunc& func);
+                 const mThreadCallbackFunc& func,
+                 void* callbackParam);
     /**
      * This function will create a thread object and allocate thread object memory
      * and stack.
@@ -220,4 +223,5 @@ private:
     thread_t thData_;
     mTimer thTimer_;
     mThreadCallbackFunc cb_;
+    void* callbackParam_;
 };

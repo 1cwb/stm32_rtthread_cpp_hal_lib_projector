@@ -89,6 +89,13 @@ SECTIONS
     KEEP(*(SORT(.initfunc*)))
     initEnd = .;
     . = ALIGN(4);
+
+    /* section information for task. */
+    . = ALIGN(4);
+    _task_start = .;
+    KEEP(*(TaskTab))
+    _task_end = .;
+    . = ALIGN(4);
   } >FLASH
 
   .ARM.extab   : { 

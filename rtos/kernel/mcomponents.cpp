@@ -5,8 +5,10 @@
 #include "mobject.hpp"
 #include "mscheduler.hpp"
 #include "mIdle.hpp"
+#include "mtask.hpp"
 #include "board.hpp"
 #include "sys.h"
+
 
 static int initStart(void)
 {
@@ -44,6 +46,8 @@ void mainThreadEntry(void *parameter)
 {
     extern int main(void);
     componentsAutoinit();
+    mTaskManager::getInstance()->init();
+    mTaskManager::getInstance()->start();
     main();
 }
 

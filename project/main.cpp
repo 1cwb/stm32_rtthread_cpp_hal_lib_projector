@@ -56,7 +56,7 @@ int main(void)
         printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
     }
 
-    mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](){
+    mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](void* p){
         uint32_t test = 0;
         while(1)
         {
@@ -80,13 +80,13 @@ int main(void)
                 {
                     imu1->updateData();
                     imu2->updateData();
-                    ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
+                    //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
                     //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
                     //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
                 }
             }
         }
-    });
+    },nullptr);
     if(IMUCALTHREAD)
     {
         IMUCALTHREAD->startup();
