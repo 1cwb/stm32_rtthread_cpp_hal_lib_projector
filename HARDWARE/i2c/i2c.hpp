@@ -19,6 +19,4 @@ public:
     }
     I2C_HandleTypeDef _i2cxHandle;
 private:
-    bool _benableISR = false;
-    bool _benableDMA = false;
 };

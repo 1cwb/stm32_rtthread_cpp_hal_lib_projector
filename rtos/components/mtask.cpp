@@ -230,7 +230,7 @@ mResult mTaskManager::kill(const char* name)
     return M_RESULT_ERROR;
 }
 
-
+#if 0
 mResult testinitf(void)
 {
 printf("testxxxxx init  now \r\n"); return M_RESULT_EOK;
@@ -252,3 +252,4 @@ TASK_EXPORT testx = {
     ._param = nullptr,
     ._dependency = nullptr
 };
+#endif

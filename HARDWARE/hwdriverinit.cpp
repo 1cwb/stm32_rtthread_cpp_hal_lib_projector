@@ -21,9 +21,17 @@ spix* spi1 = nullptr;
 spix* spi4 = nullptr;
 gpiox* imu1drdy = nullptr;
 gpiox* pd12 = nullptr;
+i2cx* i2c4 = nullptr;
+QMC5883LCompass* qmc5883l = nullptr;
 #if 1
 int initAllDevice()
 {
+    gpiox* pd8 = new gpiox("pd8");
+    pd8->init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_8, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
+    gpiox* pd9 = new gpiox("pd9");
+    pd9->init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
+    pd8->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+    pd9->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
     ledx* led0 = new ledx("led0");
     led0->init([](bool benable){ if(benable) __HAL_RCC_GPIOD_CLK_ENABLE(); },GPIOD,GPIO_PIN_15);
     ledx* led1 = new ledx("led1");
@@ -44,7 +52,7 @@ int initAllDevice()
     I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
     I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
 
-    i2cx* i2c4 = new i2cx("i2c4");
+    i2c4 = new i2cx("i2c4");
     i2c4->init([&](bool b){
         if(b)
         {
@@ -53,9 +61,13 @@ int initAllDevice()
             i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_12, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
             gpiox i2c4sda("i2c4sda");
             i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_13, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
+            HAL_NVIC_SetPriority(I2C4_EV_IRQn, 3, 0);
+            HAL_NVIC_EnableIRQ(I2C4_EV_IRQn);
+            HAL_NVIC_SetPriority(I2C4_ER_IRQn, 3, 0);
+            HAL_NVIC_EnableIRQ(I2C4_ER_IRQn);
         }
     },&I2C_Handle);
-    QMC5883LCompass* qmc5883l = new QMC5883LCompass("mag1",i2c4);
+    qmc5883l = new QMC5883LCompass("mag1",i2c4);
     qmc5883l->init();
 
     I2C_Handle.Instance = I2C1;
@@ -96,7 +108,7 @@ int initAllDevice()
     timerst.Init.RepetitionCounter = 0;
 
     timer1 = new timerx("timer1");
-    timer1->calcPeriodAndPrescalerByFreq(&timerst,250);
+    timer1->calcPeriodAndPrescalerByFreq(&timerst,1000);
     timer1->baseTimeInit([](bool b){
         if(b)
         {
@@ -460,3 +472,41 @@ extern "C" void TIM2_IRQHandler(void)
         }
     }
 }
+#if 1
+extern "C" void I2C4_EV_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C1_EV_IRQn 0 */
+
+  /* USER CODE END I2C1_EV_IRQn 0 */
+  HAL_I2C_EV_IRQHandler(i2c4->i2cxHandle());
+  /* USER CODE BEGIN I2C1_EV_IRQn 1 */
+
+  /* USER CODE END I2C1_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C1 error interrupt.
+  */
+extern "C" void I2C4_ER_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C1_ER_IRQn 0 */
+
+  /* USER CODE END I2C1_ER_IRQn 0 */
+  HAL_I2C_ER_IRQHandler(i2c4->i2cxHandle());
+  /* USER CODE BEGIN I2C1_ER_IRQn 1 */
+
+  /* USER CODE END I2C1_ER_IRQn 1 */
+}
+extern "C" void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+    if(qmc5883l)
+    {
+        qmc5883l->runInterruptCb();
+    }
+}
+
+extern "C" void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+    printf("tony xxxxxxxxxxxxxxxxxx\r\n");
+}
+#endif

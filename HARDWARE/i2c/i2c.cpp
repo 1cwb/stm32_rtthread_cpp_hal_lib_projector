@@ -30,6 +30,7 @@ mResult i2cx::deInit()
 }
 mResult i2cx::write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
 {
+    _sem.semTake(WAITING_FOREVER);
     if(_benableDMA)
     {
         if(isMasterMode())
@@ -37,6 +38,7 @@ mResult i2cx::write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
             if(HAL_I2C_Master_Transmit_DMA(&_i2cxHandle, slaveAddr << 1, (uint8_t*)buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
@@ -45,6 +47,7 @@ mResult i2cx::write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
             if(HAL_I2C_Slave_Transmit_DMA(&_i2cxHandle, (uint8_t*)buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
@@ -56,6 +59,7 @@ mResult i2cx::write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
             if(HAL_I2C_Master_Transmit_IT(&_i2cxHandle, slaveAddr << 1, (uint8_t*)buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
@@ -64,13 +68,13 @@ mResult i2cx::write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
             if(HAL_I2C_Slave_Transmit_IT(&_i2cxHandle, (uint8_t*)buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
     }
     else
     {
-        _sem.semTake(WAITING_FOREVER);
         if(isMasterMode())
         {
             if(HAL_I2C_Master_Transmit(&_i2cxHandle, slaveAddr << 1, (uint8_t*)buff, len, 5000) != HAL_OK)
@@ -89,12 +93,13 @@ mResult i2cx::write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
                 return M_RESULT_ERROR;
             }
         }
-        _sem.semRelease();
     }
+    _sem.semRelease();
     return M_RESULT_EOK;
 }
 mResult i2cx::read(uint16_t slaveAddr, uint8_t* buff, size_t len)
 {
+    _sem.semTake(WAITING_FOREVER);
     if(_benableDMA)
     {
         if(isMasterMode())
@@ -102,6 +107,7 @@ mResult i2cx::read(uint16_t slaveAddr, uint8_t* buff, size_t len)
             if(HAL_I2C_Master_Receive_DMA(&_i2cxHandle, slaveAddr << 1, buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
@@ -110,6 +116,7 @@ mResult i2cx::read(uint16_t slaveAddr, uint8_t* buff, size_t len)
             if(HAL_I2C_Slave_Receive_DMA(&_i2cxHandle, buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
@@ -121,6 +128,7 @@ mResult i2cx::read(uint16_t slaveAddr, uint8_t* buff, size_t len)
             if(HAL_I2C_Master_Receive_IT(&_i2cxHandle, slaveAddr << 1, buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
@@ -129,13 +137,13 @@ mResult i2cx::read(uint16_t slaveAddr, uint8_t* buff, size_t len)
             if(HAL_I2C_Slave_Receive_IT(&_i2cxHandle, buff, len) != HAL_OK)
             {
                 printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
+                _sem.semRelease();
                 return M_RESULT_ERROR;
             }
         }
     }
     else
     {
-        _sem.semTake(WAITING_FOREVER);
         if(isMasterMode())
         {
             if(HAL_I2C_Master_Receive(&_i2cxHandle, slaveAddr << 1, buff, len, 5000) != HAL_OK)
@@ -154,12 +162,13 @@ mResult i2cx::read(uint16_t slaveAddr, uint8_t* buff, size_t len)
                 return M_RESULT_ERROR;
             }
         }
-        _sem.semRelease();
     }
+    _sem.semRelease();
     return M_RESULT_EOK;
 }
 mResult i2cx::writeReg(uint16_t slaveAddr, uint8_t reg, const uint8_t* buff, size_t len)
 {
+    _sem.semTake(WAITING_FOREVER);
     if(_benableDMA)
     {
         if(HAL_I2C_Mem_Write_DMA(&_i2cxHandle, slaveAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*)buff, len) != HAL_OK)
@@ -180,19 +189,19 @@ mResult i2cx::writeReg(uint16_t slaveAddr, uint8_t reg, const uint8_t* buff, siz
     }
     else
     {
-        _sem.semTake(WAITING_FOREVER);
         if(HAL_I2C_Mem_Write(&_i2cxHandle, slaveAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*)buff, len, 5000) != HAL_OK)
         {
             printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
             _sem.semRelease();
             return M_RESULT_ERROR;
         }
-        _sem.semRelease();
     }
+    _sem.semRelease();
     return M_RESULT_EOK;
 }
 mResult i2cx::readReg(uint16_t slaveAddr, uint8_t reg, uint8_t* buff, size_t len)
 {
+    _sem.semTake(WAITING_FOREVER);
     if(_benableDMA)
     {
         if(HAL_I2C_Mem_Read_DMA(&_i2cxHandle, slaveAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, buff, len) != HAL_OK)
@@ -213,16 +222,14 @@ mResult i2cx::readReg(uint16_t slaveAddr, uint8_t reg, uint8_t* buff, size_t len
     }
     else
     {
-        _sem.semTake(WAITING_FOREVER);
         if(HAL_I2C_Mem_Read(&_i2cxHandle, slaveAddr << 1, reg, I2C_MEMADD_SIZE_8BIT, buff, len, 5000) != HAL_OK)
         {
             printf("Error %s()%d  Fail\r\n",__FUNCTION__,__LINE__);
             _sem.semRelease();
             return M_RESULT_ERROR;
         }
-        _sem.semRelease();
     }
-
+    _sem.semRelease();
     return M_RESULT_EOK;
 }
 

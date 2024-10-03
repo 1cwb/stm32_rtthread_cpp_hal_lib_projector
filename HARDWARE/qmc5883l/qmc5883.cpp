@@ -253,23 +253,22 @@ void QMC5883LCompass::clearCalibration(){
 	@since v0.1;
 **/
 void QMC5883LCompass::read(){
-    uint8_t data[6] = {0};
-    _i2cx->readReg(_ADDR, QMC5883L_X_LSB, data, 6);
-
-		_vRaw[0] = (int)(int16_t)(data[0] | data[1] << 8);
-		_vRaw[1] = (int)(int16_t)(data[2] | data[3] << 8);
-		_vRaw[2] = (int)(int16_t)(data[4] | data[5] << 8);
-
-		_applyCalibration();
-		
-		if ( _smoothUse ) {
-			_smoothing();
-		}
-		
-		//uint8_t overflow = Wire.read() & 0x02;
-		//return overflow << 2;
+	_i2cx->enableISR(true);
+    _i2cx->readReg(_ADDR, QMC5883L_X_LSB, _orignalData, 6);
 }
 
+void QMC5883LCompass::calibrateAndSmooth()
+{
+	_vRaw[0] = (int)(int16_t)(_orignalData[0] | _orignalData[1] << 8);
+	_vRaw[1] = (int)(int16_t)(_orignalData[2] | _orignalData[3] << 8);
+	_vRaw[2] = (int)(int16_t)(_orignalData[4] | _orignalData[5] << 8);
+
+	_applyCalibration();
+	
+	if ( _smoothUse ) {
+		_smoothing();
+	}
+}
 /**
     APPLY CALIBRATION
 	This function uses the calibration data provided via @see setCalibration() to calculate more

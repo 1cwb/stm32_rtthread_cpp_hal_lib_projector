@@ -23,8 +23,14 @@ public:
     {
         return _type == I2C_TYPE_MASTER;
     }
+    void enableDma(bool benable) {_benableDMA = benable;}
+    void enableISR(bool benable) {_benableISR = benable;}
+    bool isEnableDMA() const {return _benableDMA;}
+    bool isEnableISR() const {return _benableISR;}
 protected:
     I2C_TYPE _type = I2C_TYPE_MASTER;
     mSemaphore _sem;
+    bool _benableISR;
+    bool _benableDMA;
 };
 }

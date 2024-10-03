@@ -48,31 +48,40 @@ int main(void)
             if(timeCount == 5)
             {
                 timeCount = 0;
-                mevent.send(0X02);
+                //mevent.send(0X02);
             }
             mevent.send(0X01);
         });
         timer1->start();
         printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
     }
-
+    mag1->registerInterruptCb([&](mDev::mDevice* dev){
+        mevent.send(0X04);
+    });
     mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](void* p){
         uint32_t test = 0;
+        mag1->prepareData();
         while(1)
         {
             if(led1)
             led1->toggle();
-            mevent.recv(0x01|0x02,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
+            mevent.recv(0x01|0x02|0x04,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
+            HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
             if(test & 0x02)
             {
                 if(mb1)
                 {
-                    mb1->updateData();
+                    //mb1->updateData();
                 }
                 if(mag1)
                 {
-                    mag1->updateData();
+                    
                 }
+            }
+            else if(test&0x04)
+            {
+                //printf("mag x:%d, y:%d, z%d\r\n",mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
+                                        mag1->prepareData();
             }
             else
             {
@@ -81,10 +90,11 @@ int main(void)
                     imu1->updateData();
                     imu2->updateData();
                     //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
-                    //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+                    printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
                     //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
                 }
             }
+            HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
         }
     },nullptr);
     if(IMUCALTHREAD)

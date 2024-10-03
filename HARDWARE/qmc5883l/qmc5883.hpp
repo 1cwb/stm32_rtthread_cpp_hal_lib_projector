@@ -74,12 +74,15 @@ public:
 		_i2cx->readReg(_ADDR, QMC5883L_STATUS, &data, 1);
 		return data;
 	}
+	void calibrateAndSmooth();
     virtual float getTemp()override{return 0.0f;};
     virtual int getMageX()override{return getX();};
     virtual int getMageY()override{return getY();};
     virtual int getMageZ()override{return getZ();};
-    virtual bool updateData()override{read();return true;}
+	virtual bool prepareData()override{read(); return true;}
+    virtual bool updateData()override{calibrateAndSmooth(); return true;}
     virtual int getAzimuth()override {return  QMC5883LCompass::getAzimuthData();}
+	virtual void getOrignalData(uint8_t* ordata, uint32_t len)override {memcpy(ordata, _orignalData, len > sizeof(_orignalData) ? sizeof(_orignalData) : len);}
   private:
     void _writeReg(uint8_t reg,uint8_t val);
 	int _get(int index);
@@ -97,6 +100,7 @@ public:
 	float _offset[3] = {0.,0.,0.};
 	float _scale[3] = {1.,1.,1.};
 	int _vCalibrated[3];
+	uint8_t _orignalData[6] = {0};
 	void _applyCalibration();
 	const char _bearings[16][3] =  {
 		{' ', ' ', 'N'},
