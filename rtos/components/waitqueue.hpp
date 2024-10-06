@@ -29,7 +29,7 @@ struct wqueueNode
     wqueueFunc wakeup;
     uint32_t key;
     wqueueNode(const wqueueFunc& func)
-    :pollingThread(mthread::threadSelf()),
+    :pollingThread(nullptr),
      wakeup(func),
      key(0)
     {}

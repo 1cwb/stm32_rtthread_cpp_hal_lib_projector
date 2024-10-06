@@ -31,6 +31,7 @@ mResult mWqueue::wait(int condition, int timeout)
     }
     level = HW::hwInterruptDisable();
     tid = mthread::threadSelf();
+    __wait.pollingThread = tid;
     tmr = reinterpret_cast<mthread*>(tid)->getThTimer_t();
     do 
     {
@@ -99,5 +100,5 @@ void mWqueue::wakeup(void* key)
 }
 int mWqueue::defaultWake(struct wqueueNode *wait, void *key)
 {
-    return M_RESULT_EOK;
+    return 0;
 }

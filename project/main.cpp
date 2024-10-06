@@ -90,7 +90,7 @@ int main(void)
                     imu1->updateData();
                     imu2->updateData();
                     //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
-                    printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+                    //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
                     //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
                 }
             }
