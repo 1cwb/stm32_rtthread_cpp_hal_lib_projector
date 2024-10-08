@@ -17,6 +17,8 @@
 #include "bmi088.hpp"
 #include "qmc5883.hpp"
 #include "usart.h"
+#include "workqueue.hpp"
+#include "workqueuemanager.hpp"
 
 int main(void)
 {
@@ -58,13 +60,25 @@ int main(void)
     mag1->registerInterruptCb([&](mDev::mDevice* dev){
         mevent.send(0X04);
     });
+    workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
+        if(led1)
+        led1->toggle();
+        if(led2)
+        led2->toggle();
+    }, nullptr);
+    workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
+        printf("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
+        printf("thread stack Info:\r\n");
+        mthread::showAllThreadStackSizeInfo();
+    }, nullptr);
+    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
+    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
+
     mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](void* p){
         uint32_t test = 0;
         mag1->prepareData();
         while(1)
         {
-            if(led1)
-            led1->toggle();
             mevent.recv(0x01|0x02|0x04,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
             HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
             if(test & 0x02)
@@ -81,7 +95,7 @@ int main(void)
             else if(test&0x04)
             {
                 //printf("mag x:%d, y:%d, z%d\r\n",mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
-                                        mag1->prepareData();
+                mag1->prepareData();
             }
             else
             {
@@ -112,10 +126,6 @@ int main(void)
     {
         if(led0)
         led0->toggle();
-        if(led1)
-        led1->toggle();
-        if(led2)
-        led2->toggle();
         mthread::threadSleep(1000);
        //printf("thread run now++++++++++++\r\n");
     }

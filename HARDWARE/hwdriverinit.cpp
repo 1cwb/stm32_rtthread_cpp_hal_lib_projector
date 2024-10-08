@@ -15,6 +15,9 @@
 #include "i2c.hpp"
 #include "qmc5883.hpp"
 #include "spl06.hpp"
+#include "workqueue.hpp"
+#include "workqueuemanager.hpp"
+
 timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
 spix* spi1 = nullptr;
@@ -234,7 +237,6 @@ int initAllDevice()
             HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
             HAL_NVIC_EnableIRQ(EXTI0_IRQn);
         }},GPIOA,GPIO_PIN_0,GPIO_MODE_IT_RISING,GPIO_PULLDOWN);
-
     #if 0
     pd12 = new gpiox("pd12");
     pd12->init([](bool b){if(b){
