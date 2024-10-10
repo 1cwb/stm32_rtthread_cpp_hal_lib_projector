@@ -208,25 +208,21 @@ bool mcnHub::poll(mcnNode* node)
     mSchedule::getInstance()->exitCritical();
     return renewal;
 }
-bool mcnHub::wait(mcnNode* node, int32_t timeout)
+bool mcnHub::wait(int32_t timeout)
 {
     uint32_t recvSet = 0;
-    if(!node)
+    if(_event.recv(MCN_PUB_EVENT,EVENT_FLAG_OR,timeout,&recvSet) != M_RESULT_EOK)
     {
         return false;
     }
-    if(_event.recv(MCN_PUB_EVENT,EVENT_FLAG_OR,timeout,&recvSet) != M_RESULT_EOK)
+    if(recvSet & MCN_PUB_EVENT)
     {
-        if(recvSet & MCN_PUB_EVENT)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return true;
     }
-    return false;
+    else
+    {
+        return false;
+    }
 }
 mResult mcnHub::copy(mcnNode* node, void* buffer)
 {

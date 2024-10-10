@@ -58,7 +58,7 @@ public:
     mResult unSubscribe(mcnNode* node);
     mResult publish(const void* data, bool bsync = true);
     bool poll(mcnNode* node);
-    bool wait(mcnNode* node, int32_t timeout);
+    bool wait(int32_t timeout);
     mResult copy(mcnNode* node, void* buffer);
     /* This function will directly copy topic data from hub no matter it has been updated or not and won't clear the renewal flag*/
     mResult copyDirectly(void* buffer);

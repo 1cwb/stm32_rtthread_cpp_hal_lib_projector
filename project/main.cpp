@@ -19,11 +19,16 @@
 #include "usart.h"
 #include "workqueue.hpp"
 #include "workqueuemanager.hpp"
+#include "umcn.hpp"
 
 int main(void)
 {
     mEvent mevent;
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
+
+    mcnHub hub("test", 4);
+    hub.init([](void* param)->int{printf("iiiiiiiiiiiiiiiii\r\n"); return 0;});
+    mcnNode* testNode = hub.subscribe(nullptr);
     mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu1");
     mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu2");
     mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
@@ -49,6 +54,7 @@ int main(void)
             timeCount++;
             if(timeCount == 5)
             {
+                hub.publish(&timeCount);
                 timeCount = 0;
                 //mevent.send(0X02);
             }
@@ -122,12 +128,20 @@ int main(void)
     });
     tim1->start();
 #endif
+    uint32_t j = 0;
     while(1)
     {
         if(led0)
         led0->toggle();
-        mthread::threadSleep(1000);
+        if(hub.wait(WAITING_FOREVER))
+        {
+            hub.copy(testNode,&j);
+            printf("jkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk = %u\r\n",j);
+        }
+        
+        //mthread::threadSleep(1000);
        //printf("thread run now++++++++++++\r\n");
+       
     }
     return 0;
 }
