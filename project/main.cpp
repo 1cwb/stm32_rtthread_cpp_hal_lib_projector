@@ -28,7 +28,7 @@ int main(void)
 
     mcnHub hub("test", 4);
     hub.init([](void* param)->int{printf("iiiiiiiiiiiiiiiii\r\n"); return 0;});
-    mcnNode* testNode = hub.subscribe(nullptr);
+    hub.subscribe("testNode",nullptr);
     mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu1");
     mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu2");
     mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
@@ -135,7 +135,7 @@ int main(void)
         led0->toggle();
         if(hub.wait(WAITING_FOREVER))
         {
-            hub.copy(testNode,&j);
+            hub.copy(hub.getNode("testNode"),&j);
             printf("jkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk = %u\r\n",j);
         }
         

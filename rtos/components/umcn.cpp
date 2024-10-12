@@ -73,14 +73,14 @@ mResult mcnHub::deInit()
     return M_RESULT_EOK;
 }
 
-mcnNode* mcnHub::subscribe(const mcnPubCallback& cb)
+mcnNode* mcnHub::subscribe(const char* nodeName, const mcnPubCallback& cb)
 {
     if(_linkNum >= MCN_MAX_LINK_NUM)
     {
         printf("Error: mcn link num is already full\r\n");
         return nullptr;
     }
-    mcnNode* node = new mcnNode(this, 0, nullptr, cb);
+    mcnNode* node = new mcnNode(nodeName, this, cb);
 
     mSchedule::getInstance()->enterCritical();
     if(_linkTail == nullptr)
@@ -148,6 +148,23 @@ mResult mcnHub::unSubscribe(mcnNode* node)
     mSchedule::getInstance()->exitCritical();
     delete node;
     return M_RESULT_EOK;
+}
+mResult mcnHub::unSubscribe(const char* nodeName)
+{
+    return unSubscribe(getNode(nodeName));
+}
+mcnNode* mcnHub::getNode(const char* nodeName)
+{
+    mcnNode* node = _linkHead;
+    while(node != nullptr)
+    {
+        if(strcmp(node->getName(), nodeName) == 0)
+        {
+            break;
+        }
+        node = node->getNext();
+    }
+    return node;
 }
 mcnHub* mcnHub::getObject(const char* objname)
 {
@@ -274,4 +291,12 @@ void mcnHub::clear(mcnNode* node)
     mSchedule::getInstance()->enterCritical();
     node->setRenewal(0);
     mSchedule::getInstance()->exitCritical();
+}
+void mcnHub::clear(const char* nodeName)
+{
+    if(!nodeName)
+    {
+        return;
+    }
+    clear(getNode(nodeName));
 }

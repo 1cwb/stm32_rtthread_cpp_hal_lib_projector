@@ -42,20 +42,22 @@ public:
     mcnHub& operator=(mcnHub&& mq) = delete;
     mResult init(const mcnPubEchoCallback& cb);
     mResult deInit();
-    inline const char* getObjName() const {return _objName;}
-    inline const uint32_t getObjSize() const {return _objSize;}
-    inline void* getData() {return _pdata;}
-    inline mcnNode* getLinkHead() {return _linkHead;}
-    inline mcnNode* getLinkT() {return _linkTail;}
-    inline uint32_t getLinkNum() const {return _linkNum;}
-    inline bool bPublished() const {return _bpublished;}
-    inline bool bSuspend() const {return _bsuspend;}
-    inline void suspend() {_bsuspend = true;}
-    inline void resume() {_bsuspend = false;}
-    inline float getFreq() const {return _freq;}
-    inline uint16_t getWindowIndex() const {return _windowIndex;}
-    mcnNode* subscribe(const mcnPubCallback& cb);
+    const char* getObjName() const {return _objName;}
+    const uint32_t getObjSize() const {return _objSize;}
+    void* getData() {return _pdata;}
+    mcnNode* getLinkHead() {return _linkHead;}
+    mcnNode* getLinkT() {return _linkTail;}
+    uint32_t getLinkNum() const {return _linkNum;}
+    bool bPublished() const {return _bpublished;}
+    bool bSuspend() const {return _bsuspend;}
+    void suspend() {_bsuspend = true;}
+    void resume() {_bsuspend = false;}
+    float getFreq() const {return _freq;}
+    uint16_t getWindowIndex() const {return _windowIndex;}
+    mcnNode* subscribe(const char* nodeName, const mcnPubCallback& cb);
     mResult unSubscribe(mcnNode* node);
+    mResult unSubscribe(const char* nodeName);
+    mcnNode* getNode(const char* nodeName);
     mResult publish(const void* data, bool bsync = true);
     bool poll(mcnNode* node);
     bool wait(int32_t timeout);
@@ -63,6 +65,7 @@ public:
     /* This function will directly copy topic data from hub no matter it has been updated or not and won't clear the renewal flag*/
     mResult copyDirectly(void* buffer);
     void clear(mcnNode* node);
+    void clear(const char* nodeName);
     static mcnHub* getObject(const char* objname);
 private:
     const char* _objName;
@@ -86,11 +89,12 @@ private:
 class mcnNode
 {
 public:
-    mcnNode(mcnHub* hub, uint8_t renewal, mcnNode* next, mcnPubCallback cb):
+    mcnNode(const char* name, mcnHub* hub, mcnPubCallback cb = nullptr):
     _hub(hub),
-    _renewal(renewal),
-    _next(next),
-    _cb(cb)
+    _renewal(0),
+    _next(nullptr),
+    _cb(cb),
+    _name(name)
     {
 
     }
@@ -108,9 +112,11 @@ public:
     void runPubCallback(void* param) {if(_cb){_cb(param);}}
     void setNext(mcnNode* next) {_next = next;}
     mcnNode* getNext() {return _next;}
+    const char* getName() const {return _name;}
 private:
     mcnHub* _hub;
     volatile uint8_t _renewal;
     mcnNode* _next;
     mcnPubCallback _cb;
+    const char* _name;
 };
