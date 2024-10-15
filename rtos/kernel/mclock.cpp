@@ -6,7 +6,7 @@
  *
  * @return current tick
  */
-uint32_t mClock::tickGet(void)
+uint64_t mClock::tickGet(void)
 {
     /* return the global tick */
     return tick;
@@ -14,7 +14,7 @@ uint32_t mClock::tickGet(void)
 /**
  * This function will set current tick
  */
-void mClock::tickSet(uint32_t tick)
+void mClock::tickSet(uint64_t tick)
 {
     long level;
 

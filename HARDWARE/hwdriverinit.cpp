@@ -17,6 +17,7 @@
 #include "spl06.hpp"
 #include "workqueue.hpp"
 #include "workqueuemanager.hpp"
+#include "systick.hpp"
 
 timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
@@ -29,6 +30,14 @@ QMC5883LCompass* qmc5883l = nullptr;
 #if 1
 int initAllDevice()
 {
+    #if 1
+    systick* msystick = new systick;
+    if(msystick)
+    {
+        msystick->init();//do no thing
+    }
+    #endif
+
     gpiox* pd8 = new gpiox("pd8");
     pd8->init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_8, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
     gpiox* pd9 = new gpiox("pd9");

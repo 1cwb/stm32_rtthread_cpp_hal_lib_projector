@@ -20,7 +20,7 @@
 #include "workqueue.hpp"
 #include "workqueuemanager.hpp"
 #include "umcn.hpp"
-
+#include "msystickdrv.hpp"
 int main(void)
 {
     mEvent mevent;
@@ -37,6 +37,12 @@ int main(void)
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led1");
     mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led2");
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
+    mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice("systick");
+    if(systickx)
+    {
+        printf("systick is find \r\n");
+        
+    }
     if(timer2)
     {
         timer2->registerInterruptCb([&](mDev::mDevice* dev){
@@ -52,7 +58,7 @@ int main(void)
         timer1->registerInterruptCb([&](mDev::mDevice* dev){
             static int timeCount = 0;
             timeCount++;
-            if(timeCount == 5)
+            if(timeCount == 10)
             {
                 hub.publish(&timeCount);
                 timeCount = 0;
@@ -119,7 +125,7 @@ int main(void)
     },nullptr);
     if(IMUCALTHREAD)
     {
-        IMUCALTHREAD->startup();
+        //IMUCALTHREAD->startup();
     }
 
 #if 0
@@ -128,17 +134,22 @@ int main(void)
     });
     tim1->start();
 #endif
-    uint32_t j = 0;
+    uint64_t a=systickx->systimeNowMs();
+    uint32_t j;
     while(1)
     {
-        if(led0)
+        /*if(led0)
         led0->toggle();
         if(hub.wait(WAITING_FOREVER))
         {
             hub.copy(hub.getNode("testNode"),&j);
-            printf("jkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk = %u\r\n",j);
         }
-        
+        printf("== systickms = %lu, systickus = %lu\r\n",(uint32_t)systickx->systimeNowMs(),(uint32_t)systickx->systimeNowMs()-a);*/
+        a = mClock::getInstance()->tickGet();//systickx->systimeNowMs();
+        ((mDev::mGpio*)(mDev::mPlatform::getInstance()->getDevice("pd8")))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+        delay_ms(10);
+        ((mDev::mGpio*)(mDev::mPlatform::getInstance()->getDevice("pd8")))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+        printf("%lu\r\n",(uint32_t)(mClock::getInstance()->tickGet()-a));
         //mthread::threadSleep(1000);
        //printf("thread run now++++++++++++\r\n");
        

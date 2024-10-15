@@ -126,7 +126,7 @@ HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, 
     __HAL_RCC_SYSCFG_CLK_ENABLE() ; /* 使能 SYSCFG 时钟 */
     HAL_EnableCompensationCell(); /* 使能 IO 补偿单元 */
 
-    HAL_SYSTICK_Config(HAL_RCC_GetSysClockFreq()/1000);//systick时钟默认使用HCLK，可以手动设置为AHB/8，1ms 进一次中断
+    HAL_SYSTICK_Config(HAL_RCC_GetSysClockFreq()/THREAD_TICK_PER_SECOND);//systick时钟默认使用HCLK，可以手动设置为AHB/8，1ms 进一次中断
     HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
     return HAL_OK;
 }

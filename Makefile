@@ -84,6 +84,7 @@ DEFINE    :=-DSTM32H750xx \
 			-DPLLR_VALUE=2 \
 			-DIMB088_BOARD
 endif
+DEFINE    +=-DTHREAD_TICK_PER_SECOND=1000
 ###############################################################
 CFLAGS 				+= $(MCU_FLAGS) $(C_COMPILE_FLAGS) $(DEFINE)
 CXXFLAGS 			+= $(MCU_FLAGS) $(CXX_COMPILE_FLAGS) $(DEFINE)

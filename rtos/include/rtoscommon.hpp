@@ -15,7 +15,7 @@
 #define WAITING_NO                   0               /**< Non-block. */
 
 //  <i>Default: 1000   (1ms)
-#define TICK_PER_SECOND  1000
+#define TICK_PER_SECOND  THREAD_TICK_PER_SECOND
 
 /* RT-Thread error code definitions */
 enum mResult

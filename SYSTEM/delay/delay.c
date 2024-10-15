@@ -1,6 +1,6 @@
 #include "delay.h"
 static uint32_t fac_us=0;
-void delay_init(uint8_t sysclk)
+void delay_init(uint32_t sysclk)
 {
     HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
     fac_us=sysclk;

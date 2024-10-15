@@ -15,11 +15,11 @@ public:
      *
      * @return current tick
      */
-    uint32_t tickGet(void);
+    uint64_t tickGet(void);
     /**
      * This function will set current tick
      */
-    void tickSet(uint32_t tick);
+    void tickSet(uint64_t tick);
     /**
      * This function will notify kernel there is one tick passed. Normally,
      * this function is invoked by clock ISR.
@@ -51,6 +51,6 @@ private:
     mClock& operator=(mClock&&) = delete;
 
 
-    uint32_t tick;
+    uint64_t tick;
     mTimerCheckCallBack cb_;
 };

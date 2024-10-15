@@ -5,7 +5,7 @@
 #endif 
 #include "sys.h"
 
-void delay_init(uint8_t sysclk);
+void delay_init(uint32_t sysclk);
 void delay_us(uint32_t nus);
 void delay_ms(uint16_t nms);
 #ifdef __cplusplus
