@@ -138,18 +138,19 @@ int main(void)
     uint32_t j;
     while(1)
     {
-        /*if(led0)
+        if(led0)
         led0->toggle();
         if(hub.wait(WAITING_FOREVER))
         {
             hub.copy(hub.getNode("testNode"),&j);
         }
-        printf("== systickms = %lu, systickus = %lu\r\n",(uint32_t)systickx->systimeNowMs(),(uint32_t)systickx->systimeNowMs()-a);*/
-        a = mClock::getInstance()->tickGet();//systickx->systimeNowMs();
+        //printf("== systickms = %lu, systickus = %lu\r\n",(uint32_t)systickx->systimeNowMs(),(uint32_t)systickx->systimeNowMs()-a);
+        a = systickx->systimeNowUs();//systickx->systimeNowMs();
         ((mDev::mGpio*)(mDev::mPlatform::getInstance()->getDevice("pd8")))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
-        delay_ms(10);
+        //delay_ms(10);
+        systickx->delayUs(10000);
         ((mDev::mGpio*)(mDev::mPlatform::getInstance()->getDevice("pd8")))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-        printf("%lu\r\n",(uint32_t)(mClock::getInstance()->tickGet()-a));
+        printf("%lu\r\n",(uint32_t)(systickx->systimeNowUs() -a));
         //mthread::threadSleep(1000);
        //printf("thread run now++++++++++++\r\n");
        

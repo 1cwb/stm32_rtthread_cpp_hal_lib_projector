@@ -30,7 +30,17 @@ public:
         level = HW::hwInterruptDisable();
         tickMs = clk->tickGet();
         HW::hwInterruptEnable(level);
-        return tickMs;// * (uint32_t)(1000 / THREAD_TICK_PER_SECOND);
+        return tickMs * (uint32_t)(1000 / THREAD_TICK_PER_SECOND);
+    }
+    void delayUs(uint64_t us)
+    {
+        uint64_t target = systimeNowUs() + us;
+        while (systimeNowUs() < target);
+    }
+    void mdelayMs(uint64_t ms)
+    {
+        uint64_t target = systimeNowMs() + ms;
+        while (systimeNowMs() < target);
     }
 protected:
     virtual uint32_t getSystickPeriod() const {return 0;}
