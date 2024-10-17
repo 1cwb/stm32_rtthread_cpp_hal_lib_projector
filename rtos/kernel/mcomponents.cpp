@@ -45,7 +45,6 @@ DTCM_MEM_ALIGN(M_ALIGN_SIZE) static uint8_t mainStack[MAIN_THREAD_STACK_SIZE];
 void mainThreadEntry(void *parameter)
 {
     extern int main(void);
-    componentsAutoinit();
     mTaskManager::getInstance()->init();
     mTaskManager::getInstance()->start();
     main();
@@ -97,6 +96,7 @@ private:
 extern "C" int entry(void)
 {
     boardInit();
+    componentsAutoinit();
     mComponets::getInstance()->startUp();
     return 0;
 }

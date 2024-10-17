@@ -97,7 +97,7 @@ void mSchedule::systemSchedulerStart(void)
                             tlist);
 
     currentThread_ = toThread;
-
+    bScheduleStart_ = true;
     /* switch to new thread */
     HW::hwContextSwitchTo((uint32_t)&toThread->sp);
 

@@ -335,6 +335,10 @@ mResult  mSemaphore::detach()
  */
 mResult  mSemaphore::semTake(int32_t time)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     register long temp;
     struct thread_t *thread;
 
@@ -419,6 +423,10 @@ mResult  mSemaphore::semTake(int32_t time)
  */
 mResult  mSemaphore::semTrytake()
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     return semTake(0);
 }
 
@@ -432,6 +440,10 @@ mResult  mSemaphore::semTrytake()
  */
 mResult  mSemaphore::semRelease()
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     register long temp;
     register bool needSchedule;
 
@@ -489,6 +501,10 @@ mResult  mSemaphore::semRelease()
  */
 mResult  mSemaphore::semControl(mIpcCmd cmd, void *arg)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     long level;
 
     /* parameter check */
@@ -583,6 +599,10 @@ mResult mMutex::detach()
  */
 mResult mMutex::mutexTake(int32_t time)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     register long temp;
     struct thread_t *thread;
 
@@ -720,6 +740,10 @@ mResult mMutex::mutexTake(int32_t time)
  */
 mResult mMutex::mutexRelease()
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     register long temp;
     struct thread_t *thread;
     bool needSchedule;
@@ -884,6 +908,10 @@ mResult mEvent::detach()
  */
 mResult mEvent::send(uint32_t set)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     struct mList_t *n;
     struct thread_t *thread;
     register unsigned long level;
@@ -996,6 +1024,10 @@ mResult mEvent::recv(uint32_t  set,
                     int32_t   timeout,
                     uint32_t *recved)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     struct thread_t *thread;
     register long level;
     register long status;
@@ -1130,6 +1162,10 @@ mResult mEvent::recv(uint32_t  set,
  */
 mResult mEvent::control(mIpcCmd cmd, void *arg)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     long level;
 
     /* parameter check */
@@ -1263,6 +1299,10 @@ mResult mMessagequeue::detach()
  */
 mResult mMessagequeue::sendWait(const void *buffer, uint32_t size, int32_t timeout)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     if(!bInited_)
     {
         return M_RESULT_ERROR;
@@ -1431,6 +1471,10 @@ mResult mMessagequeue::sendWait(const void *buffer, uint32_t size, int32_t timeo
  */
 mResult mMessagequeue::send(const void *buffer, uint32_t size)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     return sendWait(buffer, size, 0);
 }
 /**
@@ -1446,6 +1490,10 @@ mResult mMessagequeue::send(const void *buffer, uint32_t size)
  */
 mResult mMessagequeue::urgent(const void *buffer, uint32_t size)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     register long temp;
     struct mqMessage_t *msg;
 
@@ -1539,6 +1587,10 @@ mResult mMessagequeue::urgent(const void *buffer, uint32_t size)
  */
 mResult mMessagequeue::recv( void *buffer, uint32_t  size, int32_t timeout)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     struct thread_t *thread;
     register long temp;
     struct mqMessage_t *msg;
@@ -1691,6 +1743,10 @@ mResult mMessagequeue::recv( void *buffer, uint32_t  size, int32_t timeout)
  */
 mResult mMessagequeue::control(int cmd, void *arg)
 {
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+        return M_RESULT_EOK;
+    }
     long level;
     struct mqMessage_t *msg;
 

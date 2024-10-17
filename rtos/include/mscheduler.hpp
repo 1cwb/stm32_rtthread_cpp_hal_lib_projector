@@ -69,8 +69,9 @@ public:
     thread_t*& getCurrentThread();
     mList_t* getThreadDefunct();
     mList_t* getThreadPriorityTable(uint8_t priority);
+    bool bScheduleStarted() const {return bScheduleStart_;}
 private:
-    mSchedule():schedulerLockNest_(0),currentThread_(nullptr),currentPriority_(THREAD_PRIORITY_MAX-1)
+    mSchedule():schedulerLockNest_(0),currentThread_(nullptr),currentPriority_(THREAD_PRIORITY_MAX-1),bScheduleStart_(false)
     {
     }
     ~mSchedule()
@@ -94,4 +95,5 @@ private:
     /* Maximum priority level, 256 */
     uint8_t threadReadyTable_[32];
 #endif
+    bool bScheduleStart_;
 };
