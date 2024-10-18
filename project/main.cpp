@@ -21,6 +21,8 @@
 #include "workqueuemanager.hpp"
 #include "umcn.hpp"
 #include "msystickdrv.hpp"
+#include "systeminfo.hpp"
+
 int main(void)
 {
     mEvent mevent;
@@ -79,9 +81,9 @@ int main(void)
         led2->toggle();
     }, nullptr);
     workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
-        printf("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
-        printf("thread stack Info:\r\n");
-        mthread::showAllThreadStackSizeInfo();
+        //printf("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
+        //printf("thread stack Info:\r\n");
+        //mthread::showAllThreadStackSizeInfo();
     }, nullptr);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
@@ -125,7 +127,7 @@ int main(void)
     },nullptr);
     if(IMUCALTHREAD)
     {
-        //IMUCALTHREAD->startup();
+        IMUCALTHREAD->startup();
     }
 
 #if 0
@@ -134,7 +136,6 @@ int main(void)
     });
     tim1->start();
 #endif
-    uint64_t a=systickx->systimeNowMs();
     uint32_t j;
     while(1)
     {
@@ -144,16 +145,8 @@ int main(void)
         {
             hub.copy(hub.getNode("testNode"),&j);
         }
-        //printf("== systickms = %lu, systickus = %lu\r\n",(uint32_t)systickx->systimeNowMs(),(uint32_t)systickx->systimeNowMs()-a);
-        a = systickx->systimeNowUs();//systickx->systimeNowMs();
-        ((mDev::mGpio*)(mDev::mPlatform::getInstance()->getDevice("pd8")))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
-        //delay_ms(10);
-        systickx->delayUs(10000);
-        ((mDev::mGpio*)(mDev::mPlatform::getInstance()->getDevice("pd8")))->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-        printf("%lu\r\n",(uint32_t)(systickx->systimeNowUs() -a));
-        //mthread::threadSleep(1000);
-       //printf("thread run now++++++++++++\r\n");
-       
+        systemInfo::getInstance()->getCpuUsage();
+        //mthread::threadDelay(1000);
     }
     return 0;
 }

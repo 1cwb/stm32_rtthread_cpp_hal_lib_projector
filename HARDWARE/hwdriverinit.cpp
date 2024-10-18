@@ -120,7 +120,7 @@ int initAllDevice()
     timerst.Init.RepetitionCounter = 0;
 
     timer1 = new timerx("timer1");
-    timer1->calcPeriodAndPrescalerByFreq(&timerst,1000);
+    timer1->calcPeriodAndPrescalerByFreq(&timerst,200);
     timer1->baseTimeInit([](bool b){
         if(b)
         {

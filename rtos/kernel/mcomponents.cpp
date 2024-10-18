@@ -8,7 +8,7 @@
 #include "mtask.hpp"
 #include "board.hpp"
 #include "sys.h"
-
+#include "systeminfo.hpp"
 
 static int initStart(void)
 {
@@ -97,6 +97,7 @@ extern "C" int entry(void)
 {
     boardInit();
     componentsAutoinit();
+    systemInfo::getInstance()->init();
     mComponets::getInstance()->startUp();
     return 0;
 }

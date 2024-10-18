@@ -1,5 +1,7 @@
 #include "mscheduler.hpp"
 //#ifdef RT_USING_OVERFLOW_CHECK
+mSchedule::mScheduleHookCallbackFunc mSchedule::scheduleHookCb_ = nullptr;
+
 void mSchedule::schedulerStackCheck(thread_t *thread)
 {
     MASSERT(thread != nullptr);
@@ -148,7 +150,10 @@ void mSchedule::schedule(void)
             currentThread_   = toThread;
 
             //RT_OBJECT_HOOK_CALL(rt_scheduler_hook, (from_thread, toThread));
-
+            if(scheduleHookCb_)
+            {
+                scheduleHookCb_(fromThread, toThread);
+            }
             /* switch to new thread */
             /*RT_DEBUG_LOG(RT_DEBUG_SCHEDULER,
                         ("[%d]switch to priority#%d "
@@ -158,8 +163,8 @@ void mSchedule::schedule(void)
                         NAME_MAX, toThread->name, toThread->sp,
                         NAME_MAX, fromThread->name, fromThread->sp));*/
 
-#ifdef RT_USING_OVERFLOW_CHECK
-            _rt_scheduler_stack_check(toThread);
+#ifdef USING_OVERFLOW_CHECK
+            schedulerStackCheck(toThread);
 #endif
 
             if (mIrq::getInstance()->getInterruptNestWithoutDisableIsr() == 0)

@@ -3,9 +3,11 @@
 #include "mirq.hpp"
 #include "mkservice.hpp"
 #include "mhw.hpp"
+#include <functional>
 
 class mSchedule
 {
+    using mScheduleHookCallbackFunc = std::function<void(thread_t*, thread_t*)>;
 public:
     static mSchedule* getInstance()
     {
@@ -70,6 +72,7 @@ public:
     mList_t* getThreadDefunct();
     mList_t* getThreadPriorityTable(uint8_t priority);
     bool bScheduleStarted() const {return bScheduleStart_;}
+    static void registerScheduleHookCallback(const mScheduleHookCallbackFunc scheduleHookCb){scheduleHookCb_ = scheduleHookCb;}
 private:
     mSchedule():schedulerLockNest_(0),currentThread_(nullptr),currentPriority_(THREAD_PRIORITY_MAX-1),bScheduleStart_(false)
     {
@@ -96,4 +99,5 @@ private:
     uint8_t threadReadyTable_[32];
 #endif
     bool bScheduleStart_;
+    static mScheduleHookCallbackFunc scheduleHookCb_;
 };

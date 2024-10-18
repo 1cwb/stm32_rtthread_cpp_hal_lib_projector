@@ -1,6 +1,7 @@
 #include "mIdle.hpp"
 #include "rtoscommon.hpp"
 ALIGN(M_ALIGN_SIZE) uint8_t mIdle::threadStack[IDLE_THREAD_STACK_SIZE];
+mIdle::mIdleHookCallbackFunc mIdle::idleHookCb_ = nullptr;
 
 void mIdle::threadIdleInit(void)
 {
@@ -15,6 +16,10 @@ void mIdle::threadIdleInit(void)
                 {
                     while(true)
                     {
+                        if(idleHookCb_)
+                        {
+                            idleHookCb_();
+                        }
                         exec();
                     }
                 },nullptr);
