@@ -81,9 +81,10 @@ int main(void)
         led2->toggle();
     }, nullptr);
     workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
-        //printf("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
-        //printf("thread stack Info:\r\n");
-        //mthread::showAllThreadStackSizeInfo();
+        printf("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
+        printf("thread stack Info:\r\n");
+        systemInfo::getInstance()->showAllThreadStackSizeInfo();
+        systemInfo::getInstance()->getCpuUsage();
     }, nullptr);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
@@ -145,7 +146,6 @@ int main(void)
         {
             hub.copy(hub.getNode("testNode"),&j);
         }
-        systemInfo::getInstance()->getCpuUsage();
         //mthread::threadDelay(1000);
     }
     return 0;

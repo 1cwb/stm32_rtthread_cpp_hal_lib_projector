@@ -767,31 +767,3 @@ void mthread::threadFunc(void* p)
         }
     }
 }
-
-void mthread::showAllThreadStackSizeInfo()
-{
-    long level;
-    mList_t* node{nullptr};
-    mObject_t* object{nullptr};
-    mthread* pthread{nullptr};
-    struct mObjectInformation_t *information = nullptr;
-
-    information = mObject::getInstance()->objectGetInformation(M_OBJECT_CLASS_THREAD);
-    if (information == nullptr) return ;
-
-    level = HW::hwInterruptDisable();
-    /* retrieve pointer of object */
-    for(node = information->objectList.next; node != &(information->objectList); node = node->next)
-    {
-        object = listEntry(node, mObject_t, list);
-        if(object)
-        {
-            pthread = reinterpret_cast<mthread*>(object);
-            printf("thread %s totalStackSize = %ld, usedStackSize = %ld, freeStackSize = %ld\r\n",   pthread->getThTimer_t()->name,
-                                                                                pthread->getTotalStackSize(),
-                                                                                pthread->getTotalStackSize() - pthread->getFreeStackSize(),
-                                                                                pthread->getFreeStackSize());
-        }
-    }
-    HW::hwInterruptEnable(level);
-}

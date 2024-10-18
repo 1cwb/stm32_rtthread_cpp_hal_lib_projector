@@ -186,7 +186,6 @@ public:
     void* getUsrData() const {return thData_.userData;}
     static void registerInitHookCallback(const mThreadHookCallbackFunc& initHookCb) {initHookCb_ = initHookCb;}
     static void registerDeInitHookCallback(const mThreadHookCallbackFunc& deInitHookCb) {deInitHookCb_ = deInitHookCb;}
-    static void showAllThreadStackSizeInfo();
 private:
     mResult threadInit( const char       *name,
                         void (*entry)(void *parameter),
