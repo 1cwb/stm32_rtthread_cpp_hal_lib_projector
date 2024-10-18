@@ -325,7 +325,7 @@ struct thread_t : public mObject_t
 
     void (*cleanup)(struct thread_t *tid);             /**< cleanup function when thread exit */
 
-    uint32_t userData;                              /**< private user data beyond this thread */
+    void* userData;                                     /**< private user data beyond this thread */
 };
 
 /**

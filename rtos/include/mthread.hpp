@@ -182,8 +182,8 @@ public:
     char* name() const;
     int32_t getTotalStackSize() const {return thData_.stackSize;}
     int32_t getFreeStackSize() {return (reinterpret_cast<uint8_t*>(thData_.sp) - reinterpret_cast<uint8_t*>(thData_.stackAddr));}
-    void setUsrData(uint32_t usrdata) {thData_.userData = usrdata;}
-    uint32_t getUsrData() const {return thData_.userData;}
+    void setUsrData(void* usrdata) {thData_.userData = usrdata;}
+    void* getUsrData() const {return thData_.userData;}
     static void registerInitHookCallback(const mThreadHookCallbackFunc& initHookCb) {initHookCb_ = initHookCb;}
     static void registerDeInitHookCallback(const mThreadHookCallbackFunc& deInitHookCb) {deInitHookCb_ = deInitHookCb;}
     static void showAllThreadStackSizeInfo();
