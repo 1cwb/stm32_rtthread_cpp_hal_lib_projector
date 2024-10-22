@@ -55,7 +55,8 @@ int initAllDevice()
     memset(&I2C_Handle, 0, sizeof(I2C_Handle));
     /* I2C 配置 */
     I2C_Handle.Instance = I2C4;
-    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
+    I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C4),2000,0);//0x307075B1;//100KHz
+    printf("++++I2C4_Handle.Init.Timing = %lx\r\n",I2C_Handle.Init.Timing);
     I2C_Handle.Init.OwnAddress1      = 0;
     I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
     I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
@@ -85,7 +86,8 @@ int initAllDevice()
     qmc5883l->init();
 
     I2C_Handle.Instance = I2C1;
-    I2C_Handle.Init.Timing           = 0x307075B1;//100KHz
+    I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C1),2000,0);//0x307075B1;//100KHz
+    printf("---I2C1_Handle.Init.Timing = %lx\r\n",I2C_Handle.Init.Timing);
     I2C_Handle.Init.OwnAddress1      = 0;
     I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
     I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
@@ -142,7 +144,7 @@ int initAllDevice()
     spixHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
     spixHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
     spixHandle.Init.NSS = SPI_NSS_SOFT;
-    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
     spixHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     spixHandle.Init.TIMode = SPI_TIMODE_DISABLE;
     spixHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -199,7 +201,7 @@ int initAllDevice()
     spixHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
     spixHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
     spixHandle.Init.NSS = SPI_NSS_SOFT;
-    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
     spixHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     spixHandle.Init.TIMode = SPI_TIMODE_DISABLE;
     spixHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

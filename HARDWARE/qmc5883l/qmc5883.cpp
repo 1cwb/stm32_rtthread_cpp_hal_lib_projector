@@ -253,16 +253,14 @@ void QMC5883LCompass::clearCalibration(){
 	@since v0.1;
 **/
 void QMC5883LCompass::read(){
-	//_i2cx->enableISR(true);
     _i2cx->readReg(_ADDR, QMC5883L_X_LSB, _orignalData, 6);
+	_vRaw[0] = (int)(int16_t)(_orignalData[0] | _orignalData[1] << 8);
+	_vRaw[1] = (int)(int16_t)(_orignalData[2] | _orignalData[3] << 8);
+	_vRaw[2] = (int)(int16_t)(_orignalData[4] | _orignalData[5] << 8);
 }
 
 void QMC5883LCompass::calibrateAndSmooth()
 {
-	_vRaw[0] = (int)(int16_t)(_orignalData[0] | _orignalData[1] << 8);
-	_vRaw[1] = (int)(int16_t)(_orignalData[2] | _orignalData[3] << 8);
-	_vRaw[2] = (int)(int16_t)(_orignalData[4] | _orignalData[5] << 8);
-
 	_applyCalibration();
 	
 	if ( _smoothUse ) {

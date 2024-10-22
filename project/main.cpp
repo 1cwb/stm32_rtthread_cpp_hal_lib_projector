@@ -70,10 +70,11 @@ int main(void)
         led2->toggle();
     }, nullptr);
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 1000, 20, [&](void* param){
-        mag1->prepareData();
         mag1->updateData();
         mb1->updateData();
+        //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
         printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+
     }, nullptr);
     workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
         #if 0
@@ -88,8 +89,10 @@ int main(void)
     workItem* IMUItem = new workItem("imu", 2000, 5, [&](void* param){
         if(imu1 && imu2)
         {
+            HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
             imu1->updateData();
             imu2->updateData();
+            HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
             //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
             //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
         }
@@ -104,9 +107,6 @@ int main(void)
         while(1)
         {
             mevent.recv(0x01|0x02|0x04,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
-            HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
-
-            HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
         }
     },nullptr);
     if(IMUCALTHREAD)
