@@ -29,7 +29,7 @@ int main(void)
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
 
     mcnHub hub("test", 4);
-    hub.init([](void* param)->int{printf("iiiiiiiiiiiiiiiii\r\n"); return 0;});
+    hub.init(nullptr);
     hub.subscribe("testNode",nullptr);
     mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu1");
     mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu2");
@@ -58,71 +58,54 @@ int main(void)
     if(timer1)
     {
         timer1->registerInterruptCb([&](mDev::mDevice* dev){
-            static int timeCount = 0;
-            timeCount++;
-            if(timeCount == 10)
-            {
-                hub.publish(&timeCount);
-                timeCount = 0;
-                //mevent.send(0X02);
-            }
             mevent.send(0X01);
         });
         timer1->start();
         printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
     }
-    mag1->registerInterruptCb([&](mDev::mDevice* dev){
-        mevent.send(0X04);
-    });
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
         led1->toggle();
         if(led2)
         led2->toggle();
     }, nullptr);
+    workItem* i2cWorkItem = new workItem("i2cWorkItem", 1000, 20, [&](void* param){
+        mag1->prepareData();
+        mag1->updateData();
+        mb1->updateData();
+        printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+    }, nullptr);
     workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
+        #if 0
         printf("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
         printf("thread stack Info:\r\n");
         systemInfo::getInstance()->showAllThreadStackSizeInfo();
         systemInfo::getInstance()->getCpuUsage();
+        #endif
     }, nullptr);
-    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
-    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
 
+
+    workItem* IMUItem = new workItem("imu", 2000, 5, [&](void* param){
+        if(imu1 && imu2)
+        {
+            imu1->updateData();
+            imu2->updateData();
+            //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
+            //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
+        }
+    }, nullptr);
+
+    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
+    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(i2cWorkItem);
+    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
+    workQueueManager::getInstance()->find(WORKQUEUE_HP_WORK)->scheduleWork(IMUItem);
     mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](void* p){
         uint32_t test = 0;
-        mag1->prepareData();
         while(1)
         {
             mevent.recv(0x01|0x02|0x04,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
             HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
-            if(test & 0x02)
-            {
-                if(mb1)
-                {
-                    //mb1->updateData();
-                }
-                if(mag1)
-                {
-                    
-                }
-            }
-            else if(test&0x04)
-            {
-                //printf("mag x:%d, y:%d, z%d\r\n",mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
-                mag1->prepareData();
-            }
-            else
-            {
-                if(imu1 && imu2)
-                {
-                    imu1->updateData();
-                    imu2->updateData();
-                    //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
-                    //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
-                    //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
-                }
-            }
+
             HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
         }
     },nullptr);
@@ -142,11 +125,11 @@ int main(void)
     {
         if(led0)
         led0->toggle();
-        if(hub.wait(WAITING_FOREVER))
+        /*if(hub.wait(WAITING_FOREVER))
         {
             hub.copy(hub.getNode("testNode"),&j);
-        }
-        //mthread::threadDelay(1000);
+        }*/
+        mthread::threadDelay(1000);
     }
     return 0;
 }

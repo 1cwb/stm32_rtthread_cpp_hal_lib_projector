@@ -253,7 +253,7 @@ void QMC5883LCompass::clearCalibration(){
 	@since v0.1;
 **/
 void QMC5883LCompass::read(){
-	_i2cx->enableISR(true);
+	//_i2cx->enableISR(true);
     _i2cx->readReg(_ADDR, QMC5883L_X_LSB, _orignalData, 6);
 }
 

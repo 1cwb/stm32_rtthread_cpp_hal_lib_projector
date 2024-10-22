@@ -73,10 +73,12 @@ int initAllDevice()
             i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_12, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
             gpiox i2c4sda("i2c4sda");
             i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_13, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
+            #if 0
             HAL_NVIC_SetPriority(I2C4_EV_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(I2C4_EV_IRQn);
             HAL_NVIC_SetPriority(I2C4_ER_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(I2C4_ER_IRQn);
+            #endif
         }
     },&I2C_Handle);
     qmc5883l = new QMC5883LCompass("mag1",i2c4);
@@ -483,7 +485,7 @@ extern "C" void TIM2_IRQHandler(void)
         }
     }
 }
-#if 1
+#if 0
 extern "C" void I2C4_EV_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_EV_IRQn 0 */
