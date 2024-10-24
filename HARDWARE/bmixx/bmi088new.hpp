@@ -22,7 +22,7 @@
 #include "mgpiodrv.hpp"
 #include "MadgwickAHRS.hpp"
 #include "mmagnetmetordrv.hpp"
-
+#include "sys.h"
 #ifdef BIT
     #undef BIT
 #endif
@@ -148,7 +148,7 @@ public:
     ~bmi088() = default;
 
 
-    virtual float getTemp()override{return temprature;};
+    virtual float getTemp()override{return readTemp();};
     virtual int16_t getAccelX()override{return acc[0];};
     virtual int16_t getAccelY()override{return acc[1];};
     virtual int16_t getAccelZ()override{return acc[2];};
@@ -169,7 +169,6 @@ public:
     {
         gyroReadRad();
         accelReadMs2();
-        readTemp();
         #if 0
         if(mag1)
         {
@@ -204,17 +203,13 @@ private:
     mResult accelErometerInit(uint32_t sampleRate = 1600, uint32_t dlpfFreqHz = 145, uint32_t Grange = 12);
     mResult accelReadRaw();
     mResult accelReadMs2();
-    mResult readTemp();
+    float readTemp();
     uint32_t readTime();
 private:
     int16_t gyr[3];
     float   gyrRad[3];
     int16_t acc[3];
     float   accgMs[3];
-    float   temprature;
-    uint32_t currentTimeCounter;
-    uint32_t prevTimeCounter;
-    uint32_t timeCounter;
     float _gyroRangesSale;
     float _accelRangeScale;
     float _sampleRate;

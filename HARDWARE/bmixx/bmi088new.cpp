@@ -17,8 +17,7 @@
 #include "delay.h"
 
 bmi088::bmi088(const char* name, mDev::mSpi* bus,mDev::mGpio* accel_cs,mDev::mGpio* gyro_cs) :
-mDev::mImu(name),currentTimeCounter(0),prevTimeCounter(0),timeCounter(0),
-_accelCsPin(accel_cs), _gyroCsPin(gyro_cs), _spi(bus)
+mDev::mImu(name),_accelCsPin(accel_cs), _gyroCsPin(gyro_cs), _spi(bus)
 {
 
 }
@@ -483,7 +482,7 @@ mResult bmi088::accelReadMs2()
 
     return M_RESULT_EOK;
 }
-mResult bmi088::readTemp()
+float bmi088::readTemp()
 {
     /* temperature data */
     uint8_t _buffer[3];
@@ -503,8 +502,7 @@ mResult bmi088::readTemp()
     {
     temp_int11 = temp_uint11;
     }
-    temprature = (float) temp_int11 * 0.125f + 23.0f;
-    return M_RESULT_EOK;
+    return (float) temp_int11 * 0.125f + 23.0f;
 }
 uint32_t bmi088::readTime()
 {
@@ -514,10 +512,7 @@ uint32_t bmi088::readTime()
         return M_RESULT_ERROR;
     }
     /* time data */
-    currentTimeCounter = (_buffer[3] << 16) | (_buffer[2] << 8) | _buffer[1];
-    timeCounter = currentTimeCounter - prevTimeCounter;
-    prevTimeCounter = currentTimeCounter;
-    return timeCounter;
+    return (_buffer[3] << 16) | (_buffer[2] << 8) | _buffer[1];
 }
 
 mResult bmi088::init(uint32_t gyroRange, uint32_t gyroRate, uint32_t sampleRate, uint32_t dlpfFreqHz, uint32_t Grange)
