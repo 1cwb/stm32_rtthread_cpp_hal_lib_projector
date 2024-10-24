@@ -141,7 +141,7 @@ int initAllDevice()
     spixHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
     spixHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
     spixHandle.Init.NSS = SPI_NSS_SOFT;
-    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
     spixHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     spixHandle.Init.TIMode = SPI_TIMODE_DISABLE;
     spixHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -180,17 +180,10 @@ int initAllDevice()
 
     imu1acs->setLevel(mDev::mGpio::LEVEL_HIGH);
     imu1gcs->setLevel(mDev::mGpio::LEVEL_HIGH);
-#if 0
+
     bmi088* imu1 = new bmi088("imu1",spi1,imu1acs,imu1gcs);
     imu1->init();
-        delay_ms(3000);
-    while (1)
-    {
-        delay_ms(200);
-        imu1->updateData();
-        printf("G:%10f %10f %10f A:%10f %10f %10f\r\n",imu1->getGyroXrad(),imu1->getGyroYrad(),imu1->getGyroZrad(),imu1->getAccelXms2(),imu1->getAccelYms2(),imu1->getAccelZms2());
-    }
-#endif
+
     //SPI4 init
     spi4 = new spix("spi4");
     memset(&spixHandle, 0, sizeof(SPI_HandleTypeDef));
@@ -202,7 +195,7 @@ int initAllDevice()
     spixHandle.Init.CLKPolarity = SPI_POLARITY_LOW;
     spixHandle.Init.CLKPhase = SPI_PHASE_1EDGE;
     spixHandle.Init.NSS = SPI_NSS_SOFT;
-    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+    spixHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
     spixHandle.Init.FirstBit = SPI_FIRSTBIT_MSB;
     spixHandle.Init.TIMode = SPI_TIMODE_DISABLE;
     spixHandle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -244,14 +237,7 @@ int initAllDevice()
 
     bmi088* imu2 = new bmi088("imu2",spi4,imu2acs,imu2gcs);
     imu2->init();
-    delay_ms(3000);
-    while (1)
-    {
-        delay_ms(200);
-        imu2->updateData();
-        printf("G:%10f %10f %10f A:%10f %10f %10f\r\n",imu2->getGyroXrad(),imu2->getGyroYrad(),imu2->getGyroZrad(),imu2->getAccelXms2(),imu2->getAccelYms2(),imu2->getAccelZms2());
-    }
-    
+
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");

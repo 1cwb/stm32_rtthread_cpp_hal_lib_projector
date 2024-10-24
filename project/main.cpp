@@ -72,7 +72,7 @@ int main(void)
         mag1->updateData();
         mb1->updateData();
         //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
-        printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
+        //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
 
     }, nullptr);
     workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
@@ -92,8 +92,8 @@ int main(void)
             imu1->updateData();
             imu2->updateData();
             HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
-            //ANO_DT_Send_Status(imu1->getRoll(), imu1->getPitch(), imu1->getYaw(), 0, 0, 1);
-            //ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
+            ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll()/2.0f), (imu1->getPitch()+imu2->getPitch())/2.0f, (imu1->getYaw()+imu2->getYaw())/2.0f, 0, 0, 1);
+            ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
             //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
         }
     }, nullptr);
