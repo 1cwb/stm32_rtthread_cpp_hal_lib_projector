@@ -162,13 +162,15 @@ public:
     virtual float getGyroYrad()override{return gyrRad[1];};
     virtual float getGyroZrad()override{return gyrRad[2];};
 
-    //virtual float getYaw()override {return filter.getYaw();}
-    //virtual float getPitch()override {return filter.getPitch();}
-    //virtual float getRoll()override {return filter.getRoll();}
+    virtual float getYaw()override {return filter.getYaw();}
+    virtual float getPitch()override {return filter.getPitch();}
+    virtual float getRoll()override {return filter.getRoll();}
     virtual bool updateData()override
     {
+        gyroReadRad();
+        accelReadMs2();
+        readTemp();
         #if 0
-        readSensor();
         if(mag1)
         {
           //mag1->updateData();
@@ -176,14 +178,12 @@ public:
           filter.update(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ(),mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
         }
         else
-        {
-          filter.updateIMU(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
-        }
         #endif
-        gyroReadRad();
-        accelReadMs2();
-        readTemp();
-        printf("Acc:%8f %8f %8f Gyro:%8f %8f %8f temp %8f\r\n",getAccelXms2(),getAccelYms2(),getAccelZms2(),getGyroXrad(),getGyroYrad(),getGyroZrad(),getTemp());
+        {
+          filter.updateIMU(getGyroXrad(),getGyroYrad(),getGyroZrad(),getAccelXms2(),getAccelYms2(),getAccelZms2());
+        }
+
+        //printf("Acc:%8f %8f %8f Gyro:%8f %8f %8f temp %8f\r\n",getAccelXms2(),getAccelYms2(),getAccelZms2(),getGyroXrad(),getGyroYrad(),getGyroZrad(),getTemp());
         return true;
     }
     mResult init(uint32_t gyroRange = 2000, uint32_t gyroRate = 1000, uint32_t sampleRate = 1600, uint32_t dlpfFreqHz = 145, uint32_t Grange = 12);
@@ -221,5 +221,6 @@ private:
     mDev::mGpio* _accelCsPin;
     mDev::mGpio* _gyroCsPin;
     mDev::mSpi *_spi;
+    MadgMahony filter;
 };
 

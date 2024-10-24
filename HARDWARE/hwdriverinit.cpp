@@ -9,7 +9,6 @@
 #include "gpio.hpp"
 #include "mplatform.hpp"
 #include "timer.hpp"
-#include "bmi088.hpp"
 #include "delay.h"
 #include "mplatform.hpp"
 #include "i2c.hpp"
@@ -24,7 +23,6 @@ timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
 spix* spi1 = nullptr;
 spix* spi4 = nullptr;
-gpiox* imu1drdy = nullptr;
 gpiox* pd12 = nullptr;
 i2cx* i2c4 = nullptr;
 QMC5883LCompass* qmc5883l = nullptr;
@@ -57,7 +55,6 @@ int initAllDevice()
     /* I2C 配置 */
     I2C_Handle.Instance = I2C4;
     I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C4),2000,0);//0x307075B1;//100KHz
-    printf("++++I2C4_Handle.Init.Timing = %lx\r\n",I2C_Handle.Init.Timing);
     I2C_Handle.Init.OwnAddress1      = 0;
     I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
     I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
@@ -88,7 +85,6 @@ int initAllDevice()
 
     I2C_Handle.Instance = I2C1;
     I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C1),2000,0);//0x307075B1;//100KHz
-    printf("---I2C1_Handle.Init.Timing = %lx\r\n",I2C_Handle.Init.Timing);
     I2C_Handle.Init.OwnAddress1      = 0;
     I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
     I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
@@ -185,24 +181,16 @@ int initAllDevice()
     imu1acs->setLevel(mDev::mGpio::LEVEL_HIGH);
     imu1gcs->setLevel(mDev::mGpio::LEVEL_HIGH);
 #if 0
-    Bmi088* imu1 = new Bmi088("imu1",*spi1,*imu1acs,*imu1gcs);
-    imu1->begin();
-    imu1->mapSync(Bmi088::SyncPin::PIN_3);//将gyro和acc的同步引脚连到pin3，以gyro的输出频率为基准同步。
-    imu1->mapDrdy(Bmi088::DrdyPin::PIN_1);//将rdy引脚接到中断
-    imu1->pinModeDrdy(Bmi088::PUSH_PULL,Bmi088::ACTIVE_HIGH);
-#endif
-
-printf("what fuck with you ?\r\n");
     bmi088* imu1 = new bmi088("imu1",spi1,imu1acs,imu1gcs);
-    printf("what fuck with you +++?\r\n");
     imu1->init();
-    printf("what fuck with you ----?\r\n");
+        delay_ms(3000);
     while (1)
     {
         delay_ms(200);
         imu1->updateData();
+        printf("G:%10f %10f %10f A:%10f %10f %10f\r\n",imu1->getGyroXrad(),imu1->getGyroYrad(),imu1->getGyroZrad(),imu1->getAccelXms2(),imu1->getAccelYms2(),imu1->getAccelZms2());
     }
-    
+#endif
     //SPI4 init
     spi4 = new spix("spi4");
     memset(&spixHandle, 0, sizeof(SPI_HandleTypeDef));
@@ -254,45 +242,23 @@ printf("what fuck with you ?\r\n");
     imu2acs->setLevel(mDev::mGpio::LEVEL_HIGH);
     imu2gcs->setLevel(mDev::mGpio::LEVEL_HIGH);
 
-    Bmi088* imu2 = new Bmi088("imu2",*spi4,*imu2acs,*imu2gcs);
-    imu2->begin();
-
-    imu1drdy = new gpiox("imu1drdy");
-    imu1drdy->init([](bool b){if(b){
-            __HAL_RCC_GPIOA_CLK_ENABLE();
-            HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
-            HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-        }},GPIOA,GPIO_PIN_0,GPIO_MODE_IT_RISING,GPIO_PULLDOWN);
-    #if 0
-    pd12 = new gpiox("pd12");
-    pd12->init([](bool b){if(b){
-            __HAL_RCC_GPIOD_CLK_ENABLE();
-            HAL_NVIC_SetPriority(EXTI15_10_IRQn, 1, 0);
-            HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
-        }},GPIOD,GPIO_PIN_12,GPIO_MODE_IT_FALLING,GPIO_PULLUP);
-
-    gpiox* imu1grd = new gpiox("imu1grd");
-    imu1grd->init([](bool b){if(b){
-            __HAL_RCC_GPIOA_CLK_ENABLE();
-            HAL_NVIC_SetPriority(EXTI1_IRQn, 1, 0);
-            HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-        }},GPIOA,GPIO_PIN_1,GPIO_MODE_IT_RISING,GPIO_PULLDOWN);
-    #endif
+    bmi088* imu2 = new bmi088("imu2",spi4,imu2acs,imu2gcs);
+    imu2->init();
+    delay_ms(3000);
+    while (1)
+    {
+        delay_ms(200);
+        imu2->updateData();
+        printf("G:%10f %10f %10f A:%10f %10f %10f\r\n",imu2->getGyroXrad(),imu2->getGyroYrad(),imu2->getGyroZrad(),imu2->getAccelXms2(),imu2->getAccelYms2(),imu2->getAccelZms2());
+    }
+    
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
 
 extern "C" void EXTI0_IRQHandler(void)
 {
-    printf("data-ready\r\n");
-    if(imu1drdy)
-    {
-        if(__HAL_GPIO_EXTI_GET_IT(imu1drdy->getPin()) != 0X00)
-        {
-            __HAL_GPIO_EXTI_CLEAR_IT(imu1drdy->getPin());
-            
-        }
-    }
+
 }
 extern "C" void EXTI1_IRQHandler(void)
 {

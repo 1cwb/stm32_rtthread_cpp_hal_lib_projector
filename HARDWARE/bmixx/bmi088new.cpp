@@ -17,7 +17,8 @@
 #include "delay.h"
 
 bmi088::bmi088(const char* name, mDev::mSpi* bus,mDev::mGpio* accel_cs,mDev::mGpio* gyro_cs) :
-mDev::mImu(name), _accelCsPin(accel_cs), _gyroCsPin(gyro_cs), _spi(bus)
+mDev::mImu(name),currentTimeCounter(0),prevTimeCounter(0),timeCounter(0),
+_accelCsPin(accel_cs), _gyroCsPin(gyro_cs), _spi(bus)
 {
 
 }
