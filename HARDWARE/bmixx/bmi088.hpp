@@ -62,6 +62,9 @@ class Bmi088Accel {
     float getAccelX_mss();
     float getAccelY_mss();
     float getAccelZ_mss();
+    int16_t getAcclX() {return accel[0];}
+    int16_t getAcclY() {return accel[1];}
+    int16_t getAcclZ() {return accel[2];}
     float getTemperature_C();
     uint64_t getTime_ps();
     void estimateBias();
@@ -76,15 +79,13 @@ class Bmi088Accel {
     // i2c
     uint8_t _address;
     mDev::mI2c *_i2c;
-    const uint32_t _i2cRate = 400000; // 400 kHz
     // spi
     mDev::mGpio* _csPin;
     mDev::mSpi *_spi;
     bool _useSPI;
     const uint8_t SPI_READ = 0x80;
-    const uint32_t SPI_CLOCK = 10000000; // 10 MHz
     // buffer for reading from sensor
-    uint8_t _buffer[9];
+    int16_t accel[3];
     // constants
     static const uint8_t ACC_CHIP_ID = 0x1E;
     static const uint8_t ACC_RESET_CMD = 0xB6;
@@ -223,6 +224,9 @@ class Bmi088Gyro {
     float getGyroX_rads();
     float getGyroY_rads();
     float getGyroZ_rads();
+    int16_t getGyroX() {return gyro[0];}
+    int16_t getGyroY() {return gyro[1];}
+    int16_t getGyroZ() {return gyro[2];}
   private:
     // available power settings
     enum PowerMode {
@@ -233,15 +237,13 @@ class Bmi088Gyro {
     // i2c
     uint8_t _address;
     mDev::mI2c *_i2c;
-    const uint32_t _i2cRate = 400000; // 400 kHz
     // spi
     mDev::mGpio* _csPin;
     mDev::mSpi *_spi;
     bool _useSPI;
     const uint8_t SPI_READ = 0x80;
-    const uint32_t SPI_CLOCK = 10000000; // 10 MHz
     // buffer for reading from sensor
-    uint8_t _buffer[9];
+    int16_t gyro[3];
     // constants
     static const uint8_t GYRO_CHIP_ID = 0x0F;
     static const uint8_t GYRO_RESET_CMD = 0xB6;
@@ -363,12 +365,19 @@ class Bmi088 : public mDev::mImu{
     float getGyroZ_rads(); 
 
     virtual float getTemp()override{return getTemperature_C();};
-    virtual float getAccelX()override{return getAccelX_mss();};
-    virtual float getAccelY()override{return getAccelY_mss();};
-    virtual float getAccelZ()override{return getAccelZ_mss();};
-    virtual float getGyroX()override{return getGyroX_rads();};
-    virtual float getGyroY()override{return getGyroY_rads();};
-    virtual float getGyroZ()override{return getGyroZ_rads();};
+    virtual int16_t getAccelX()override{return accel->getAcclX();};
+    virtual int16_t getAccelY()override{return accel->getAcclY();};
+    virtual int16_t getAccelZ()override{return accel->getAcclZ();};
+    virtual int16_t getGyroX()override{return gyro->getGyroX();};
+    virtual int16_t getGyroY()override{return gyro->getGyroY();};
+    virtual int16_t getGyroZ()override{return gyro->getGyroZ();};
+    virtual float getAccelXms2()override{return getAccelX_mss();};
+    virtual float getAccelYms2()override{return getAccelY_mss();};
+    virtual float getAccelZms2()override{return getAccelZ_mss();};
+    virtual float getGyroXrad()override{return getGyroX_rads();};
+    virtual float getGyroYrad()override{return getGyroY_rads();};
+    virtual float getGyroZrad()override{return getGyroZ_rads();};
+
     virtual float getYaw()override {return filter.getYaw();}
     virtual float getPitch()override {return filter.getPitch();}
     virtual float getRoll()override {return filter.getRoll();}
@@ -379,11 +388,11 @@ class Bmi088 : public mDev::mImu{
         {
           //mag1->updateData();
         //_mahony.MahonyUpdate(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
-          filter.update(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ(),mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
+          filter.update(getGyroXrad(),getGyroYrad(),getGyroZrad(),getAccelXms2(),getAccelYms2(),getAccelZms2(),mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
         }
         else
         {
-          filter.updateIMU(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
+          filter.updateIMU(getGyroXrad(),getGyroYrad(),getGyroZrad(),getAccelXms2(),getAccelYms2(),getAccelZms2());
         }
         return true;
     }

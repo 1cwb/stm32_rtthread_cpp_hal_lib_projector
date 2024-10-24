@@ -1124,7 +1124,12 @@ public:
    * @brief Start thermometer
    */
   void startTempMeasure();
-
+  int16_t getAccelX() {return _accelX;}
+  int16_t getAccelY() {return _accelY;}
+  int16_t getAccelZ() {return _accelZ;}
+  int16_t getGyroX() {return _gyroX;}
+  int16_t getGyroY() {return _gyroY;}
+  int16_t getGyroZ() {return _gyroZ;}
 protected:
   
   /**
@@ -1281,12 +1286,19 @@ public:
    */
   int begin(void);
   virtual float getTemp()override{return DFRobot_ICM42688::getTemperature();};
-  virtual float getAccelX()override{return DFRobot_ICM42688::getAccelDataX();};
-  virtual float getAccelY()override{return DFRobot_ICM42688::getAccelDataY();};
-  virtual float getAccelZ()override{return DFRobot_ICM42688::getAccelDataZ();};
-  virtual float getGyroX()override{return DFRobot_ICM42688::getGyroDataX();};
-  virtual float getGyroY()override{return DFRobot_ICM42688::getGyroDataY();};
-  virtual float getGyroZ()override{return DFRobot_ICM42688::getGyroDataZ();};
+  virtual float getAccelXms2()override{return DFRobot_ICM42688::getAccelDataX();};
+  virtual float getAccelYms2()override{return DFRobot_ICM42688::getAccelDataY();};
+  virtual float getAccelZms2()override{return DFRobot_ICM42688::getAccelDataZ();};
+  virtual float getGyroXrad()override{return DFRobot_ICM42688::getGyroDataX();};
+  virtual float getGyroYrad()override{return DFRobot_ICM42688::getGyroDataY();};
+  virtual float getGyroZrad()override{return DFRobot_ICM42688::getGyroDataZ();};
+
+  virtual int16_t getAccelX()override{return DFRobot_ICM42688::getAccelX();};
+  virtual int16_t getAccelY()override{return DFRobot_ICM42688::getAccelY();};
+  virtual int16_t getAccelZ()override{return DFRobot_ICM42688::getAccelZ();};
+  virtual int16_t getGyroX()override{return DFRobot_ICM42688::getGyroX();};
+  virtual int16_t getGyroY()override{return DFRobot_ICM42688::getGyroY();};
+  virtual int16_t getGyroZ()override{return DFRobot_ICM42688::getGyroZ();};
   virtual float getYaw()override {return _mahony.getAngleZ();}
   virtual float getPitch()override {return _mahony.getAngleY();}
   virtual float getRoll()override {return _mahony.getAngleX();}

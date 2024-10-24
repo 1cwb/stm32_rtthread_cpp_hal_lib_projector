@@ -873,8 +873,9 @@ bool Bmi088Accel::getDrdyStatus()
 void Bmi088Accel::readSensor()
 {
   /* accel data */
+  uint8_t _buffer[9];
   uint16_t temp_uint11;
-  int16_t accel[3], temp_int11;
+  int16_t temp_int11;
   readRegisters(ACC_ACCEL_DATA_ADDR,9,_buffer);
   accel[0] = (_buffer[1] << 8) | _buffer[0];
   accel[1] = (_buffer[3] << 8) | _buffer[2];
@@ -1384,7 +1385,7 @@ bool Bmi088Gyro::getDrdyStatus()
 void Bmi088Gyro::readSensor()
 {
   /* accel data */
-  int16_t gyro[3];
+  uint8_t _buffer[9];
   readRegisters(GYRO_DATA_ADDR,6,_buffer);
   gyro[0] = (_buffer[1] << 8) | _buffer[0];
   gyro[1] = (_buffer[3] << 8) | _buffer[2];

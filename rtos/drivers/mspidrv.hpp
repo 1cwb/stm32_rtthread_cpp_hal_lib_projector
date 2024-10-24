@@ -17,7 +17,10 @@ public:
     {
         mResult ret = M_RESULT_ERROR;
         reg &= 0x7F;
-        csEnable(cspin);
+        if(cspin)
+        {
+            csEnable(cspin);
+        }
         do{
             ret = write(&reg, 1);
             if(ret != M_RESULT_EOK)
@@ -30,14 +33,20 @@ public:
                 break;
             }
         }while(0);
-        csDisable(cspin);
-    return ret;
+        if(cspin)
+        {
+            csDisable(cspin);
+        }
+        return ret;
     }
     mResult readReg(mDev::mGpio* cspin, uint8_t reg, uint8_t* buff, size_t len)
     {
         mResult ret = M_RESULT_ERROR;
         reg |= 0x80;
-        csEnable(cspin);
+        if(cspin)
+        {
+            csEnable(cspin);
+        }
         do{
             ret = write(&reg, 1);
             if(ret != M_RESULT_EOK)
@@ -50,7 +59,10 @@ public:
                 break;
             }
         }while(0);
-        csDisable(cspin);
+        if(cspin)
+        {
+            csDisable(cspin);
+        }
         return ret; 
     }
 private:

@@ -18,6 +18,7 @@
 #include "workqueue.hpp"
 #include "workqueuemanager.hpp"
 #include "systick.hpp"
+#include "bmi088new.hpp"
 
 timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
@@ -183,12 +184,24 @@ int initAllDevice()
 
     imu1acs->setLevel(mDev::mGpio::LEVEL_HIGH);
     imu1gcs->setLevel(mDev::mGpio::LEVEL_HIGH);
-
+#if 0
     Bmi088* imu1 = new Bmi088("imu1",*spi1,*imu1acs,*imu1gcs);
     imu1->begin();
     imu1->mapSync(Bmi088::SyncPin::PIN_3);//将gyro和acc的同步引脚连到pin3，以gyro的输出频率为基准同步。
     imu1->mapDrdy(Bmi088::DrdyPin::PIN_1);//将rdy引脚接到中断
     imu1->pinModeDrdy(Bmi088::PUSH_PULL,Bmi088::ACTIVE_HIGH);
+#endif
+
+printf("what fuck with you ?\r\n");
+    bmi088* imu1 = new bmi088("imu1",spi1,imu1acs,imu1gcs);
+    printf("what fuck with you +++?\r\n");
+    imu1->init();
+    printf("what fuck with you ----?\r\n");
+    while (1)
+    {
+        delay_ms(200);
+        imu1->updateData();
+    }
     
     //SPI4 init
     spi4 = new spix("spi4");
