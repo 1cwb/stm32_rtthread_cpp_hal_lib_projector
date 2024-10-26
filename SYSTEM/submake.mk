@@ -1,6 +1,6 @@
 CURRENT_DIR := $(CURDIR)/SYSTEM
 
-SUBDIRS := $(shell find $(CURRENT_DIR) -maxdepth 3 -type d)
+SUBDIRS := $(shell find $(CURRENT_DIR) -maxdepth 7 -type d)
 
 CURRENT_SRC_DIR := $(SUBDIRS)
 

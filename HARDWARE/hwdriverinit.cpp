@@ -18,6 +18,7 @@
 #include "workqueuemanager.hpp"
 #include "systick.hpp"
 #include "bmi088new.hpp"
+#include "usbtest.hpp"
 
 timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
@@ -29,6 +30,7 @@ QMC5883LCompass* qmc5883l = nullptr;
 #if 1
 int initAllDevice()
 {
+    MX_USB_DEVICE_Init();
     #if 1
     systick* msystick = new systick;
     if(msystick)
@@ -237,6 +239,14 @@ int initAllDevice()
 
     bmi088* imu2 = new bmi088("imu2",spi4,imu2acs,imu2gcs);
     imu2->init();
+
+    while(1)
+    {
+		usb_send_test();
+		HAL_Delay(1000);
+		usb_recv_test();
+		HAL_Delay(1000);
+    }
 
     return 0;
 }
