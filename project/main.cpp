@@ -43,7 +43,7 @@ int main(void)
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("usbhid");
     if(systickx)
     {
-        printf("systick is find \r\n");
+        //printf("systick is find \r\n");
         
     }
     if(timer2)
@@ -52,7 +52,7 @@ int main(void)
             
         });
         timer2->start(mDev::CHANNEL_1);
-        printf("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
+        //printf("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
     }
     if(usbDev)
     {
@@ -67,7 +67,7 @@ int main(void)
             mevent.send(0X01);
         });
         timer1->start();
-        printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
+        //printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
     }
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
@@ -78,7 +78,7 @@ int main(void)
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 1000, 20, [&](void* param){
         mag1->updateData();
         mb1->updateData();
-        printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+        //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
         //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
 
     }, nullptr);

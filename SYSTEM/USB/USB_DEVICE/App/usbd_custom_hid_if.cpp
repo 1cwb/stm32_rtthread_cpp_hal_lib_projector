@@ -235,7 +235,7 @@ int8_t USBD_CUSTOM_HID_RecvReport_FS(uint8_t *report, uint16_t len)
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
-void OTG_FS_IRQHandler(void)
+extern "C" void OTG_FS_IRQHandler(void)
 {
   /* USER CODE BEGIN OTG_FS_IRQn 0 */
 

@@ -30,13 +30,6 @@ QMC5883LCompass* qmc5883l = nullptr;
 #if 1
 int initAllDevice()
 {
-    MX_USB_DEVICE_Init();
-    printf("tony befor USB INIT\r\n");
-    usbDeviceHID* usbx = new usbDeviceHID;
-    printf("tony befor USB1 INIT\r\n");
-    //usbx->init();
-    printf("tony after USB INIT\r\n");
-
     #if 1
     systick* msystick = new systick;
     if(msystick)
@@ -245,7 +238,8 @@ int initAllDevice()
 
     bmi088* imu2 = new bmi088("imu2",spi4,imu2acs,imu2gcs);
     imu2->init();
-printf("+++++++++++++++\r\n");
+    usbDeviceHID* usbx = new usbDeviceHID;
+    usbx->init();
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
