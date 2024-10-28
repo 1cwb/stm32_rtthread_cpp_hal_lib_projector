@@ -1,6 +1,7 @@
 #pragma once
+#if 0
 #include "usb_device.h"
-#include "usbd_custom_hid_if.h"
+#include "usbd_custom_hid_if.hpp"
 
 //接收中断标志。定义位置：usbd_custom_hid_if.c(26) : uint8_t usb_flag = 0;
 extern uint8_t usb_flag;
@@ -39,3 +40,4 @@ void usb_recv_test(void)
 	usb_recv_hid(s_char,64);
 	usb_send_hid(s_char, 64);
 }
+#endif

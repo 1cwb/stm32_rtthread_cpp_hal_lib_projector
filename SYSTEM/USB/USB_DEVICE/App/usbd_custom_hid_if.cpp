@@ -19,10 +19,11 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_custom_hid_if.h"
+#include "usbd_custom_hid_if.hpp"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "musbdevicedrv.hpp"
+#include "mplatform.hpp"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -185,8 +186,7 @@ static int8_t CUSTOM_HID_DeInit_FS(void)
   return (USBD_OK);
   /* USER CODE END 5 */
 }
-/*定义接收中断标志*/
-uint8_t usb_flag = 0;
+
 /**
   * @brief  Manage the CUSTOM HID class events
   * @param  event_idx: Event index
@@ -204,8 +204,11 @@ static int8_t CUSTOM_HID_OutEvent_FS(uint8_t event_idx, uint8_t state)
   {
     return -1;
   }
-  //USBD_CUSTOM_HID_HandleTypeDef     *hhid = (USBD_CUSTOM_HID_HandleTypeDef *)(hUsbDeviceFS.pClassData);
-  usb_flag = 1;
+  mDev::mUsbHidDevice* usbx = reinterpret_cast< mDev::mUsbHidDevice*>(mDev::mPlatform::getInstance()->getDevice("usbhid"));
+  if(usbx)
+  {
+    usbx->runInterruptCb(nullptr);
+  }
   return (USBD_OK);
   /* USER CODE END 6 */
 }
@@ -222,7 +225,12 @@ int8_t USBD_CUSTOM_HID_SendReport_FS(uint8_t *report, uint16_t len)
 {
   return USBD_CUSTOM_HID_SendReport(&hUsbDeviceFS, report, len);
 }
-
+int8_t USBD_CUSTOM_HID_RecvReport_FS(uint8_t *report, uint16_t len)
+{
+  USBD_CUSTOM_HID_HandleTypeDef     *hhid = (USBD_CUSTOM_HID_HandleTypeDef *)(hUsbDeviceFS.pClassData);
+  memcpy(report, hhid->Report_buf, len);
+  return uint8_t(USBD_OK);
+}
 /* USER CODE END 7 */
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
