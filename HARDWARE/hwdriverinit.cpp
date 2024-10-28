@@ -18,7 +18,7 @@
 #include "workqueuemanager.hpp"
 #include "systick.hpp"
 #include "bmi088new.hpp"
-#include "usbdevice.hpp"
+#include "usbtest.hpp"
 
 timerx* timer1 = nullptr;
 timerx* timer2 = nullptr;
@@ -31,12 +31,6 @@ QMC5883LCompass* qmc5883l = nullptr;
 int initAllDevice()
 {
     MX_USB_DEVICE_Init();
-    printf("tony befor USB INIT\r\n");
-    usbDeviceHID* usbx = new usbDeviceHID;
-    printf("tony befor USB1 INIT\r\n");
-    //usbx->init();
-    printf("tony after USB INIT\r\n");
-
     #if 1
     systick* msystick = new systick;
     if(msystick)
@@ -245,7 +239,15 @@ int initAllDevice()
 
     bmi088* imu2 = new bmi088("imu2",spi4,imu2acs,imu2gcs);
     imu2->init();
-printf("+++++++++++++++\r\n");
+
+    while(1)
+    {
+		usb_send_test();
+		HAL_Delay(1000);
+		usb_recv_test();
+		HAL_Delay(1000);
+    }
+
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
@@ -439,7 +441,7 @@ extern "C" void TIM1_UP_IRQHandler(void)
         if(__HAL_TIM_GET_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE))
         {
             __HAL_TIM_CLEAR_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE);
-            timx->runInterruptCb(nullptr);
+            timx->runInterruptCb();
         }
     }
 }
@@ -452,7 +454,7 @@ extern "C" void TIM2_IRQHandler(void)
         if(__HAL_TIM_GET_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE))
         {
             __HAL_TIM_CLEAR_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE);
-            timx->runInterruptCb(nullptr);
+            timx->runInterruptCb();
         }
         if(__HAL_TIM_GET_FLAG(timx->getTimHandle(), TIM_FLAG_CC1))
         {

@@ -24,7 +24,7 @@
 #include "usbd_core.h"
 #include "usbd_desc.h"
 #include "usbd_customhid.h"
-#include "usbd_custom_hid_if.hpp"
+#include "usbd_custom_hid_if.h"
 
 /* USER CODE BEGIN Includes */
 
