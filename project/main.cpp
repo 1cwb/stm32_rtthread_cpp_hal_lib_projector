@@ -100,7 +100,7 @@ int main(void)
             imu2->updateData();
             //HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
             //ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll()/2.0f), (imu1->getPitch()+imu2->getPitch())/2.0f, (imu1->getYaw()+imu2->getYaw())/2.0f, 0, 0, 1);
-            //ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
+            ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
             //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
         }
     }, nullptr);

@@ -37,6 +37,8 @@ int initAllDevice()
         msystick->init();//do no thing
     }
     #endif
+    usbDeviceHID* usbx = new usbDeviceHID;
+    usbx->init();
 
     gpiox* pd8 = new gpiox("pd8");
     pd8->init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_8, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
@@ -238,8 +240,7 @@ int initAllDevice()
 
     bmi088* imu2 = new bmi088("imu2",spi4,imu2acs,imu2gcs);
     imu2->init();
-    usbDeviceHID* usbx = new usbDeviceHID;
-    usbx->init();
+
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");
