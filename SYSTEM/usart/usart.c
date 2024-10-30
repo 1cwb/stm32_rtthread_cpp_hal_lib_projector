@@ -1,3 +1,4 @@
+#if 1
 #include "usart.h"
 #include "delay.h"
 #include <string.h>
@@ -199,3 +200,4 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 	
 	HAL_UART_Transmit(&UART1_Handler,data_to_send,_cnt,2000);
 }
+#endif
