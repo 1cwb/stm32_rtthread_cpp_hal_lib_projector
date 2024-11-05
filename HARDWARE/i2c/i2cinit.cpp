@@ -104,4 +104,4 @@ int i2cInit()
 
     return 0;
 }
-INIT_EXPORT(i2cInit, "0.2");
+INIT_EXPORT(i2cInit, "0.4");

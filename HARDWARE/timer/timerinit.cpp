@@ -57,5 +57,5 @@ int timeInit()
     }, &timerst,mDev::TIMESTARTMODE_IT);
     return 0;
 }
-INIT_EXPORT(timeInit, "0.2");
+INIT_EXPORT(timeInit, "0.4");
 

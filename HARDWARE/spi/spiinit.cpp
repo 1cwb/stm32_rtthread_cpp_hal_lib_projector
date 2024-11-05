@@ -94,4 +94,4 @@ int spiInit()
     },&spixHandle);
     return 0;
 }
-INIT_EXPORT(spiInit, "0.2");
+INIT_EXPORT(spiInit, "0.4");

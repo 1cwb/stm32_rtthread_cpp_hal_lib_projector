@@ -1,32 +1,11 @@
 #include "usartx.hpp"
-#if 0
+#include "mgpiodrv.hpp"
+#include "mplatform.hpp"
 mResult usart::init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHandle, DMA_HandleTypeDef* hdmaUsartxTx, DMA_HandleTypeDef* hdmaUsartxRx)
 {
     _initcb = cb;
     memcpy(&_uartHandle, uartHandle, sizeof(UART_HandleTypeDef));
-    if(hdmaUsartxTx)
-    {
-        memcpy(&_hdmaUsartxTx, hdmaUsartxTx, sizeof(DMA_HandleTypeDef));
-        /* USART1_TX Init */
-        if (HAL_DMA_Init(&_hdmaUsartxTx) != HAL_OK)
-        {
-            return M_RESULT_ERROR; 
-        }
-        __HAL_LINKDMA(&_uartHandle,hdmatx,_hdmaUsartxTx);
-        _buseTxDma = true;
-    }
-    if(hdmaUsartxRx)
-    {
-        memcpy(&_hdmaUsartxRx, hdmaUsartxRx, sizeof(DMA_HandleTypeDef));
-        /* USART1_RX Init */
-        if (HAL_DMA_Init(&_hdmaUsartxRx) != HAL_OK)
-        {
-            return M_RESULT_ERROR;
-        }
-
-        __HAL_LINKDMA(&_uartHandle,hdmarx,_hdmaUsartxRx);
-        _buseRxDma = true;
-    }
+    _uartHandle.gState = HAL_UART_STATE_RESET;
 
     if (HAL_UART_Init(&_uartHandle) != HAL_OK)
     {
@@ -43,6 +22,30 @@ mResult usart::init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHan
     if (HAL_UARTEx_DisableFifoMode(&_uartHandle) != HAL_OK)
     {
         return M_RESULT_ERROR;
+    }
+    if(hdmaUsartxTx)
+    {
+        memcpy(&_hdmaUsartxTx, hdmaUsartxTx, sizeof(DMA_HandleTypeDef));
+        _hdmaUsartxTx.State = HAL_DMA_STATE_RESET;
+        /* USART1_TX Init */
+        if (HAL_DMA_Init(&_hdmaUsartxTx) != HAL_OK)
+        {
+            return M_RESULT_ERROR; 
+        }
+        __HAL_LINKDMA(&_uartHandle,hdmatx,_hdmaUsartxTx);
+        _buseTxDma = true;
+    }
+    if(hdmaUsartxRx)
+    {
+        memcpy(&_hdmaUsartxRx, hdmaUsartxRx, sizeof(DMA_HandleTypeDef));
+        _hdmaUsartxRx.State = HAL_DMA_STATE_RESET;
+        /* USART1_RX Init */
+        if (HAL_DMA_Init(&_hdmaUsartxRx) != HAL_OK)
+        {
+            return M_RESULT_ERROR;
+        }
+        __HAL_LINKDMA(&_uartHandle,hdmarx,_hdmaUsartxRx);
+        _buseRxDma = true;
     }
     return M_RESULT_EOK;
 }
@@ -118,19 +121,19 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     return M_RESULT_EOK;
 }
-
-extern "C" void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
+#if 1
+extern "C" void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {
-    usart* usartx = containerof(uartHandle, usart, _uartHandle);
-    if(uartHandle == usartx->usartHandle())
+    usart* usartx = containerof(huart, usart, _uartHandle);
+    if(huart == usartx->usartHandle())
     {
         usartx->runInitCallback(true);
     }
 }
-extern "C" void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
+extern "C" void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
-    usart* usartx = containerof(uartHandle, usart, _uartHandle);
-    if(uartHandle == usartx->usartHandle())
+    usart* usartx = containerof(huart, usart, _uartHandle);
+    if(huart == usartx->usartHandle())
     {
         usartx->runInitCallback(false);
     }

@@ -1,6 +1,6 @@
 #pragma once
 #include "mspidrv.hpp"
-#include "stm32h7xx_hal_conf.h"
+#include "sys.h"
 #include "gpio.hpp"
 class spix : public mDev::mSpi
 {

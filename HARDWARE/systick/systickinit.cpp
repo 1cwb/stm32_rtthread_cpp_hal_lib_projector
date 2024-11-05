@@ -9,4 +9,4 @@ int systickInit()
     }
     return 0;
 }
-INIT_EXPORT(systickInit, "0.1");
+INIT_EXPORT(systickInit, "0.4");
