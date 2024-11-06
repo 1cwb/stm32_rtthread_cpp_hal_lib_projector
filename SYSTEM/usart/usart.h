@@ -5,7 +5,7 @@
 #endif
 #include "stdio.h"	
 #include "sys.h"
-#if 1
+#if 0
 #define USART_REC_LEN  			256 
 extern uint8_t  USART_RX_BUF[USART_REC_LEN];
 extern uint16_t USART_RX_STA; 

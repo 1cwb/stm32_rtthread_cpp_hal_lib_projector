@@ -134,16 +134,16 @@ HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, 
 void hwInit()
 {
     MPU_SetProtection();
-    //SCB_EnableICache();		// 使能ICache
-	  //SCB_EnableDCache();		// 使能DCache
+    SCB_EnableICache();		// 使能ICache
+	  SCB_EnableDCache();		// 使能DCache
     HAL_Init(); //初始化 HAL 库
     Stm32_Clock_Init(PLLM_VALUE,PLLN_VALUE,PLLP_VALUE,PLLQ_VALUE,PLLR_VALUE); //设置时钟,480Mhz
     /* System Clock Update */
     SystemCoreClockUpdate();
     delay_init(HAL_RCC_GetSysClockFreq()/1000000);//1US跑的tick数
-    uart_init(115200);
-    printf("sys clock is %lu\r\n",HAL_RCC_GetSysClockFreq());
-    printf("HCLK clock is %lu\r\n",HAL_RCC_GetHCLKFreq());
+    //uart_init(115200);
+    //printf("sys clock is %lu\r\n",HAL_RCC_GetSysClockFreq());
+    //printf("HCLK clock is %lu\r\n",HAL_RCC_GetHCLKFreq());
 }
 
 void SoftReset(void)

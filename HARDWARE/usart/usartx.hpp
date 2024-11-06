@@ -17,7 +17,7 @@ public:
     bool buseTxDma()const {return _buseTxDma;}
     bool buseRxDma() const {return _buseRxDma;}
     bool btransferComplete() const {return _transferComplete;}
-    void setTransferComplete(bool bcomplete) {_transferComplete = bcomplete;} 
+    void setTransferComplete(bool bcomplete) {_transferComplete = bcomplete;}
     UART_HandleTypeDef _uartHandle;
     DMA_HandleTypeDef _hdmaUsartxTx;
     DMA_HandleTypeDef _hdmaUsartxRx;
