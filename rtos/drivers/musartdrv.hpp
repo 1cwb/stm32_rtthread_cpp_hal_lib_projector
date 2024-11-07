@@ -15,7 +15,7 @@ class mUsart : public mDevice
 public:
     mUsart(const char* name) : mDev::mDevice(name),_mode(transferMode::TRANSFER_MODE_NOMAL) {_sem.init(getDeviceName(),1,IPC_FLAG_FIFO);}
     virtual ~mUsart() {}
-    mResult sendData(uint8_t* data, uint32_t len)
+    mResult sendData(const uint8_t* data, uint32_t len)
     {
         _sem.semTake(WAITING_FOREVER);
         if(send(data, len) != M_RESULT_EOK)
@@ -39,8 +39,9 @@ public:
     }
     void setTransferMode(transferMode mode) {_mode = mode;}
     virtual void* getObj() {return nullptr;}
+    virtual void syncDataByAddr(uint32_t *addr, int32_t dsize){}
 protected:
-    virtual mResult send(uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
+    virtual mResult send(const uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
     virtual mResult recv(uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
     transferMode _mode;
 private:

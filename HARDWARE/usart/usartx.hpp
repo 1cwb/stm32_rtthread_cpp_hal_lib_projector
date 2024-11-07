@@ -11,9 +11,10 @@ public:
     UART_HandleTypeDef* usartHandle() {return &_uartHandle;}
     DMA_HandleTypeDef* dmaTxHandle() {return &_hdmaUsartxTx;}
     DMA_HandleTypeDef* dmaRxHandle() {return &_hdmaUsartxRx;}
-    virtual mResult send(uint8_t* data, uint32_t len);
-    virtual mResult recv(uint8_t* data, uint32_t len);
-    virtual void* getObj() {return this;}
+    virtual mResult send(const uint8_t* data, uint32_t len) override;
+    virtual mResult recv(uint8_t* data, uint32_t len) override;
+    virtual void syncDataByAddr(uint32_t *addr, int32_t dsize) override;
+    virtual void* getObj() override {return this;}
     bool buseTxDma()const {return _buseTxDma;}
     bool buseRxDma() const {return _buseRxDma;}
     bool btransferComplete() const {return _transferComplete;}
@@ -24,6 +25,6 @@ public:
 private:
     bool _buseTxDma;
     bool _buseRxDma;
-    bool _transferComplete;
+    volatile bool _transferComplete;
 };
 void Debug_printf(const char *format, ...);

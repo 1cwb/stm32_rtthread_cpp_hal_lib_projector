@@ -7,4 +7,4 @@ int usbInit()
     return 0;
 }
 
-INIT_EXPORT(usbInit, "0.1");
+INIT_EXPORT(usbInit, "0.2");

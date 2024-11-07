@@ -28,20 +28,6 @@ gpiox* pd12 = nullptr;
 #if 1
 int initAllDevice()
 {
-#if 0
-Debug_printf("hellow worinima\r\n");
-Debug_printf("hellow worinima\r\n");
-Debug_printf("hellow worinima\r\n");
-Debug_printf("hellow worinima\r\n");
-Debug_printf("hellow worinima\r\n");
-#endif
-
-
-
-
-
- 
-
     return 0;
 }
 INIT_EXPORT(initAllDevice, "1");

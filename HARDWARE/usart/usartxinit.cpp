@@ -1,8 +1,11 @@
+#if 0
 #include "usartx.hpp"
 #include "gpio.hpp"
 #include "stdio.h"
+#include "log.hpp"
 
 static usart* uart1 = nullptr;
+static logx* debugLog = nullptr;
 /**
   * @brief This function handles DMA1 stream0 global interrupt.
   */
@@ -70,31 +73,20 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
     }
 }
-#define TXBUFF_SZIE 128
-#define TX_CACHE_SIZE 32 //(128/4)
-uint8_t usart1_tx_buffer[TXBUFF_SZIE]; //串口1的DMA发送缓冲区
-#if 0
-extern "C" int _read (int fd, char *pBuffer, int size)  
-{  
+extern "C" int _write (int fd, char *pBuffer, int size)  
+{
     for (int i = 0; i < size; i++)  
     {  
-        while((USART2->ISR&(1 << 5))==0);          //等待上一次串口数据发送完成  
-        USART2->RDR = (uint8_t) pBuffer[i];    //写DR,串口1将发送数据
+        while((USART1->ISR&(1 << 6))==0);    //等待上一次串口数据发送完成  
+        USART1->TDR = (uint8_t) pBuffer[i];    //写DR,串口1将发送数据
     }
     return size;
 }
 
-extern "C" int _write (int fd, char *pBuffer, int size)
-{
-  size = (size <= TXBUFF_SZIE ? size : TXBUFF_SZIE);
-  //while(!uart1->btransferComplete());
-  SCB_CleanDCache_by_Addr((uint32_t *)usart1_tx_buffer,TX_CACHE_SIZE);
-  memcpy(usart1_tx_buffer, pBuffer, size);
-  uart1->sendData(usart1_tx_buffer, size);
-  uart1->setTransferComplete(false);
-  return size;
-}
-#endif
+#define TXBUFF_SZIE 128
+#define TX_CACHE_SIZE 32 //(128/4)
+uint8_t usart1_tx_buffer[TXBUFF_SZIE]; //串口1的DMA发送缓冲区
+
 //串口1的DMA发送printf
 void Debug_printf(const char *format, ...)
 {
@@ -106,11 +98,11 @@ void Debug_printf(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 
-  //while(!uart1->btransferComplete());
+  while(!uart1->btransferComplete());
+  uart1->setTransferComplete(false);
   SCB_CleanDCache_by_Addr((uint32_t *)usart1_tx_buffer,sizeof(usart1_tx_buffer)/4);
 	length = vsnprintf((char*)usart1_tx_buffer, sizeof(usart1_tx_buffer), (char*)format, args);
   uart1->sendData(usart1_tx_buffer, length);
-  uart1->setTransferComplete(false);
 }
 
 int initUsart()
@@ -156,16 +148,6 @@ int initUsart()
     hdma_usart1_rx.Init.Priority = DMA_PRIORITY_MEDIUM;
     hdma_usart1_rx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
     uart1->init([](bool enable){
-          /* DMA controller clock enable */
-        __HAL_RCC_DMA1_CLK_ENABLE();
-
-        /* DMA interrupt init */
-        /* DMA1_Stream0_IRQn interrupt configuration */
-        HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
-        /* DMA1_Stream1_IRQn interrupt configuration */
-        HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
         RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1;
         PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
@@ -182,14 +164,23 @@ int initUsart()
     
     },&huart1, &hdma_usart1_tx, &hdma_usart1_rx);
     uart1->setTransferMode(mDev::transferMode::TRANSFER_MODE_DMA);
-while (1)
+
+    debugLog = new logx("LOGX",uart1);
+while (0)
 {
-  HAL_Delay(1);
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);
- Debug_printf("HELLOW WORLD\r\n");
+ //Debug_printf("HELLOW WORLD\r\n");
+ //debugLog->LOGW("hellow world\r\n");
  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
 }
-
+debugLog->LOGW("hellow world11111\r\n");
+debugLog->LOGW("hellow world22222\r\n");
+HAL_Delay(1000);
+printf("this is a test\r\n");
+debugLog->LOGW("hellow world3\r\n");
+ debugLog->LOGW("hellow world4\r\n");
+  debugLog->LOGW("hellow worl5\r\n");
     return 0;
 }
-INIT_EXPORT(initUsart, "0.2");
+INIT_EXPORT(initUsart, "0.1");
+#endif

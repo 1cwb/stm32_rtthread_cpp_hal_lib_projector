@@ -28,9 +28,7 @@ void componentsAutoinit(void)
     const struct initDesc_t *desc;
     for (desc = &__initDesc_t_initStart; desc < &__initDesc_t_initEnd; desc ++)
     {
-        printf("initialize %s ", desc->fnName);
         result = desc->fn();
-        printf(":%d done\r\n", result);
     }
 }
 

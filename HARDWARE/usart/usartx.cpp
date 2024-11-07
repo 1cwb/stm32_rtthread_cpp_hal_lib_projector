@@ -6,23 +6,16 @@ mResult usart::init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHan
     _initcb = cb;
     memcpy(&_uartHandle, uartHandle, sizeof(UART_HandleTypeDef));
     _uartHandle.gState = HAL_UART_STATE_RESET;
+          /* DMA controller clock enable */
+        __HAL_RCC_DMA1_CLK_ENABLE();
 
-    if (HAL_UART_Init(&_uartHandle) != HAL_OK)
-    {
-        return M_RESULT_ERROR;
-    }
-    if (HAL_UARTEx_SetTxFifoThreshold(&_uartHandle, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-    {
-        return M_RESULT_ERROR;
-    }
-    if (HAL_UARTEx_SetRxFifoThreshold(&_uartHandle, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-    {
-        return M_RESULT_ERROR;
-    }
-    if (HAL_UARTEx_DisableFifoMode(&_uartHandle) != HAL_OK)
-    {
-        return M_RESULT_ERROR;
-    }
+        /* DMA interrupt init */
+        /* DMA1_Stream0_IRQn interrupt configuration */
+        HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
+        HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+        /* DMA1_Stream1_IRQn interrupt configuration */
+        HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
+        HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
     if(hdmaUsartxTx)
     {
         memcpy(&_hdmaUsartxTx, hdmaUsartxTx, sizeof(DMA_HandleTypeDef));
@@ -47,6 +40,23 @@ mResult usart::init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHan
         __HAL_LINKDMA(&_uartHandle,hdmarx,_hdmaUsartxRx);
         _buseRxDma = true;
     }
+    if (HAL_UART_Init(&_uartHandle) != HAL_OK)
+    {
+        return M_RESULT_ERROR;
+    }
+    if (HAL_UARTEx_SetTxFifoThreshold(&_uartHandle, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+    {
+        return M_RESULT_ERROR;
+    }
+    if (HAL_UARTEx_SetRxFifoThreshold(&_uartHandle, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+    {
+        return M_RESULT_ERROR;
+    }
+    if (HAL_UARTEx_DisableFifoMode(&_uartHandle) != HAL_OK)
+    {
+        return M_RESULT_ERROR;
+    }
+
     return M_RESULT_EOK;
 }
 mResult usart::deInit()
@@ -71,7 +81,7 @@ mResult usart::deInit()
     }
     return M_RESULT_EOK;
 }
-mResult usart::send(uint8_t* data, uint32_t len)
+mResult usart::send(const uint8_t* data, uint32_t len)
 {
     if(_mode == mDev::transferMode::TRANSFER_MODE_NOMAL)
     {
@@ -120,6 +130,10 @@ mResult usart::recv(uint8_t* data, uint32_t len)
         }
     }
     return M_RESULT_EOK;
+}
+void usart::syncDataByAddr(uint32_t *addr, int32_t dsize)
+{
+    SCB_CleanDCache_by_Addr(addr, dsize);
 }
 #if 1
 extern "C" void HAL_UART_MspInit(UART_HandleTypeDef *huart)
