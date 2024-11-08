@@ -408,5 +408,3 @@ struct mMessagequeue_t : public mIpcObject_t
 
     mList_t             suspendSenderThread;         /**< sender thread suspended on this message queue */
 };
-
-#define rt_kprintf printf

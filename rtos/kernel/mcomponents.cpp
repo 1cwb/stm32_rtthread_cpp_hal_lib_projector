@@ -9,6 +9,7 @@
 #include "board.hpp"
 #include "sys.h"
 #include "systeminfo.hpp"
+#include "mklog.hpp"
 
 static int initStart(void)
 {
@@ -28,7 +29,9 @@ void componentsAutoinit(void)
     const struct initDesc_t *desc;
     for (desc = &__initDesc_t_initStart; desc < &__initDesc_t_initEnd; desc ++)
     {
+        KLOGD("initialize %s ", desc->fnName);
         result = desc->fn();
+        KLOGD("return value :%d done", result);
     }
 }
 

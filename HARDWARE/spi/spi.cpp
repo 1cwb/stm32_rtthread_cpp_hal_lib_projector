@@ -1,4 +1,5 @@
 #include "spi.hpp"
+#include "mklog.hpp"
 spix::spix(const char* name) : mSpi(name)
 {
 
@@ -32,7 +33,7 @@ void spix::csEnable(mDev::mGpio* cspin)
     }
     else
     {
-        printf("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
     }
 }
 void spix::csDisable(mDev::mGpio* cspin)
@@ -43,14 +44,14 @@ void spix::csDisable(mDev::mGpio* cspin)
     }
     else
     {
-        printf("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
     }
 }
 mResult spix::write(const uint8_t* buff, size_t len)
 {
     if(HAL_SPI_Transmit(&_spixHandle, buff, len, 5000) != HAL_OK)
     {
-        printf("Error: %s()%d\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     return M_RESULT_EOK;
@@ -59,7 +60,7 @@ mResult spix::read(uint8_t* buff, size_t len)
 {
     if(HAL_SPI_Receive(&_spixHandle, buff, len, 5000) != HAL_OK)
     {
-        printf("Error: %s()%d\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     return M_RESULT_EOK;

@@ -15,6 +15,7 @@
  *****************************************************************************/
 #include "bmi088new.hpp"
 #include "delay.h"
+#include "mklog.hpp"
 
 bmi088::bmi088(const char* name, mDev::mSpi* bus,mDev::mGpio* accel_cs,mDev::mGpio* gyro_cs) :
 mDev::mImu(name),_accelCsPin(accel_cs), _gyroCsPin(gyro_cs), _spi(bus)
@@ -173,7 +174,7 @@ mResult bmi088::gyroScopeInit(uint32_t gyroRange, uint32_t gyroRate)
     _spi->readReg(_gyroCsPin, BMI088_CHIP_ID_ADDR, &gyroId, 1);
     if (gyroId != BMI088_GRRO_CHIP_ID)
     {
-        printf("Warning: not found BMI088 gyro id: %02x\r\n", gyroId);
+        KLOGE("Warning: not found BMI088 gyro id: %02x\r\n", gyroId);
         return M_RESULT_ERROR;
     }
 
@@ -181,26 +182,26 @@ mResult bmi088::gyroScopeInit(uint32_t gyroRange, uint32_t gyroRate)
     gyroId = 0xB6;
     if(_spi->writeReg(_gyroCsPin, BMI088_BGW_SOFT_RST_ADDR, &gyroId, 1) != M_RESULT_EOK)
     {
-        printf("Error: soft reset fail\r\n");
+        KLOGE("Error: soft reset fail\r\n");
         return M_RESULT_ERROR;
     }
     delay_ms(30);
 
     if(gyroSetRange(gyroRange)!= M_RESULT_EOK)/* 2000dps */
     {
-        printf("Error: setRange fail\r\n");
+        KLOGE("Error: setRange fail\r\n");
         return M_RESULT_ERROR;
     }
 
     if(gyroSetSampleRate(gyroRate)!= M_RESULT_EOK)/* OSR 1000KHz, Filter BW: 116Hz */
     {
-        printf("Error: setRange fail\r\n");
+        KLOGE("Error: setRange fail\r\n");
         return M_RESULT_ERROR;
     }
     /* enable gyroscope */
     if(modifyReg(_gyroCsPin, BMI088_MODE_LPM1_ADDR, REG_VAL(0, BIT(7) | BIT(5)))!=M_RESULT_EOK)/* {0; 0}  NORMAL mode */
     {
-        printf("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     delay_ms(1);
@@ -399,7 +400,7 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
     _spi->readReg(_accelCsPin, BMI088_ACC_BGW_CHIPID, &accelId, 1);
     if (accelId != BMI088_ACC_BGW_CHIPID_VALUE)
     {
-        printf("Warning: not found BMI088 accel id: %02x\n", accelId);
+        KLOGE("Warning: not found BMI088 accel id: %02x\n", accelId);
         return M_RESULT_ERROR;
     }
 
@@ -407,7 +408,7 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
     regval = 0xB6;
     if(_spi->writeReg(_accelCsPin, BMI088_ACC_SOFTRESET, &regval, 1)!=M_RESULT_EOK)
     {
-        printf("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     delay_ms(2);
@@ -416,7 +417,7 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
     regval = 0x00;
     if(_spi->writeReg(_accelCsPin, BMI088_ACC_PWR_CONF, &regval, 1)!=M_RESULT_EOK)
     {
-        printf("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     delay_ms(1);
@@ -425,7 +426,7 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
     regval = 0x04;
     if(_spi->writeReg(_accelCsPin, BMI088_ACC_PWR_CTRL, &regval, 1)!=M_RESULT_EOK)
     {
-        printf("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     delay_ms(55);
@@ -433,17 +434,17 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
     /* set default range and bandwidth */
     if(accelSetRange(Grange)!=M_RESULT_EOK)         /* 24g */
     {
-        printf("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     if(accelSetSampleRate(sampleRate)!=M_RESULT_EOK)      /* 1600Hz sample rate */
     {
-        printf("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     if(accelSetBwpOdr(dlpfFreqHz)!=M_RESULT_EOK)           /* Normal BW */
     {
-        printf("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
+        KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
 

@@ -1,4 +1,5 @@
 #include "mthread.hpp"
+#include "mklog.hpp"
 
 mthread::mThreadHookCallbackFunc mthread::initHookCb_ = nullptr;
 mthread::mThreadHookCallbackFunc mthread::deInitHookCb_ = nullptr;

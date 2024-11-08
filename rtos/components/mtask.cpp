@@ -1,5 +1,7 @@
 #include "mtask.hpp"
 #include "mclock.hpp"
+#include "mklog.hpp"
+
 #define MAX_INIT_TIME (5000)
 #define TASK_TICKET (5)
 void mTaskManager::init()

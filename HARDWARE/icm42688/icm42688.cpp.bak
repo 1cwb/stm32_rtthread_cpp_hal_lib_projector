@@ -1,5 +1,7 @@
 #include "icm42688.hpp"
 #include "delay.h"
+#include "mklog.hpp"
+
 using namespace ICM42688REG;
 /* ICM42688 object, input the I2C bus and address */
 ICM42688::ICM42688(mDev::mI2c& bus, uint8_t address){
@@ -23,8 +25,8 @@ int ICM42688::begin() {
 	if (whoAmI() != WHO_AM_I) {
 		return -3;
 	}
-    printf("whoAmI() = %x\r\n",whoAmI());
-	delay_ms(3000);
+    KLOGD("whoAmI() = %x\r\n",whoAmI());
+	delay_ms(1000);
 	// turn on accel and gyro in Low Noise (LN) Mode
 	if (writeRegister(UB0_REG_PWR_MGMT0, 0x0F) < 0) {
 		return -4;
@@ -302,8 +304,7 @@ int ICM42688::getRawAGT() {  // Added to return raw data only
 	_rawGyr[0] = rawMeas[4];
 	_rawGyr[1] = rawMeas[5];
 	_rawGyr[2] = rawMeas[6];
-	//printf("=ax:%d, ay:%d, az:%d gx:%d gy:%d gz:%d\r\n",_rawAcc[0],_rawAcc[1],_rawAcc[2],_rawGyr[0],_rawGyr[1],_rawGyr[2]);
-
+	KLOGD("=ax:%d, ay:%d, az:%d gx:%d gy:%d gz:%d\r\n",_rawAcc[0],_rawAcc[1],_rawAcc[2],_rawGyr[0],_rawGyr[1],_rawGyr[2]);
 	return 1;
 }
 

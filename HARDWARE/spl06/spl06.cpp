@@ -1,5 +1,7 @@
 #include "spl06.hpp"
 #include "delay.h"
+#include "mklog.hpp"
+
 // Register list
 #define REG_PSR_B2 (0x00)
 #define REG_PSR_B1 (0x01)
@@ -71,8 +73,8 @@ bool ArtronShop_SPL06_001::begin() {
         this->status(&status);
         if((status.SENSOR_RDY) && (status.COEF_RDY)) // Check sensor ready and coefficients are available flag
         {
-            printf("Sensor ready!\r\n");
-            printf("read_reg(REG_ID) = %x\r\n",read_reg(REG_ID));
+            KLOGD("Sensor ready!");
+            KLOGD("read_reg(REG_ID) = %x",read_reg(REG_ID));
             break;
         }
     }

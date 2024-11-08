@@ -1,6 +1,6 @@
 #include "mipc.hpp"
 #include "mthread.hpp"
-
+#include "mklog.hpp"
 /**
  * This function will initialize an IPC object
  *

@@ -1,6 +1,7 @@
 #include "rtoscommon.hpp"
 #include "cpuport.hpp"
 #include "mthread.hpp"
+#include "mklog.hpp"
 
 #if               ( /* GNU */(defined ( __GNUC__ ) && defined ( __VFP_FP__ ) && !defined(__SOFTFP__)))
 #define USE_FPU   1
@@ -56,38 +57,38 @@ void CPUPORT::hwHardFaultException(exceptionInfo_t *exceptionInfo)
     //struct exceptionStackFrame *exceptionStack = &exceptionInfo->stackFrame.exceptionStackFrame;
     struct stackFrame *context = &exceptionInfo->stackFrame;
 
-    printf("psr: 0x%08lx\r\n", context->exceptionStackFrame.psr);
+    KLOGC("psr: 0x%08lx\r\n", context->exceptionStackFrame.psr);
 
-    printf("r00: 0x%08lx\r\n", context->exceptionStackFrame.r0);
-    printf("r01: 0x%08lx\r\n", context->exceptionStackFrame.r1);
-    printf("r02: 0x%08lx\r\n", context->exceptionStackFrame.r2);
-    printf("r03: 0x%08lx\r\n", context->exceptionStackFrame.r3);
-    printf("r04: 0x%08lx\r\n", context->r4);
-    printf("r05: 0x%08lx\r\n", context->r5);
-    printf("r06: 0x%08lx\r\n", context->r6);
-    printf("r07: 0x%08lx\r\n", context->r7);
-    printf("r08: 0x%08lx\r\n", context->r8);
-    printf("r09: 0x%08lx\r\n", context->r9);
-    printf("r10: 0x%08lx\r\n", context->r10);
-    printf("r11: 0x%08lx\r\n", context->r11);
-    printf("r12: 0x%08lx\r\n", context->exceptionStackFrame.r12);
-    printf(" lr: 0x%08lx\r\n", context->exceptionStackFrame.lr);
-    printf(" pc: 0x%08lx\r\n", context->exceptionStackFrame.pc);
+    KLOGC("r00: 0x%08lx\r\n", context->exceptionStackFrame.r0);
+    KLOGC("r01: 0x%08lx\r\n", context->exceptionStackFrame.r1);
+    KLOGC("r02: 0x%08lx\r\n", context->exceptionStackFrame.r2);
+    KLOGC("r03: 0x%08lx\r\n", context->exceptionStackFrame.r3);
+    KLOGC("r04: 0x%08lx\r\n", context->r4);
+    KLOGC("r05: 0x%08lx\r\n", context->r5);
+    KLOGC("r06: 0x%08lx\r\n", context->r6);
+    KLOGC("r07: 0x%08lx\r\n", context->r7);
+    KLOGC("r08: 0x%08lx\r\n", context->r8);
+    KLOGC("r09: 0x%08lx\r\n", context->r9);
+    KLOGC("r10: 0x%08lx\r\n", context->r10);
+    KLOGC("r11: 0x%08lx\r\n", context->r11);
+    KLOGC("r12: 0x%08lx\r\n", context->exceptionStackFrame.r12);
+    KLOGC(" lr: 0x%08lx\r\n", context->exceptionStackFrame.lr);
+    KLOGC(" pc: 0x%08lx\r\n", context->exceptionStackFrame.pc);
 
     if (exceptionInfo->excReturn & (1 << 2))
     {
-        printf("hard fault on thread: %s\r\n\r\n", mthread::threadSelf()->name);
+        KLOGC("hard fault on thread: %s\r\n\r\n", mthread::threadSelf()->name);
     }
     else
     {
-        printf("hard fault on handler\r\n\r\n");
+        KLOGC("hard fault on handler\r\n\r\n");
     }
 
     if ( (exceptionInfo->excReturn & 0x10) == 0)
     {
-        printf("FPU active!\r\n");
+        KLOGC("FPU active!\r\n");
     }
-    printf("you can use the command to find whitch line caused this fault: \r\n");
-    printf("arm-none-eabi-addr2line -e xxx.elf -a -f %lx\r\n",context->exceptionStackFrame.pc);
+    KLOGC("you can use the command to find whitch line caused this fault: \r\n");
+    KLOGC("arm-none-eabi-addr2line -e xxx.elf -a -f %lx\r\n",context->exceptionStackFrame.pc);
     while (1);
 }

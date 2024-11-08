@@ -1,4 +1,6 @@
 #include "mtimer.hpp"
+#include "mklog.hpp"
+
 mList_t mTimer::timerListTotal[TIMER_SKIP_LIST_LEVEL];
 
 void mTimer::mTimerCommonCallbackFunc(void* p)

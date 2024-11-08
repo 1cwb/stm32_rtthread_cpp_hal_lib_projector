@@ -11,15 +11,6 @@
 #define MB_ENTRY_MAX                 UINT16_MAX   /**< Maxium number of mailbox .entry */
 #define MQ_ENTRY_MAX                 UINT16_MAX   /**< Maxium number of message queue .entry */
 
-
-#ifndef MASSERT
-#define MASSERT(x) \
-if(!(x)) \
-{        \
-    printf("%s()%d error happend\r\n",__FUNCTION__,__LINE__);\
-}
-#endif
-
 #define containerof(ptr, type, member) \
     ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
 /**

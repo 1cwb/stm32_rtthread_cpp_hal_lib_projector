@@ -1,4 +1,5 @@
 #include "mscheduler.hpp"
+#include "mklog.hpp"
 //#ifdef RT_USING_OVERFLOW_CHECK
 mSchedule::mScheduleHookCallbackFunc mSchedule::scheduleHookCb_ = nullptr;
 
@@ -17,7 +18,7 @@ void mSchedule::schedulerStackCheck(thread_t *thread)
     {
         unsigned long level;
 
-        rt_kprintf("thread:%s stack overflow\n", thread->name);
+        KLOGD("thread:%s stack overflow", thread->name);
 #ifdef RT_USING_FINSH //tony
         {
             extern long list_thread(void);
@@ -30,13 +31,13 @@ void mSchedule::schedulerStackCheck(thread_t *thread)
 #if defined(ARCH_CPU_STACK_GROWS_UPWARD)
     else if ((unsigned long)thread->sp > ((unsigned long)thread->stackAddr + thread->stackSize))
     {
-        rt_kprintf("warning: %s stack is close to the top of stack address.\n",
+        KLOGD("warning: %s stack is close to the top of stack address.",
                 thread->name);
     }
 #else
     else if ((unsigned long)thread->sp <= ((unsigned long)thread->stackAddr + 32))
     {
-        rt_kprintf("warning: %s stack is close to end of stack address.\n",
+        KLOGD("warning: %s stack is close to end of stack address.",
                 thread->name);
     }
 #endif
@@ -135,9 +136,9 @@ void mSchedule::schedule(void)
         /* get switch to thread */
         if(threadPriorityTable_[highestReadyPriority].isEmpty())
         {
-            printf("Error: all thread sleep\r\n");
-            printf("Error: do not use threadSleep in idle thread\r\n");
-            printf("Error: do not use ipc func in interrupt\r\n");
+            KLOGC("Error: all thread sleep\r\n");
+            KLOGC("Error: do not use threadSleep in idle thread\r\n");
+            KLOGC("Error: do not use ipc func in interrupt\r\n");
             while(1);
         }
         toThread = listEntry(threadPriorityTable_[highestReadyPriority].next, struct thread_t, tlist);

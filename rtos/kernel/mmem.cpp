@@ -1,5 +1,5 @@
 #include "mmem.hpp"
-
+#include "mklog.hpp"
 /**
  * @ingroup SystemInit
  *
@@ -29,7 +29,7 @@ void mMem::init(void *beginAddr, void *endAddr)
     }
     else
     {
-        rt_kprintf("mem init, error begin address 0x%lx, and end address 0x%lx\n",
+        KLOGD("mem init, error begin address 0x%lx, and end address 0x%lx",
                 (unsigned long)beginAddr, (unsigned long)endAddr);
 
         return;
@@ -377,8 +377,8 @@ void mMem::free(void *rmem)
     /* ... which has to be in a used state ... */
     if (!mem->used || mem->magic != HEAP_MAGIC)
     {
-        rt_kprintf("to free a bad data block:\n");
-        rt_kprintf("mem: 0x%08lx, used flag: %d, magic code: 0x%04x\n", (unsigned long)mem, mem->used, mem->magic);
+        KLOGD("to free a bad data block:");
+        KLOGD("mem: 0x%08lx, used flag: %d, magic code: 0x%04x\n", (unsigned long)mem, mem->used, mem->magic);
     }
     MASSERT(mem->used);
     MASSERT(mem->magic == HEAP_MAGIC);

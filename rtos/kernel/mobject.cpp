@@ -1,4 +1,5 @@
 #include "mobject.hpp"
+#include "mklog.hpp"
 /**
  * This function will return the specified type of object information.
  *

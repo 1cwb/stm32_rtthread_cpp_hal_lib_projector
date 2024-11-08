@@ -22,6 +22,7 @@
 #include "msystickdrv.hpp"
 #include "systeminfo.hpp"
 #include "musbdevicedrv.hpp"
+#include "mklog.hpp"
 
 int main(void)
 {
@@ -44,7 +45,7 @@ int main(void)
     
     if(systickx)
     {
-        //printf("systick is find \r\n");
+        //KLOGI("systick is find \r\n");
         
     }
     if(timer2)
@@ -53,7 +54,7 @@ int main(void)
             
         });
         timer2->start(mDev::CHANNEL_1);
-        //printf("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
+        //KLOGI("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
     }
     if(usbDev)
     {
@@ -68,7 +69,7 @@ int main(void)
             mevent.send(0X01);
         });
         timer1->start();
-        //printf("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
+        //KLOGI("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
     }
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
@@ -79,14 +80,14 @@ int main(void)
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 2000, 20, [&](void* param){
         mag1->updateData();
         mb1->updateData();
-        printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
-        //printf("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
+        KLOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu1->getYaw(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+        //KLOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
 
     }, nullptr);
     workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
         #if 0
-        printf("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
-        printf("thread stack Info:\r\n");
+        KLOGI("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
+        KLOGI("thread stack Info:\r\n");
         systemInfo::getInstance()->showAllThreadStackSizeInfo();
         systemInfo::getInstance()->getCpuUsage();
         #endif
