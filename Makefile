@@ -81,8 +81,9 @@ DEFINE    :=-DSTM32H750xx \
 			-DPLLN_VALUE=240 \
 			-DPLLP_VALUE=2 \
 			-DPLLQ_VALUE=4 \
-			-DPLLR_VALUE=2 \
-			-DIMB088_BOARD
+			-DPLLR_VALUE=2
+AP_FLY_BOARD := 1
+export AP_FLY_BOARD
 endif
 DEFINE    +=-DTHREAD_TICK_PER_SECOND=1000
 ###############################################################

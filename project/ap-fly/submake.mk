@@ -1,4 +1,4 @@
-ifdef RC_FLY_BOARD
+#ifeq ($(AP_FLY_BOARD), 1)
 CURRENT_DIR := $(CURDIR)/project/ap-fly
 SUBDIRS := $(shell find $(CURRENT_DIR) -maxdepth 3 -type d)
 
@@ -11,4 +11,4 @@ LINK_FILES += $(foreach dir, $(CURRENT_SRC_DIR), $(wildcard $(dir)/*.ld))
 SRC_AMSFILES +=  $(foreach dir, $(CURRENT_SRC_DIR), $(wildcard $(dir)/*.s))
 
 SRC_INCDIR += $(SUBDIRS)
-endif
+#endif
