@@ -78,6 +78,42 @@ private:
     }   \
 }
 
+#define ALOGD(fmt, ...) \
+{   \
+    if(mKlog::getInstance())    \
+    {   \
+        mKlog::getInstance()->LOGD(fmt,##__VA_ARGS__);  \
+    }   \
+}
+#define ALOGI(fmt, ...) \
+{   \
+    if(mKlog::getInstance())    \
+    {   \
+        mKlog::getInstance()->LOGI(fmt,##__VA_ARGS__);  \
+    }   \
+}
+#define ALOGW(fmt, ...) \
+{   \
+    if(mKlog::getInstance())    \
+    {   \
+        mKlog::getInstance()->LOGW(fmt,##__VA_ARGS__);  \
+    }   \
+}
+#define ALOGE(fmt, ...) \
+{   \
+    if(mKlog::getInstance())    \
+    {   \
+        mKlog::getInstance()->LOGE(fmt,##__VA_ARGS__);  \
+    }   \
+}
+#define ALOGC(fmt, ...) \
+{   \
+    if(mKlog::getInstance())    \
+    {   \
+        mKlog::getInstance()->LOGC(fmt,##__VA_ARGS__);  \
+    }   \
+}
+
 #ifndef MASSERT
 #define MASSERT(x) \
 if(!(x)) \
