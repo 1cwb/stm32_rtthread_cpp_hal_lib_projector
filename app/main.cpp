@@ -24,6 +24,54 @@
 #include "musbdevicedrv.hpp"
 #include "mklog.hpp"
 
+#define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
+#define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
+#define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
+#define BYTE3(dwTemp)       ( *( (char *)(&dwTemp) + 3) )
+uint8_t data_to_send[64] D2_MEM_ALIGN(4);
+//uint8_t data_to_send[50];
+void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed)
+{
+	uint8_t _cnt=0;
+	int16_t _temp;
+	int32_t _temp2 = alt;
+	memset(data_to_send, 0, 64);
+	data_to_send[_cnt++]=0xAA;
+	data_to_send[_cnt++]=0xAA;
+	data_to_send[_cnt++]=0x01;
+	data_to_send[_cnt++]=0;
+	
+	_temp = (int)(angle_rol*100);
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (int)(angle_pit*100);
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	_temp = (int)(angle_yaw*100);
+	data_to_send[_cnt++]=BYTE1(_temp);
+	data_to_send[_cnt++]=BYTE0(_temp);
+	
+	data_to_send[_cnt++]=BYTE3(_temp2);
+	data_to_send[_cnt++]=BYTE2(_temp2);
+	data_to_send[_cnt++]=BYTE1(_temp2);
+	data_to_send[_cnt++]=BYTE0(_temp2);
+	
+	data_to_send[_cnt++] = fly_model;
+	
+	data_to_send[_cnt++] = armed;
+	
+	data_to_send[3] = _cnt-4;
+	
+	uint8_t sum = 0;
+	for(uint8_t i=0;i<_cnt;i++)
+		sum += data_to_send[i];
+	data_to_send[_cnt++]=sum;
+	
+	//HAL_UART_Transmit(&UART1_Handler,data_to_send,_cnt,2000);
+    memcpy(data_to_send, "hellow world", strlen("hellow world"));
+    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("usbhid"))->send(data_to_send,strlen("hellow world"));
+}
+
 int main(void)
 {
     mEvent mevent;
@@ -81,8 +129,9 @@ int main(void)
         mag1->updateData();
         mb1->updateData();
         HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);
-        ALOGI("YAW:%d ROLL:%10f PITCH:%10f P%10f\r\n",/*imu1->getYaw()*/mag1->getMageX(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
+        //ALOGI("YAW:%d ROLL:%10f PITCH:%10f P%10f\r\n",/*imu1->getYaw()*/mag1->getMageX(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
         HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
+        ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
         //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
 
     }, nullptr);
@@ -121,9 +170,9 @@ int main(void)
             mevent.recv(0x20,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
             if(test == 0x20)//USB RECV
             {
-                usbDev->recv(usbBuff, 64);
-                usbDev->send(usbBuff, 64);
-                memset(usbBuff, 0, 64);
+                //usbDev->recv(usbBuff, 64);
+                //usbDev->send(usbBuff, 64);
+                //memset(usbBuff, 0, 64);
             }
         }
     },nullptr);
