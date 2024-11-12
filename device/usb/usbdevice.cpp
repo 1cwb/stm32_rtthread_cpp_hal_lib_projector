@@ -18,6 +18,5 @@ mResult usbDeviceHID::send(uint8_t *data, uint16_t len)
 }
 mResult usbDeviceHID::recv(uint8_t *data, uint16_t len)
 {
-    
     return M_RESULT_EOK;
 }

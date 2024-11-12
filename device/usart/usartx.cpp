@@ -135,7 +135,6 @@ void usart::syncDataByAddr(uint32_t *addr, int32_t dsize)
 {
     SCB_CleanDCache_by_Addr(addr, dsize);
 }
-#if 1
 extern "C" void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {
     usart* usartx = containerof(huart, usart, _uartHandle);
@@ -152,4 +151,3 @@ extern "C" void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
         usartx->runInitCallback(false);
     }
 }
-#endif

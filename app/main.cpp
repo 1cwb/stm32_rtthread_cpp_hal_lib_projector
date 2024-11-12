@@ -88,7 +88,7 @@ int main(void)
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
     mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice("systick");
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom");
-    
+    uint8_t usbBuff[64];
     if(systickx)
     {
         //KLOGI("systick is find \r\n");
@@ -105,7 +105,13 @@ int main(void)
     if(usbDev)
     {
         usbDev->registerInterruptCb([&](mDev::mDevice* dev, void* p){
-            mevent.send(0X20);
+            mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+            if(data)
+            {
+                memset(usbBuff, 0, 64);
+                memcpy(usbBuff, data->data, data->len);
+                mevent.send(0X20);
+            }
         });
     }
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer1");
@@ -163,15 +169,12 @@ int main(void)
     workQueueManager::getInstance()->find(WORKQUEUE_HP_WORK)->scheduleWork(IMUItem);
     mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](void* p){
         uint32_t test = 0;
-        uint8_t usbBuff[64];
         while(1)
         {
             mevent.recv(0x20,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
             if(test == 0x20)//USB RECV
             {
-                //usbDev->recv(usbBuff, 64);
-                //usbDev->send(usbBuff, 64);
-                //memset(usbBuff, 0, 64);
+                printf("%s\r\n",usbBuff);
             }
         }
     },nullptr);

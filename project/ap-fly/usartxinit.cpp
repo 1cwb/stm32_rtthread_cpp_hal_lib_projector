@@ -62,7 +62,6 @@ extern "C" void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
     if(huart == usartx->usartHandle())
     {
         usartx->setTransferComplete(true);
-        usartx->runInterruptCb(nullptr);
     }
 }
 extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -70,7 +69,7 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     usart* usartx = containerof(huart, usart, _uartHandle);
     if(huart == usartx->usartHandle())
     {
-
+        usartx->runInterruptCb(nullptr);
     }
 }
 extern "C" int _write (int fd, char *pBuffer, int size)  
