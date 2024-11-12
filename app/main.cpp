@@ -32,9 +32,9 @@ uint8_t data_to_send[64] D2_MEM_ALIGN(4);
 //uint8_t data_to_send[50];
 void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed)
 {
-	uint8_t _cnt=0;
-	int16_t _temp;
-	int32_t _temp2 = alt;
+	volatile uint8_t _cnt=0;
+	volatile int16_t _temp;
+	volatile int32_t _temp2 = alt;
 	memset(data_to_send, 0, 64);
 	data_to_send[_cnt++]=0xAA;
 	data_to_send[_cnt++]=0xAA;
@@ -66,10 +66,8 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 	for(uint8_t i=0;i<_cnt;i++)
 		sum += data_to_send[i];
 	data_to_send[_cnt++]=sum;
-	
-	//HAL_UART_Transmit(&UART1_Handler,data_to_send,_cnt,2000);
-    memcpy(data_to_send, "hellow world", strlen("hellow world"));
-    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("usbhid"))->send(data_to_send,strlen("hellow world"));
+    
+    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom"))->send(data_to_send,_cnt);
 }
 
 int main(void)
@@ -89,7 +87,7 @@ int main(void)
     mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice("led2");
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
     mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice("systick");
-    mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("usbhid");
+    mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom");
     
     if(systickx)
     {
@@ -130,8 +128,9 @@ int main(void)
         mb1->updateData();
         HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);
         //ALOGI("YAW:%d ROLL:%10f PITCH:%10f P%10f\r\n",/*imu1->getYaw()*/mag1->getMageX(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
-        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
+
         ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
+        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
         //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
 
     }, nullptr);

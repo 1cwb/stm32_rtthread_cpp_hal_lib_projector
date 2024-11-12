@@ -4,6 +4,12 @@
 #include <string>
 namespace mDev
 {
+template<typename T>
+struct devCbData
+{
+    T data;
+    uint32_t len;
+};
     using initCallbackExt = std::function<void(bool binit)>;
 class mDevice
 {

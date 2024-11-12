@@ -1,9 +1,9 @@
 #pragma once
 #include "musbdevicedrv.hpp"
 #include "usb_device.h"
-#include "usbd_custom_hid_if.hpp"
+#include "usbd_cdc_if.hpp"
 
-#define USB_HID_DEVICE  "usbhid"
+#define USB_HID_DEVICE  "Vcom"
 
 class usbDeviceHID : public mDev::mUsbHidDevice
 {

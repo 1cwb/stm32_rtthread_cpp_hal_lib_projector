@@ -23,7 +23,7 @@
 #include "stm32h7xx_hal.h"
 #include "usbd_def.h"
 #include "usbd_core.h"
-#include "usbd_customhid.h"
+#include "usbd_cdc.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -39,7 +39,9 @@
 /* USER CODE END PV */
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
-void Error_Handler(void);
+void Error_Handler(void)
+{
+}
 
 /* External functions --------------------------------------------------------*/
 
@@ -89,7 +91,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
     __HAL_RCC_GPIOA_CLK_ENABLE();
     /**USB_OTG_FS GPIO Configuration
     PA12     ------> USB_OTG_FS_DP
-    PA9     ------> USB_OTG_FS_VBUS
     PA11     ------> USB_OTG_FS_DM
     */
     GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_11;
@@ -352,7 +353,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd_USB_OTG_FS.Init.Sof_enable = DISABLE;
   hpcd_USB_OTG_FS.Init.low_power_enable = DISABLE;
   hpcd_USB_OTG_FS.Init.lpm_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.battery_charging_enable = ENABLE;
+  hpcd_USB_OTG_FS.Init.battery_charging_enable = DISABLE;
   hpcd_USB_OTG_FS.Init.vbus_sensing_enable = DISABLE;
   hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
   if (HAL_PCD_Init(&hpcd_USB_OTG_FS) != HAL_OK)
@@ -639,7 +640,7 @@ USBD_StatusTypeDef USBD_LL_SetTestMode(USBD_HandleTypeDef *pdev, uint8_t testmod
 void *USBD_static_malloc(uint32_t size)
 {
   UNUSED(size);
-  static uint32_t mem[(sizeof(USBD_CUSTOM_HID_HandleTypeDef)/4+1)];/* On 32-bit boundary */
+  static uint32_t mem[(sizeof(USBD_CDC_HandleTypeDef)/4)+1];/* On 32-bit boundary */
   return mem;
 }
 
@@ -691,4 +692,14 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status)
     break;
   }
   return usb_status;
+}
+void OTG_FS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_FS_IRQn 0 */
+
+  /* USER CODE END OTG_FS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+  /* USER CODE BEGIN OTG_FS_IRQn 1 */
+
+  /* USER CODE END OTG_FS_IRQn 1 */
 }
