@@ -8,6 +8,10 @@ public:
     virtual ~usart() {}
     mResult init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHandle,DMA_HandleTypeDef* hdmaUsartxTx, DMA_HandleTypeDef* hdmaUsartxRx);
     mResult deInit();
+    mResult txDmaInit();
+    mResult txDmaDeInit();
+    mResult rxDmaInit();
+    mResult rxDmaDeInit();
     UART_HandleTypeDef* usartHandle() {return &_uartHandle;}
     DMA_HandleTypeDef* dmaTxHandle() {return &_hdmaUsartxTx;}
     DMA_HandleTypeDef* dmaRxHandle() {return &_hdmaUsartxRx;}

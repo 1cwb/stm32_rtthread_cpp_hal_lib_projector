@@ -6,38 +6,17 @@ mResult usart::init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHan
     _initcb = cb;
     memcpy(&_uartHandle, uartHandle, sizeof(UART_HandleTypeDef));
     _uartHandle.gState = HAL_UART_STATE_RESET;
-          /* DMA controller clock enable */
-        __HAL_RCC_DMA1_CLK_ENABLE();
 
-        /* DMA interrupt init */
-        /* DMA1_Stream0_IRQn interrupt configuration */
-        HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
-        /* DMA1_Stream1_IRQn interrupt configuration */
-        HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
-        HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
     if(hdmaUsartxTx)
     {
         memcpy(&_hdmaUsartxTx, hdmaUsartxTx, sizeof(DMA_HandleTypeDef));
         _hdmaUsartxTx.State = HAL_DMA_STATE_RESET;
-        /* USART1_TX Init */
-        if (HAL_DMA_Init(&_hdmaUsartxTx) != HAL_OK)
-        {
-            return M_RESULT_ERROR; 
-        }
-        __HAL_LINKDMA(&_uartHandle,hdmatx,_hdmaUsartxTx);
         _buseTxDma = true;
     }
     if(hdmaUsartxRx)
     {
         memcpy(&_hdmaUsartxRx, hdmaUsartxRx, sizeof(DMA_HandleTypeDef));
         _hdmaUsartxRx.State = HAL_DMA_STATE_RESET;
-        /* USART1_RX Init */
-        if (HAL_DMA_Init(&_hdmaUsartxRx) != HAL_OK)
-        {
-            return M_RESULT_ERROR;
-        }
-        __HAL_LINKDMA(&_uartHandle,hdmarx,_hdmaUsartxRx);
         _buseRxDma = true;
     }
     if (HAL_UART_Init(&_uartHandle) != HAL_OK)
@@ -65,18 +44,50 @@ mResult usart::deInit()
     {
         return M_RESULT_ERROR;
     }
-    if(buseTxDma())
+    return M_RESULT_EOK;
+}
+mResult usart::txDmaInit()
+{
+    if(_buseTxDma)
+    {
+        if (HAL_DMA_Init(&_hdmaUsartxTx) != HAL_OK)
+        {
+            return M_RESULT_ERROR; 
+        }
+        __HAL_LINKDMA(&_uartHandle,hdmatx,_hdmaUsartxTx);
+    }
+    return M_RESULT_EOK;
+}
+mResult usart::txDmaDeInit()
+{
+    if(_buseTxDma)
     {
         if (HAL_DMA_DeInit(&_hdmaUsartxTx) != HAL_OK)
         {
             return M_RESULT_ERROR; 
         }
     }
-    if(buseRxDma())
+    return M_RESULT_EOK;
+}
+mResult usart::rxDmaInit()
+{
+    if(_buseRxDma)
+    {
+        if (HAL_DMA_Init(&_hdmaUsartxRx) != HAL_OK)
+        {
+            return M_RESULT_ERROR; 
+        }
+        __HAL_LINKDMA(&_uartHandle,hdmarx,_hdmaUsartxRx);
+    }
+    return M_RESULT_EOK;
+}
+mResult usart::rxDmaDeInit()
+{
+    if(_buseRxDma)
     {
         if (HAL_DMA_DeInit(&_hdmaUsartxRx) != HAL_OK)
         {
-            return M_RESULT_ERROR; 
+            return M_RESULT_ERROR;
         }
     }
     return M_RESULT_EOK;

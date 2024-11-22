@@ -57,7 +57,7 @@ void uart_init(uint32_t bound)
 	
 	HAL_UART_Receive_IT(&UART1_Handler, (uint8_t *)aRxBuffer, RXBUFFERSIZE);
 }
-
+#if 0
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart->Instance==USART1)
@@ -105,3 +105,4 @@ void USART1_IRQHandler(void)
 	 if(timeout>HAL_MAX_DELAY) break;	
 	}
 }
+#endif
