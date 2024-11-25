@@ -110,8 +110,18 @@ mResult usart::send(const uint8_t* data, uint32_t len)
     }
     else if(_mode == mDev::transferMode::TRANSFER_MODE_DMA)
     {
+        if(_transferComplete)
+        {
+            _transferComplete = false;
+        }
+        else
+        {
+            return M_RESULT_EBUSY;
+        }
+        SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
         if(HAL_UART_Transmit_DMA(&_uartHandle, data, len) != HAL_OK)
         {
+            _transferComplete = true;
             return M_RESULT_ERROR;
         }
     }

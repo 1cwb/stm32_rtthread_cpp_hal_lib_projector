@@ -1,4 +1,5 @@
 #pragma once
+#include "atomic.hpp"
 #include "musartdrv.hpp"
 #include "sys.h"
 class usart : public mDev::mUsart
@@ -21,7 +22,7 @@ public:
     virtual void* getObj() override {return this;}
     bool buseTxDma()const {return _buseTxDma;}
     bool buseRxDma() const {return _buseRxDma;}
-    bool btransferComplete() const {return _transferComplete;}
+    bool btransferComplete()  {return _transferComplete;}
     void setTransferComplete(bool bcomplete) {_transferComplete = bcomplete;}
     UART_HandleTypeDef _uartHandle;
     DMA_HandleTypeDef _hdmaUsartxTx;
