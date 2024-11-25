@@ -94,21 +94,21 @@ mResult usart::rxDmaDeInit()
 }
 mResult usart::send(const uint8_t* data, uint32_t len)
 {
-    if(_mode == mDev::transferMode::TRANSFER_MODE_NOMAL)
+    if(_transferMode == mDev::transferMode::TRANSFER_MODE_NOMAL)
     {
         if(HAL_UART_Transmit(&_uartHandle, data, len, 0xFFFF) != HAL_OK)
         {
             return M_RESULT_ERROR;
         }
     }
-    else if(_mode == mDev::transferMode::TRANSFER_MODE_IT || _mode == mDev::transferMode::TRANSFER_MODE_IT_RECV_IDLE)
+    else if(_transferMode == mDev::transferMode::TRANSFER_MODE_IT)
     {
         if(HAL_UART_Transmit_IT(&_uartHandle, data, len) != HAL_OK)
         {
             return M_RESULT_ERROR;
         }
     }
-    else if(_mode == mDev::transferMode::TRANSFER_MODE_DMA || _mode == mDev::transferMode::TRANSFER_MODE_DMA_RECV_IDLE)
+    else if(_transferMode == mDev::transferMode::TRANSFER_MODE_DMA)
     {
         if(_transferComplete)
         {
@@ -129,21 +129,21 @@ mResult usart::send(const uint8_t* data, uint32_t len)
 }
 mResult usart::recv(uint8_t* data, uint32_t len)
 {
-    if(_mode == mDev::transferMode::TRANSFER_MODE_NOMAL)
+    if(_recvMode == mDev::recvMode::RECV_MODE_NOMAL)
     {
         if(HAL_UART_Receive(&_uartHandle, data, len, 0xFFFF) != HAL_OK)
         {
             return M_RESULT_ERROR;
         }
     }
-    else if(_mode == mDev::transferMode::TRANSFER_MODE_IT)
+    else if(_recvMode == mDev::recvMode::RECV_MODE_IT)
     {
         if(HAL_UART_Receive_IT(&_uartHandle, data, len) != HAL_OK)
         {
             return M_RESULT_ERROR;
         }
     }
-    else if(_mode == mDev::transferMode::TRANSFER_MODE_DMA)
+    else if(_recvMode == mDev::recvMode::RECV_MODE_DMA)
     {
         SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
         if(HAL_UART_Receive_DMA(&_uartHandle, data, len) != HAL_OK)
@@ -152,14 +152,14 @@ mResult usart::recv(uint8_t* data, uint32_t len)
         }
         __HAL_DMA_DISABLE_IT(&_hdmaUsartxRx, DMA_IT_HT);
     }
-    else if (_mode == mDev::transferMode::TRANSFER_MODE_IT_RECV_IDLE)
+    else if (_recvMode == mDev::recvMode::RECV_MODE_IT_RECV_IDLE)
     {
         if(HAL_UARTEx_ReceiveToIdle_IT(&_uartHandle, data, len) != HAL_OK)
         {
             return M_RESULT_ERROR;
         }
     }
-    else if (_mode == mDev::transferMode::TRANSFER_MODE_DMA_RECV_IDLE)
+    else if (_recvMode == mDev::recvMode::RECV_MODE_DMA_RECV_IDLE)
     {
         SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
         if(HAL_UARTEx_ReceiveToIdle_DMA(&_uartHandle, data, len) != HAL_OK)

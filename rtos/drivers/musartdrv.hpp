@@ -9,14 +9,20 @@ enum class transferMode
     TRANSFER_MODE_NOMAL,
     TRANSFER_MODE_IT,
     TRANSFER_MODE_DMA,
-    TRANSFER_MODE_IT_RECV_IDLE,
-    TRANSFER_MODE_DMA_RECV_IDLE
+};
+enum class recvMode
+{
+    RECV_MODE_NOMAL,
+    RECV_MODE_IT,
+    RECV_MODE_DMA,
+    RECV_MODE_IT_RECV_IDLE,
+    RECV_MODE_DMA_RECV_IDLE
 };
 class mUsart : public mDevice
 {
 public:
     using usartData = devCbData<uint8_t*>;
-    mUsart(const char* name) : mDev::mDevice(name),_mode(transferMode::TRANSFER_MODE_NOMAL) {_sem.init(getDeviceName(),1,IPC_FLAG_FIFO);}
+    mUsart(const char* name) : mDev::mDevice(name),_transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL) {_sem.init(getDeviceName(),1,IPC_FLAG_FIFO);}
     virtual ~mUsart() {}
     mResult sendData(const uint8_t* data, uint32_t len)
     {
@@ -40,13 +46,15 @@ public:
         _sem.semRelease();
         return M_RESULT_EOK;
     }
-    void setTransferMode(transferMode mode) {_mode = mode;}
+    void setTransferMode(transferMode mode) {_transferMode = mode;}
+    void setRecvMode(recvMode mode) {_recvMode = mode;}
     virtual void* getObj() {return nullptr;}
     virtual void syncDataByAddr(uint32_t *addr, int32_t dsize){}
 protected:
     virtual mResult send(const uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
     virtual mResult recv(uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
-    transferMode _mode;
+    transferMode _transferMode;
+    recvMode _recvMode;
 private:
     mSemaphore _sem;
 };

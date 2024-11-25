@@ -90,6 +90,7 @@ int main(void)
     mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice("systick");
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom");
     mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart2");
+    mDev::mUsart* usartDev3 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart3");
     uint8_t usbBuff[64];
     if(systickx)
     {
@@ -127,6 +128,17 @@ int main(void)
             }
         });
     }
+    if(usartDev3)
+    {
+        usartDev3->registerInterruptCb([](mDev::mDevice* dev, void* data){
+            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(pdata)
+            {
+                pdata->data[pdata->len] = '\0';
+                printf("%s\r\n",pdata->data);
+            }
+        });
+    }
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer1");
     if(timer1)
     {
@@ -145,11 +157,11 @@ int main(void)
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 2000, 20, [&](void* param){
         mag1->updateData();
         mb1->updateData();
-        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);
+        //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);
         //ALOGI("YAW:%d ROLL:%10f PITCH:%10f P%10f\r\n",/*imu1->getYaw()*/mag1->getMageX(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
 
         ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
-        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
+       //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
         //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
 
     }, nullptr);
