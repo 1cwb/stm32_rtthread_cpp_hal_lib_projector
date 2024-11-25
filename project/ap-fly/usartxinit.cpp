@@ -46,7 +46,25 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     usart* usartx = containerof(huart, usart, _uartHandle);
     if(huart == usartx->usartHandle())
     {
-        usartx->runInterruptCb(nullptr);
+        mDev::mUsart::usartData rxdata = {
+          .data = usartx->getRxBuff(),
+          .len = usart::RX_BUFF_LEN,
+        };
+        usartx->runInterruptCb(&rxdata);
+        usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
+    }
+}
+extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
+{
+    usart* usartx = containerof(huart, usart, _uartHandle);
+    if(huart == usartx->usartHandle())
+    {
+        mDev::mUsart::usartData rxdata = {
+          .data = usartx->getRxBuff(),
+          .len = Size,
+        };
+        usartx->runInterruptCb(&rxdata);
+        usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
     }
 }
 #if 0
@@ -72,18 +90,7 @@ void Debug_printf(const char *format, ...)
   uart1->sendData(usart1_tx_buffer, length);
 }
 #endif
-void dumpreg(unsigned long addr, int len)
-{
-    unsigned long* baseaddr = (unsigned long*)(addr);
 
-    for(int i = 0; i < len; i+=4)
-    {
-        printf("%lx = %08x\r\n",baseaddr,*baseaddr);
-    	HAL_Delay(10);
-    	baseaddr ++;
-    	//Debug_printf("hxxxxxxxxxxxxxx%d\r\n",i);
-    }
-}
 int initUsart()
 {
     UART_HandleTypeDef huart2;
@@ -143,7 +150,6 @@ int initUsart()
       HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
       HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
 
-      GPIO_InitTypeDef GPIO_InitStruct = {0};
       RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
       PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
@@ -163,7 +169,8 @@ int initUsart()
         HAL_NVIC_SetPriority(USART2_IRQn, 0, 0);
         HAL_NVIC_EnableIRQ(USART2_IRQn);
     },&huart2, &hdma_usart2_tx, &hdma_usart2_rx);
-    uart2->setTransferMode(mDev::transferMode::TRANSFER_MODE_DMA);
+    uart2->setTransferMode(mDev::transferMode::TRANSFER_MODE_IT_RECV_IDLE);
+    uart2->recvData(uart2->getRxBuff(),usart::RX_BUFF_LEN);
     return 0;
 }
 INIT_EXPORT(initUsart, "0.1");

@@ -8,11 +8,14 @@ enum class transferMode
 {
     TRANSFER_MODE_NOMAL,
     TRANSFER_MODE_IT,
-    TRANSFER_MODE_DMA
+    TRANSFER_MODE_DMA,
+    TRANSFER_MODE_IT_RECV_IDLE,
+    TRANSFER_MODE_DMA_RECV_IDLE
 };
 class mUsart : public mDevice
 {
 public:
+    using usartData = devCbData<uint8_t*>;
     mUsart(const char* name) : mDev::mDevice(name),_mode(transferMode::TRANSFER_MODE_NOMAL) {_sem.init(getDeviceName(),1,IPC_FLAG_FIFO);}
     virtual ~mUsart() {}
     mResult sendData(const uint8_t* data, uint32_t len)

@@ -101,14 +101,14 @@ mResult usart::send(const uint8_t* data, uint32_t len)
             return M_RESULT_ERROR;
         }
     }
-    else if(_mode == mDev::transferMode::TRANSFER_MODE_IT)
+    else if(_mode == mDev::transferMode::TRANSFER_MODE_IT || _mode == mDev::transferMode::TRANSFER_MODE_IT_RECV_IDLE)
     {
         if(HAL_UART_Transmit_IT(&_uartHandle, data, len) != HAL_OK)
         {
             return M_RESULT_ERROR;
         }
     }
-    else if(_mode == mDev::transferMode::TRANSFER_MODE_DMA)
+    else if(_mode == mDev::transferMode::TRANSFER_MODE_DMA || _mode == mDev::transferMode::TRANSFER_MODE_DMA_RECV_IDLE)
     {
         if(_transferComplete)
         {
@@ -145,10 +145,28 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     else if(_mode == mDev::transferMode::TRANSFER_MODE_DMA)
     {
+        SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
         if(HAL_UART_Receive_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             return M_RESULT_ERROR;
         }
+        __HAL_DMA_DISABLE_IT(&_hdmaUsartxRx, DMA_IT_HT);
+    }
+    else if (_mode == mDev::transferMode::TRANSFER_MODE_IT_RECV_IDLE)
+    {
+        if(HAL_UARTEx_ReceiveToIdle_IT(&_uartHandle, data, len) != HAL_OK)
+        {
+            return M_RESULT_ERROR;
+        }
+    }
+    else if (_mode == mDev::transferMode::TRANSFER_MODE_DMA_RECV_IDLE)
+    {
+        SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
+        if(HAL_UARTEx_ReceiveToIdle_DMA(&_uartHandle, data, len) != HAL_OK)
+        {
+            return M_RESULT_ERROR;
+        }
+        __HAL_DMA_DISABLE_IT(&_hdmaUsartxRx, DMA_IT_HT);
     }
     return M_RESULT_EOK;
 }

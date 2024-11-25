@@ -23,6 +23,7 @@
 #include "systeminfo.hpp"
 #include "musbdevicedrv.hpp"
 #include "mklog.hpp"
+#include "musartdrv.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -88,6 +89,7 @@ int main(void)
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer2");
     mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice("systick");
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom");
+    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart2");
     uint8_t usbBuff[64];
     if(systickx)
     {
@@ -111,6 +113,17 @@ int main(void)
                 memset(usbBuff, 0, 64);
                 memcpy(usbBuff, data->data, data->len);
                 mevent.send(0X20);
+            }
+        });
+    }
+    if(usartDev2)
+    {
+        usartDev2->registerInterruptCb([](mDev::mDevice* dev, void* data){
+            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(pdata)
+            {
+                pdata->data[pdata->len] = '\0';
+                printf("%s\r\n",pdata->data);
             }
         });
     }

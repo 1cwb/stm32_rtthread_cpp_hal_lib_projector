@@ -24,10 +24,15 @@ public:
     bool buseRxDma() const {return _buseRxDma;}
     bool btransferComplete()  {return _transferComplete;}
     void setTransferComplete(bool bcomplete) {_transferComplete = bcomplete;}
+    uint8_t* getRxBuff() {return _rxBuff;}
+public:
     UART_HandleTypeDef _uartHandle;
     DMA_HandleTypeDef _hdmaUsartxTx;
     DMA_HandleTypeDef _hdmaUsartxRx;
+constexpr static int RX_BUFF_LEN = 128;
+
 private:
+    uint8_t _rxBuff[RX_BUFF_LEN];
     bool _buseTxDma;
     bool _buseRxDma;
     volatile bool _transferComplete;
