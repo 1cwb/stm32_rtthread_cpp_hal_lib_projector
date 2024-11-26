@@ -91,6 +91,10 @@ int main(void)
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom");
     mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart2");
     mDev::mUsart* usartDev3 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart3");
+    mDev::mUsart* usartDev4 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart4");
+    mDev::mUsart* usartDev5 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart5");
+    mDev::mUsart* usartDev6 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart6");
+    mDev::mUsart* usartDev8 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice("usart8");
     uint8_t usbBuff[64];
     if(systickx)
     {
@@ -139,6 +143,50 @@ int main(void)
             }
         });
     }
+    if(usartDev4)
+    {
+        usartDev4->registerInterruptCb([](mDev::mDevice* dev, void* data){
+            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(pdata)
+            {
+                pdata->data[pdata->len] = '\0';
+                printf("%s\r\n",pdata->data);
+            }
+        });
+    }
+    if(usartDev5)
+    {
+        usartDev5->registerInterruptCb([](mDev::mDevice* dev, void* data){
+            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(pdata)
+            {
+                pdata->data[pdata->len] = '\0';
+                printf("%s\r\n",pdata->data);
+            }
+        });
+    }
+    if(usartDev6)
+    {
+        usartDev6->registerInterruptCb([](mDev::mDevice* dev, void* data){
+            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(pdata)
+            {
+                pdata->data[pdata->len] = '\0';
+                printf("%s\r\n",pdata->data);
+            }
+        });
+    }
+    if(usartDev8)
+    {
+        usartDev8->registerInterruptCb([](mDev::mDevice* dev, void* data){
+            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(pdata)
+            {
+                pdata->data[pdata->len] = '\0';
+                printf("%s\r\n",pdata->data);
+            }
+        });
+    }
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice("timer1");
     if(timer1)
     {
@@ -173,7 +221,6 @@ int main(void)
         systemInfo::getInstance()->getCpuUsage();
         #endif
     }, nullptr);
-
 
     workItem* IMUItem = new workItem("imu", 2000, 5, [&](void* param){
         if(imu1 && imu2)

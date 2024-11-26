@@ -45,14 +45,14 @@ extern "C" void USART3_IRQHandler(void)
         HAL_UART_IRQHandler(uart3->usartHandle());
   }
 }
-extern "C" void USART4_IRQHandler(void)
+extern "C" void UART4_IRQHandler(void)
 {
   if(uart4)
   {
         HAL_UART_IRQHandler(uart4->usartHandle());
   }
 }
-extern "C" void USART5_IRQHandler(void)
+extern "C" void UART5_IRQHandler(void)
 {
   if(uart5)
   {
@@ -66,7 +66,7 @@ extern "C" void USART6_IRQHandler(void)
         HAL_UART_IRQHandler(uart6->usartHandle());
   }
 }
-extern "C" void USART8_IRQHandler(void)
+extern "C" void UART8_IRQHandler(void)
 {
   if(uart8)
   {
@@ -107,6 +107,10 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
         usartx->runInterruptCb(&rxdata);
         usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
     }
+}
+extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+  
 }
 #if 0
 #define TXBUFF_SZIE 128
@@ -219,7 +223,6 @@ int initUsart()
 
     huartX.Instance = USART3;
     uart3->init([](bool enable){
-
         /* Peripheral clock enable */
         __HAL_RCC_USART3_CLK_ENABLE();
         gpiox usart3txpin("usart3tx");
@@ -235,6 +238,73 @@ int initUsart()
     uart3->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
     uart3->recvData(uart3->getRxBuff(),usart::RX_BUFF_LEN);
 
+    huartX.Instance = UART4;
+    uart4->init([](bool enable){
+        /* Peripheral clock enable */
+        __HAL_RCC_UART4_CLK_ENABLE();
+        gpiox usart4txpin("usart4tx");
+        usart4txpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART4);
+        gpiox usart4rxpin("usart4rx");
+        usart4rxpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART4);
+        //uart4->txDmaInit();
+        //uart4->rxDmaInit();
+        HAL_NVIC_SetPriority(UART4_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(UART4_IRQn);
+    },&huartX, nullptr, nullptr);
+    uart4->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
+    uart4->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
+    uart4->recvData(uart4->getRxBuff(),usart::RX_BUFF_LEN);
+
+    huartX.Instance = UART5;
+    uart5->init([](bool enable){
+        /* Peripheral clock enable */
+        __HAL_RCC_UART5_CLK_ENABLE();
+        gpiox usart5txpin("usart5tx");
+        usart5txpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_12, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF14_UART5);
+        gpiox usart5rxpin("usart5rx");
+        usart5rxpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_13, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF14_UART5);
+        //uart5->txDmaInit();
+        //uart5->rxDmaInit();
+        HAL_NVIC_SetPriority(UART5_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(UART5_IRQn);
+    },&huartX, nullptr, nullptr);
+    uart5->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
+    uart5->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
+    uart5->recvData(uart5->getRxBuff(),usart::RX_BUFF_LEN);
+
+    huartX.Instance = USART6;
+    uart6->init([](bool enable){
+        /* Peripheral clock enable */
+        __HAL_RCC_USART6_CLK_ENABLE();
+        gpiox usart6txpin("usart6tx");
+        usart6txpin.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();},GPIOC, GPIO_PIN_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART6);
+        gpiox usart6rxpin("usart6rx");
+        usart6rxpin.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();},GPIOC, GPIO_PIN_7, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART6);
+        //uart6->txDmaInit();
+        //uart6->rxDmaInit();
+        HAL_NVIC_SetPriority(USART6_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(USART6_IRQn);
+    },&huartX, nullptr, nullptr);
+    uart6->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
+    uart6->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
+    uart6->recvData(uart6->getRxBuff(),usart::RX_BUFF_LEN);
+
+    huartX.Instance = UART8;
+    uart8->init([](bool enable){
+        /* Peripheral clock enable */
+        __HAL_RCC_UART8_CLK_ENABLE();
+        gpiox usart8txpin("usart8tx");
+        usart8txpin.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_0, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART8);
+        gpiox usart8rxpin("usart8rx");
+        usart8rxpin.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_1, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART8);
+        //uart8->txDmaInit();
+        //uart8->rxDmaInit();
+        HAL_NVIC_SetPriority(UART8_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(UART8_IRQn);
+    },&huartX, nullptr, nullptr);
+    uart8->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
+    uart8->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
+    uart8->recvData(uart8->getRxBuff(),usart::RX_BUFF_LEN);
     return 0;
 }
 INIT_EXPORT(initUsart, "0.1");

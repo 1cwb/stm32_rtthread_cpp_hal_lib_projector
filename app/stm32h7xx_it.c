@@ -47,6 +47,7 @@
   */
 void NMI_Handler(void)
 {
+  printf("ERROR: %s()%d \r\n",__FUNCTION__,__LINE__);
 }
 
 /**
@@ -73,7 +74,7 @@ void MemManage_Handler(void)
   /* Go to infinite loop when Memory Manage exception occurs */
   while (1)
   {
-    
+    printf("ERROR: %s()%d \r\n",__FUNCTION__,__LINE__);
   }
 }
 
@@ -87,6 +88,7 @@ void BusFault_Handler(void)
   /* Go to infinite loop when Bus Fault exception occurs */
   while (1)
   {
+    printf("ERROR: %s()%d \r\n",__FUNCTION__,__LINE__);
   }
 }
 
@@ -100,6 +102,7 @@ void UsageFault_Handler(void)
   /* Go to infinite loop when Usage Fault exception occurs */
   while (1)
   {
+    printf("ERROR: %s()%d \r\n",__FUNCTION__,__LINE__);
   }
 }
 
@@ -110,6 +113,7 @@ void UsageFault_Handler(void)
   */
 void SVC_Handler(void)
 {
+  printf("ERROR: %s()%d \r\n",__FUNCTION__,__LINE__);
 }
 
 /**
@@ -119,6 +123,7 @@ void SVC_Handler(void)
   */
 void DebugMon_Handler(void)
 {
+  printf("ERROR: %s()%d \r\n",__FUNCTION__,__LINE__);
 }
 
 /**

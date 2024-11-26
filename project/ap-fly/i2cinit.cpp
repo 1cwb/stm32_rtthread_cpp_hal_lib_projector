@@ -3,14 +3,15 @@
 static  i2cx* i2c4 = nullptr;
 static  i2cx* i2c1 = nullptr;
 
-
-#if 0
 extern "C" void I2C4_EV_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_EV_IRQn 0 */
-
+    printf("%s()%d\r\n",__FUNCTION__,__LINE__);
   /* USER CODE END I2C1_EV_IRQn 0 */
-  HAL_I2C_EV_IRQHandler(i2c4->i2cxHandle());
+  if(i2c4)
+  {
+      HAL_I2C_EV_IRQHandler(i2c4->i2cxHandle());
+  }
   /* USER CODE BEGIN I2C1_EV_IRQn 1 */
 
   /* USER CODE END I2C1_EV_IRQn 1 */
@@ -22,26 +23,58 @@ extern "C" void I2C4_EV_IRQHandler(void)
 extern "C" void I2C4_ER_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_ER_IRQn 0 */
-
+    printf("%s()%d\r\n",__FUNCTION__,__LINE__);
   /* USER CODE END I2C1_ER_IRQn 0 */
-  HAL_I2C_ER_IRQHandler(i2c4->i2cxHandle());
+    if(i2c4)
+    {
+        HAL_I2C_ER_IRQHandler(i2c4->i2cxHandle());
+    }
   /* USER CODE BEGIN I2C1_ER_IRQn 1 */
 
   /* USER CODE END I2C1_ER_IRQn 1 */
 }
+
+extern "C" void I2C1_EV_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C1_EV_IRQn 0 */
+    printf("%s()%d\r\n",__FUNCTION__,__LINE__);
+  /* USER CODE END I2C1_EV_IRQn 0 */
+  if(i2c1)
+  {
+      HAL_I2C_EV_IRQHandler(i2c1->i2cxHandle());
+  }
+  /* USER CODE BEGIN I2C1_EV_IRQn 1 */
+
+  /* USER CODE END I2C1_EV_IRQn 1 */
+}
+
+/**
+  * @brief This function handles I2C1 error interrupt.
+  */
+extern "C" void I2C1_ER_IRQHandler(void)
+{
+  /* USER CODE BEGIN I2C1_ER_IRQn 0 */
+    printf("%s()%d\r\n",__FUNCTION__,__LINE__);
+  /* USER CODE END I2C1_ER_IRQn 0 */
+    if(i2c1)
+    {
+        HAL_I2C_ER_IRQHandler(i2c1->i2cxHandle());
+    }
+  /* USER CODE BEGIN I2C1_ER_IRQn 1 */
+
+  /* USER CODE END I2C1_ER_IRQn 1 */
+}
+
 extern "C" void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-    if(qmc5883l)
-    {
-        qmc5883l->runInterruptCb();
-    }
+
 }
 
 extern "C" void HAL_I2C_MasterTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-    printf("tony xxxxxxxxxxxxxxxxxx\r\n");
+    
 }
-#endif
+
 
 
 int i2cInit()
@@ -68,12 +101,10 @@ int i2cInit()
             i2c4scl.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_12, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
             gpiox i2c4sda("i2c4sda");
             i2c4sda.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_13, GPIO_MODE_AF_OD, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW, GPIO_AF4_I2C4);
-            #if 0
             HAL_NVIC_SetPriority(I2C4_EV_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(I2C4_EV_IRQn);
             HAL_NVIC_SetPriority(I2C4_ER_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(I2C4_ER_IRQn);
-            #endif
         }
     },&I2C_Handle);
 
@@ -99,6 +130,10 @@ int i2cInit()
             gpiox i22d("i22d");
             i22d.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_5, GPIO_MODE_OUTPUT_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_LOW);
             i22d.setLevel(mDev::mGpio::LEVEL_HIGH);
+            HAL_NVIC_SetPriority(I2C1_EV_IRQn, 3, 0);
+            HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+            HAL_NVIC_SetPriority(I2C1_ER_IRQn, 3, 0);
+            HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
         }
     },&I2C_Handle);
 

@@ -7,7 +7,7 @@
 #include "mklog.hpp"
 #include "usart.h"
 
-#define MEM_HEAP_SIZE 64 * 1024 // 256K
+#define MEM_HEAP_SIZE 128 * 1024 // 256K
 D2_MEM_ALIGN(M_ALIGN_SIZE) static uint8_t memHeap[MEM_HEAP_SIZE];
 
 class LOG : public mKlog
