@@ -4,7 +4,7 @@ std::list<mcnHub*, mMemAllocator<mcnHub*>> mcnHub::_mcnHubList;
 mTimer mcnHub::_freqTimer;
 mAtomic<bool> mcnHub::_btimerInit(false);
 
-mResult mcnHub::init(const mcnPubEchoCallback& cb)
+mResult mcnHub::init()
 {
     void* pdata = nullptr;
 
@@ -23,7 +23,6 @@ mResult mcnHub::init(const mcnPubEchoCallback& cb)
 
     mSchedule::getInstance()->enterCritical();
     _pdata = pdata;
-    _echoCb = cb;
     _mcnHubList.emplace_back(this);
     memset(_freqEstWindow, 0, sizeof(_freqEstWindow));
     _windowIndex = 0;
@@ -31,7 +30,6 @@ mResult mcnHub::init(const mcnPubEchoCallback& cb)
     
     if(!_btimerInit.load())
     {
-        printf("%s()%d \r\n",__FUNCTION__,__LINE__);
         _freqTimer.init("UMCNIPC",1000,TIMER_FLAG_PERIODIC,[this](){
             for(auto it = this->_mcnHubList.begin(); it != this->_mcnHubList.end(); ++it)
             {
@@ -73,14 +71,14 @@ mResult mcnHub::deInit()
     return M_RESULT_EOK;
 }
 
-mcnNode* mcnHub::subscribe(const char* nodeName, const mcnPubCallback& cb)
+mcnNode* mcnHub::subscribe(const char* nodeName)
 {
     if(_linkNum >= MCN_MAX_LINK_NUM)
     {
         printf("Error: mcn link num is already full\r\n");
         return nullptr;
     }
-    mcnNode* node = new mcnNode(nodeName, this, cb);
+    mcnNode* node = new mcnNode(nodeName, this);
 
     mSchedule::getInstance()->enterCritical();
     if(_linkTail == nullptr)
@@ -98,7 +96,6 @@ mcnNode* mcnHub::subscribe(const char* nodeName, const mcnPubCallback& cb)
     if(_bpublished)
     {
         node->setRenewal(1);
-        node->runPubCallback(getData());
     }
     return node;
 }
@@ -199,12 +196,6 @@ mResult mcnHub::publish(const void* data, bool bsync)
     _bpublished = true;
     mSchedule::getInstance()->exitCritical();
 
-    node = _linkHead;
-    while (node != nullptr)
-    {
-        node->runPubCallback(_pdata);
-        node = node->getNext();
-    }
     if(bsync)
     {
         _event.send(MCN_PUB_EVENT);

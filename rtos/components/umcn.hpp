@@ -11,9 +11,6 @@
 #define MCN_MAX_LINK_NUM         30
 #define MCN_FREQ_EST_WINDOW_LEN  5
 
-using mcnPubCallback = std::function<void (void*)>;
-using mcnPubEchoCallback = std::function<int (void*)>;
-
 class mcnNode;
 class mcnHub
 {
@@ -40,7 +37,7 @@ public:
     mcnHub(mcnHub&& mq) = delete;
     mcnHub& operator=(const mcnHub& mq) = delete;
     mcnHub& operator=(mcnHub&& mq) = delete;
-    mResult init(const mcnPubEchoCallback& cb);
+    mResult init();
     mResult deInit();
     const char* getObjName() const {return _objName;}
     const uint32_t getObjSize() const {return _objSize;}
@@ -54,7 +51,7 @@ public:
     void resume() {_bsuspend = false;}
     float getFreq() const {return _freq;}
     uint16_t getWindowIndex() const {return _windowIndex;}
-    mcnNode* subscribe(const char* nodeName, const mcnPubCallback& cb);
+    mcnNode* subscribe(const char* nodeName);
     mResult unSubscribe(mcnNode* node);
     mResult unSubscribe(const char* nodeName);
     mcnNode* getNode(const char* nodeName);
@@ -79,7 +76,6 @@ private:
     float _freq;
     uint16_t _freqEstWindow[MCN_FREQ_EST_WINDOW_LEN] = {0};
     uint16_t _windowIndex;
-    mcnPubEchoCallback _echoCb;
     mEvent _event;
     static std::list<mcnHub*, mMemAllocator<mcnHub*>> _mcnHubList;
     static mTimer _freqTimer;
@@ -89,11 +85,10 @@ private:
 class mcnNode
 {
 public:
-    mcnNode(const char* name, mcnHub* hub, mcnPubCallback cb = nullptr):
+    mcnNode(const char* name, mcnHub* hub):
     _hub(hub),
     _renewal(0),
     _next(nullptr),
-    _cb(cb),
     _name(name)
     {
 
@@ -109,7 +104,6 @@ public:
     mcnHub* getHub() {return _hub;}
     uint8_t getRenewal() const {return _renewal;}
     void setRenewal(uint8_t renewal) {_renewal = renewal;}
-    void runPubCallback(void* param) {if(_cb){_cb(param);}}
     void setNext(mcnNode* next) {_next = next;}
     mcnNode* getNext() {return _next;}
     const char* getName() const {return _name;}
@@ -117,6 +111,5 @@ private:
     mcnHub* _hub;
     volatile uint8_t _renewal;
     mcnNode* _next;
-    mcnPubCallback _cb;
     const char* _name;
 };

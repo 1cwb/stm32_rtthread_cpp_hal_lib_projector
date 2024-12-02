@@ -77,8 +77,8 @@ int main(void)
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
 
     mcnHub hub("test", 4);
-    hub.init(nullptr);
-    hub.subscribe("testNode",nullptr);
+    hub.init();
+    hub.subscribe("testNode");
     mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu1");
     mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice("imu2");
     mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice("mag1");
