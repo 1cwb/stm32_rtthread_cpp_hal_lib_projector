@@ -1,5 +1,7 @@
 #include "i2c.hpp"
 #include "gpio.hpp"
+#include "project.hpp"
+
 static  i2cx* i2c4 = nullptr;
 static  i2cx* i2c1 = nullptr;
 
@@ -92,7 +94,7 @@ int i2cInit()
     I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
     I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
 
-    i2c4 = new i2cx("i2c4");
+    i2c4 = new i2cx(DEV_I2C4);
     i2c4->init([&](bool b){
         if(b)
         {
@@ -118,7 +120,7 @@ int i2cInit()
     I2C_Handle.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
     I2C_Handle.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
 
-    i2c1 = new i2cx("i2c1");
+    i2c1 = new i2cx(DEV_I2C1);
     i2c1->init([&](bool b){
         if(b)
         {

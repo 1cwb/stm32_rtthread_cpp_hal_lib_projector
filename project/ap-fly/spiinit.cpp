@@ -1,5 +1,6 @@
 #include "spi.hpp"
 #include "gpio.hpp"
+#include "project.hpp"
 
 static spix* spi1 = nullptr;
 static spix* spi4 = nullptr;
@@ -7,7 +8,7 @@ static spix* spi4 = nullptr;
 int spiInit()
 {
     SPI_HandleTypeDef spixHandle;
-    spi1 = new spix("spi1");
+    spi1 = new spix(DEV_SPI1);
     memset(&spixHandle, 0, sizeof(SPI_HandleTypeDef));
     spixHandle.Instance = SPI1;
     spixHandle.Init.Mode = SPI_MODE_MASTER;
@@ -49,7 +50,7 @@ int spiInit()
     },&spixHandle);
 
     //SPI4 init
-    spi4 = new spix("spi4");
+    spi4 = new spix(DEV_SPI4);
     memset(&spixHandle, 0, sizeof(SPI_HandleTypeDef));
 
     spixHandle.Instance = SPI4;

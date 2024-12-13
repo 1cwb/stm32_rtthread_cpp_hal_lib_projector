@@ -2,6 +2,7 @@
 #include "usartx.hpp"
 #include "gpio.hpp"
 #include "stdio.h"
+#include "project.hpp"
 /*uart2*/
 static usart* uart2 = nullptr;
 static usart* uart3 = nullptr;
@@ -141,12 +142,12 @@ int initUsart()
     UART_HandleTypeDef huartX;
     DMA_HandleTypeDef hdma_usartx_tx;
     DMA_HandleTypeDef hdma_usartx_rx;
-    uart2 = new usart("usart2");
-    uart3 = new usart("usart3");
-    uart4 = new usart("usart4");
-    uart5 = new usart("usart5");
-    uart6 = new usart("usart6");
-    uart8 = new usart("usart8");
+    uart2 = new usart(DEV_USART2);
+    uart3 = new usart(DEV_USART3);
+    uart4 = new usart(DEV_USART4);
+    uart5 = new usart(DEV_USART5);
+    uart6 = new usart(DEV_USART6);
+    uart8 = new usart(DEV_USART8);
 
     huartX.Instance = USART2;
     huartX.Init.BaudRate = 115200;

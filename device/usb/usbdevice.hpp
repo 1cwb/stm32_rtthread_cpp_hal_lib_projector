@@ -3,7 +3,7 @@
 #include "usb_device.h"
 #include "usbd_cdc_if.hpp"
 
-#define USB_HID_DEVICE  "Vcom"
+#define USB_HID_DEVICE  "vcom"
 
 class usbDeviceHID : public mDev::mUsbHidDevice
 {

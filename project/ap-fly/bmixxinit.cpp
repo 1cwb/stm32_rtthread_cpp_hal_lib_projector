@@ -2,10 +2,11 @@
 #include "mspidrv.hpp"
 #include "mplatform.hpp"
 #include "gpio.hpp"
+#include "project.hpp"
 
 int bimxxInit()
 {
-    mDev::mSpi* spi1 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice("spi1");
+    mDev::mSpi* spi1 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice(DEV_SPI1);
     if(!spi1)
     {
         return -1;
@@ -19,10 +20,10 @@ int bimxxInit()
     imu1acs->setLevel(mDev::mGpio::LEVEL_HIGH);
     imu1gcs->setLevel(mDev::mGpio::LEVEL_HIGH);
 
-    bmi088* imu1 = new bmi088("imu1",spi1,imu1acs,imu1gcs);
+    bmi088* imu1 = new bmi088(DEV_IMU1,spi1,imu1acs,imu1gcs);
     imu1->init();
 
-    mDev::mSpi* spi4 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice("spi4");
+    mDev::mSpi* spi4 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice(DEV_SPI4);
     if(!spi4)
     {
         return -1;
@@ -34,7 +35,7 @@ int bimxxInit()
     imu2acs->setLevel(mDev::mGpio::LEVEL_HIGH);
     imu2gcs->setLevel(mDev::mGpio::LEVEL_HIGH);
 
-    bmi088* imu2 = new bmi088("imu2",spi4,imu2acs,imu2gcs);
+    bmi088* imu2 = new bmi088(DEV_IMU2,spi4,imu2acs,imu2gcs);
     imu2->init();
     return 0; 
 }
