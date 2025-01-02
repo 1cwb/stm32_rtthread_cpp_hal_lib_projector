@@ -5,7 +5,6 @@
 #include "mobject.hpp"
 #include "mscheduler.hpp"
 #include "mIdle.hpp"
-#include "mtask.hpp"
 #include "board.hpp"
 #include "sys.h"
 #include "systeminfo.hpp"
@@ -21,7 +20,19 @@ static int initEnd(void)
 {
     return 0;
 }
-INIT_EXPORT(initEnd, "6");
+INIT_EXPORT(initEnd, "8");
+
+static int taskStart(void)
+{
+    return 0;
+}
+TASK_EXPORT(taskStart, "0");
+
+static int taskEnd(void)
+{
+    return 0;
+}
+TASK_EXPORT(taskEnd, "8");
 
 void componentsAutoinit(void)
 {
@@ -30,6 +41,18 @@ void componentsAutoinit(void)
     for (desc = &__initDesc_t_initStart; desc < &__initDesc_t_initEnd; desc ++)
     {
         KLOGD("initialize %s ", desc->fnName);
+        result = desc->fn();
+        KLOGD("return value :%d done", result);
+    }
+}
+
+void componentsAutorun(void)
+{
+    int result;
+    const struct initDesc_t *desc;
+    for (desc = &__initDesc_t_taskStart; desc < &__initDesc_t_taskEnd; desc ++)
+    {
+        KLOGD("run task %s ", desc->fnName);
         result = desc->fn();
         KLOGD("return value :%d done", result);
     }
@@ -46,8 +69,7 @@ DTCM_MEM_ALIGN(M_ALIGN_SIZE) static uint8_t mainStack[MAIN_THREAD_STACK_SIZE];
 void mainThreadEntry(void *parameter)
 {
     extern int main(void);
-    mTaskManager::getInstance()->init();
-    mTaskManager::getInstance()->start();
+    componentsAutorun();
     main();
 }
 

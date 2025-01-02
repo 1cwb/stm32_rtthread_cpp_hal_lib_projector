@@ -68,8 +68,8 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 	for(uint8_t i=0;i<_cnt;i++)
 		sum += data_to_send[i];
 	data_to_send[_cnt++]=sum;
-    
-    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom"))->send(data_to_send,_cnt);
+
+    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM))->send(data_to_send,_cnt);
 }
 
 int main(void)
@@ -89,13 +89,7 @@ int main(void)
     mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
     mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
-    mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM);
-    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2);
-    mDev::mUsart* usartDev3 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART3);
-    mDev::mUsart* usartDev4 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART4);
-    mDev::mUsart* usartDev5 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5);
-    mDev::mUsart* usartDev6 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART6);
-    mDev::mUsart* usartDev8 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART8);
+
     uint8_t usbBuff[64];
     if(systickx)
     {
@@ -109,84 +103,6 @@ int main(void)
         });
         timer2->start(mDev::CHANNEL_1);
         //KLOGI("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
-    }
-    if(usbDev)
-    {
-        usbDev->registerInterruptCb([&](mDev::mDevice* dev, void* p){
-            mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
-            if(data)
-            {
-                memset(usbBuff, 0, 64);
-                memcpy(usbBuff, data->data, data->len);
-                mevent.send(0X20);
-            }
-        });
-    }
-    if(usartDev2)
-    {
-        usartDev2->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
-            {
-                pdata->data[pdata->len] = '\0';
-                printf("%s\r\n",pdata->data);
-            }
-        });
-    }
-    if(usartDev3)
-    {
-        usartDev3->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
-            {
-                pdata->data[pdata->len] = '\0';
-                printf("%s\r\n",pdata->data);
-            }
-        });
-    }
-    if(usartDev4)
-    {
-        usartDev4->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
-            {
-                pdata->data[pdata->len] = '\0';
-                printf("%s\r\n",pdata->data);
-            }
-        });
-    }
-    if(usartDev5)
-    {
-        usartDev5->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
-            {
-                pdata->data[pdata->len] = '\0';
-                printf("%s\r\n",pdata->data);
-            }
-        });
-    }
-    if(usartDev6)
-    {
-        usartDev6->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
-            {
-                pdata->data[pdata->len] = '\0';
-                printf("%s\r\n",pdata->data);
-            }
-        });
-    }
-    if(usartDev8)
-    {
-        usartDev8->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
-            {
-                pdata->data[pdata->len] = '\0';
-                printf("%s\r\n",pdata->data);
-            }
-        });
     }
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
     if(timer1)

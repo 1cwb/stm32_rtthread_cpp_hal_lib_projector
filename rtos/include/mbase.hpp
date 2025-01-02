@@ -69,4 +69,9 @@ struct initDesc_t
     M_USED const struct initDesc_t __initDesc_t_##fn SECTION(".initfunc." level) = \
     { __init_##fn##_name, fn};
 
+#define TASK_EXPORT(fn, level)                                                       \
+    const char __init_##fn##_name[] = #fn;                                            \
+    M_USED const struct initDesc_t __initDesc_t_##fn SECTION(".taskfunc." level) = \
+    { __init_##fn##_name, fn};
+
 #endif

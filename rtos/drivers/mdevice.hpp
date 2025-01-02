@@ -34,7 +34,7 @@ public:
     void runInterruptCb(void* p){if(_cb)_cb(this,p);}
     void runInitCallback(bool binit){if(_initcb)_initcb(binit);}
 protected:
-    std::string _devname;
+    std::basic_string<char, std::char_traits<char>, mMemAllocator<char>>  _devname;
     initCallbackExt _initcb;
 private:
     interruptCallback _cb;

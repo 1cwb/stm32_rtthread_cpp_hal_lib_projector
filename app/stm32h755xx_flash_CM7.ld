@@ -92,9 +92,9 @@ SECTIONS
 
     /* section information for task. */
     . = ALIGN(4);
-    _task_start = .;
-    KEEP(*(TaskTab))
-    _task_end = .;
+    taskStart = .;
+    KEEP(*(SORT(.taskfunc*)))
+    taskEnd = .;
     . = ALIGN(4);
   } >FLASH
 

@@ -264,7 +264,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   static mDev::mUsbHidDevice* dev = nullptr;
   if(dev == nullptr)
   {
-    dev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("Vcom");
+    dev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("vcom");
   }
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
@@ -277,8 +277,6 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
     };
     dev->runInterruptCb(&rxdata);
   }
-  uint8_t buff[] = "caonima";
-  CDC_Transmit_FS(buff, sizeof(buff));
   return (USBD_OK);
   /* USER CODE END 6 */
 }

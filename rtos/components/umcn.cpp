@@ -56,6 +56,7 @@ mResult mcnHub::init()
 }
 mResult mcnHub::deInit()
 {
+    mcnNode* nextNode = nullptr;
     if(_btimerInit.load()&&_mcnHubList.empty())
     {
         _freqTimer.stop();
@@ -64,6 +65,15 @@ mResult mcnHub::deInit()
     }
     _event.detach();
     mSchedule::getInstance()->enterCritical();
+    nextNode = _linkHead;
+    while(_linkHead)
+    {
+        nextNode = _linkHead->getNext();
+        delete _linkHead;
+        _linkHead = nextNode;
+    }
+    _linkTail = _linkHead = nullptr;
+    _linkNum = 0;
     _mcnHubList.remove(this);
     delete [](uint8_t*)_pdata;
     _pdata = nullptr;
@@ -101,9 +111,11 @@ mcnNode* mcnHub::subscribe(const char* nodeName)
 }
 mResult mcnHub::unSubscribe(mcnNode* node)
 {
-    mcnNode* curNode = _linkHead;
+    mcnNode* curNode = nullptr;
     mcnNode* preNode = nullptr;
 
+    mSchedule::getInstance()->enterCritical();
+    curNode = _linkHead;
     while(curNode)
     {
         if(curNode == node)
@@ -115,9 +127,10 @@ mResult mcnHub::unSubscribe(mcnNode* node)
     }
     if(curNode == nullptr)
     {
+        mSchedule::getInstance()->exitCritical();
         return M_RESULT_EEMPTY;
     }
-    mSchedule::getInstance()->enterCritical();
+
     if(_linkNum == 1)
     {
         _linkHead = _linkTail = nullptr;
@@ -132,7 +145,7 @@ mResult mcnHub::unSubscribe(mcnNode* node)
         {
             if(preNode)
             {
-                    preNode->setNext(nullptr);
+                preNode->setNext(nullptr);
             }
             _linkTail = preNode;
         }
@@ -152,6 +165,7 @@ mResult mcnHub::unSubscribe(const char* nodeName)
 }
 mcnNode* mcnHub::getNode(const char* nodeName)
 {
+    mSchedule::getInstance()->enterCritical();
     mcnNode* node = _linkHead;
     while(node != nullptr)
     {
@@ -161,10 +175,12 @@ mcnNode* mcnHub::getNode(const char* nodeName)
         }
         node = node->getNext();
     }
+    mSchedule::getInstance()->exitCritical();
     return node;
 }
 mcnHub* mcnHub::getObject(const char* objname)
 {
+    mSchedule::getInstance()->enterCritical();
     for(auto& it : _mcnHubList)
     {
         if(strcmp(it->getObjName(), objname))
@@ -172,6 +188,7 @@ mcnHub* mcnHub::getObject(const char* objname)
             return it;
         }
     }
+    mSchedule::getInstance()->exitCritical();
     return nullptr;
 }
 mResult mcnHub::publish(const void* data, bool bsync)
