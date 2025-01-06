@@ -182,6 +182,7 @@ void usartRecvEnter(void* p)
             printf("%s recv: %s\r\n",usart8Node->getName() ,buff);
         }
         mthread::threadDelay(10);
+       // ((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5))->sendData((const uint8_t*)"helloworld\r\n", 13);
     }
 }
 TASK_EXPORT(hubUsartInit, "0.1");

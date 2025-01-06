@@ -88,6 +88,7 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     usart* usartx = containerof(huart, usart, _uartHandle);
     if(huart == usartx->usartHandle())
     {
+      printf("%s() %s recv data\r\n",__FUNCTION__,usartx->getDeviceName());
         mDev::mUsart::usartData rxdata = {
           .data = usartx->getRxBuff(),
           .len = usart::RX_BUFF_LEN,
@@ -111,7 +112,15 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
 }
 extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
-  
+  printf("error happend\r\n");
+  usart* usartx = containerof(huart, usart, _uartHandle);
+  __HAL_UNLOCK(huart);
+  if(huart == usartx->usartHandle())
+  {
+    usartx->setRecvMode(usartx->getRecvMode());
+    usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
+  }
+
 }
 #if 0
 #define TXBUFF_SZIE 128

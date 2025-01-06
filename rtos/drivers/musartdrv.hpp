@@ -48,6 +48,7 @@ public:
     }
     void setTransferMode(transferMode mode) {_transferMode = mode;}
     void setRecvMode(recvMode mode) {_recvMode = mode;}
+    recvMode getRecvMode() const {return _recvMode;}
     virtual void* getObj() {return nullptr;}
     virtual void syncDataByAddr(uint32_t *addr, int32_t dsize){}
 public:
