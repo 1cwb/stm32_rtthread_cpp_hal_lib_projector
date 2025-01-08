@@ -225,7 +225,7 @@ void SystemInit (void)
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = D1_AXISRAM_BASE  | VECT_TAB_OFFSET;       /* Vector Table Relocation in Internal SRAM */
 #else
-  SCB->VTOR = APP_VTABLE_ADDR | VECT_TAB_OFFSET; /* Vector Table Relocation to APPLICATION_ADDRESS in preprocessor defines */
+  //SCB->VTOR = APPLICATION_ADDRESS | VECT_TAB_OFFSET; /* Vector Table Relocation to APPLICATION_ADDRESS in preprocessor defines */
 #endif  
 
 

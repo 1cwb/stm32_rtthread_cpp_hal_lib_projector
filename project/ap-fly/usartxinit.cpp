@@ -3,7 +3,9 @@
 #include "gpio.hpp"
 #include "stdio.h"
 #include "project.hpp"
-/*uart2*/
+#include "usart.h"
+/*uart*/
+static usart* uart1 = nullptr;
 static usart* uart2 = nullptr;
 static usart* uart3 = nullptr;
 static usart* uart4 = nullptr;
@@ -32,6 +34,13 @@ extern "C" void DMA1_Stream1_IRQHandler(void)
   }
 }
 /*****************************************INTERRUPT BEGIN*******************/
+extern "C" void USART1_IRQHandler(void)
+{
+  if(uart1)
+  {
+        HAL_UART_IRQHandler(uart1->usartHandle());
+  }
+}
 extern "C" void USART2_IRQHandler(void)
 {
   if(uart2)
@@ -112,15 +121,14 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
 }
 extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 {
-  printf("error happend\r\n");
   usart* usartx = containerof(huart, usart, _uartHandle);
   __HAL_UNLOCK(huart);
   if(huart == usartx->usartHandle())
   {
+    printf("error happend %s ErrorCode = %d\r\n",usartx->getDeviceName(),huart->ErrorCode);
     usartx->setRecvMode(usartx->getRecvMode());
     usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
   }
-
 }
 #if 0
 #define TXBUFF_SZIE 128
@@ -151,12 +159,22 @@ int initUsart()
     UART_HandleTypeDef huartX;
     DMA_HandleTypeDef hdma_usartx_tx;
     DMA_HandleTypeDef hdma_usartx_rx;
+    uart1 = new usart(DEV_USART1);
     uart2 = new usart(DEV_USART2);
     uart3 = new usart(DEV_USART3);
     uart4 = new usart(DEV_USART4);
     uart5 = new usart(DEV_USART5);
     uart6 = new usart(DEV_USART6);
     uart8 = new usart(DEV_USART8);
+
+    uart1->duplicateHal([](bool benable){
+        HAL_NVIC_EnableIRQ(USART1_IRQn);
+        HAL_NVIC_SetPriority(USART1_IRQn,3,3);
+    },&UART1_Handler);
+
+    uart1->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
+    uart1->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
+    uart1->recvData(uart1->getRxBuff(),usart::RX_BUFF_LEN);
 
     huartX.Instance = USART2;
     huartX.Init.BaudRate = 115200;
@@ -219,9 +237,9 @@ int initUsart()
         /* Peripheral clock enable */
         __HAL_RCC_USART2_CLK_ENABLE();
         gpiox usart2txpin("usart2tx");
-        usart2txpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART2);
+        usart2txpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_5, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART2);
         gpiox usart2rxpin("usart2rx");
-        usart2rxpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART2);
+        usart2rxpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_6, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART2);
         uart2->txDmaInit();
         uart2->rxDmaInit();
         HAL_NVIC_SetPriority(USART2_IRQn, 3, 0);
@@ -236,9 +254,9 @@ int initUsart()
         /* Peripheral clock enable */
         __HAL_RCC_USART3_CLK_ENABLE();
         gpiox usart3txpin("usart3tx");
-        usart3txpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART3);
+        usart3txpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART3);
         gpiox usart3rxpin("usart3rx");
-        usart3rxpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART3);
+        usart3rxpin.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();},GPIOD, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART3);
         //uart3->txDmaInit();
         //uart3->rxDmaInit();
         HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
@@ -253,9 +271,9 @@ int initUsart()
         /* Peripheral clock enable */
         __HAL_RCC_UART4_CLK_ENABLE();
         gpiox usart4txpin("usart4tx");
-        usart4txpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART4);
+        usart4txpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART4);
         gpiox usart4rxpin("usart4rx");
-        usart4rxpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART4);
+        usart4rxpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART4);
         //uart4->txDmaInit();
         //uart4->rxDmaInit();
         HAL_NVIC_SetPriority(UART4_IRQn, 5, 0);
@@ -270,9 +288,9 @@ int initUsart()
         /* Peripheral clock enable */
         __HAL_RCC_UART5_CLK_ENABLE();
         gpiox usart5txpin("usart5tx");
-        usart5txpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_12, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF14_UART5);
+        usart5txpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_12, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF14_UART5);
         gpiox usart5rxpin("usart5rx");
-        usart5rxpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_13, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF14_UART5);
+        usart5rxpin.init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_13, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF14_UART5);
         //uart5->txDmaInit();
         //uart5->rxDmaInit();
         HAL_NVIC_SetPriority(UART5_IRQn, 5, 0);
@@ -287,9 +305,9 @@ int initUsart()
         /* Peripheral clock enable */
         __HAL_RCC_USART6_CLK_ENABLE();
         gpiox usart6txpin("usart6tx");
-        usart6txpin.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();},GPIOC, GPIO_PIN_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART6);
+        usart6txpin.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();},GPIOC, GPIO_PIN_6, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART6);
         gpiox usart6rxpin("usart6rx");
-        usart6rxpin.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();},GPIOC, GPIO_PIN_7, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART6);
+        usart6rxpin.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();},GPIOC, GPIO_PIN_7, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF7_USART6);
         //uart6->txDmaInit();
         //uart6->rxDmaInit();
         HAL_NVIC_SetPriority(USART6_IRQn, 5, 0);
@@ -304,9 +322,9 @@ int initUsart()
         /* Peripheral clock enable */
         __HAL_RCC_UART8_CLK_ENABLE();
         gpiox usart8txpin("usart8tx");
-        usart8txpin.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_0, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART8);
+        usart8txpin.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_0, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART8);
         gpiox usart8rxpin("usart8rx");
-        usart8rxpin.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_1, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART8);
+        usart8rxpin.init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_1, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_MEDIUM, GPIO_AF8_UART8);
         //uart8->txDmaInit();
         //uart8->rxDmaInit();
         HAL_NVIC_SetPriority(UART8_IRQn, 5, 0);

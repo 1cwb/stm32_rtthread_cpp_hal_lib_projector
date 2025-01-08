@@ -45,7 +45,7 @@ MEMORY
   RAM_D1    (xrw)    : ORIGIN = 0x24000000,   LENGTH = 512K
   RAM_D2    (xrw)    : ORIGIN = 0x30000000,   LENGTH = 288K
   RAM_D3    (xrw)    : ORIGIN = 0x38000000,   LENGTH = 64K
-  FLASH    (rx)    : ORIGIN = _app_flash_origin,   LENGTH = _app_flash_len
+  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 128K
 }
 
 /* Sections */
@@ -82,19 +82,6 @@ SECTIONS
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    . = ALIGN(4);
-  
-       /* section information for initial. */
-    initStart = .;
-    KEEP(*(SORT(.initfunc*)))
-    initEnd = .;
-    . = ALIGN(4);
-
-    /* section information for task. */
-    . = ALIGN(4);
-    taskStart = .;
-    KEEP(*(SORT(.taskfunc*)))
-    taskEnd = .;
     . = ALIGN(4);
   } >FLASH
 

@@ -6,17 +6,43 @@ export SRC_CXX_FILES :=
 export SRC_HPP_FILES :=
 export SRC_INCDIR :=
 export LINK_FILES :=
-
-
+########################################MEM_MAP################################################
+APP_FLASH_ORIGIN := 0x8032000
+APP_FLASH_LEN := 1848K
+DEFINE += -DAPP_VTABLE_ADDR=$(APP_FLASH_ORIGIN)
 ######################################SUB_MK###################################################
-SUBDIRS := $(shell find $(CURRENT_DIR) -maxdepth 4 -type d)
+# 定义要跳过的文件夹，用空格分隔
+ifdef BOOT
+BUILD_DIR := $(CURDIR)/bootloader $(CURDIR)/core $(CURDIR)/stm32h7hallib
+else
+BUILD_DIR := $(CURDIR)/app $(CURDIR)/core $(CURDIR)/stm32h7hallib $(CURDIR)/device $(CURDIR)/project $(CURDIR)/rtos $(CURDIR)/system
+endif
+
+#$(info "$(BUILD_DIR)")
+SUBDIRS := $(shell find $(BUILD_DIR) -maxdepth 4 -type d)
 SUBMK += $(foreach dir, $(SUBDIRS), $(wildcard $(dir)/*.mk))
 #$(info "$(SUBMK)")
 include $(SUBMK)
-
+#$(shell sleep 5)
 ################################################################################################
-TARGET           	?= STM32H7CPP
-OUTPUTDIR := $(CURDIR)/output
+OUTPUT := $(CURDIR)/output
+ifdef BOOT
+TARGET           	?= STM32H7_BOOT
+OUTPUTDIR += $(OUTPUT)/bootloader
+else
+TARGET           	?= STM32H7_APP
+OUTPUTDIR += $(OUTPUT)/app
+endif
+
+define ensure_dir
+    @if [ ! -d "$(1)" ]; then \
+        echo "创建目录: $(1)"; \
+        mkdir -p $(1); \
+    else \
+        echo "目录已存在: $(1)"; \
+    fi
+endef
+
 ###################################################COMPILE######################################
 CROSS_COMPILE    	?= arm-none-eabi-
 
@@ -49,11 +75,12 @@ ASM_COMPILE_FLAGS 	:= -x assembler-with-cpp -Wa,-mimplicit-it=thumb
 #################################################################################################
 EXTRA_LINK_FLAGS	:= -g -gdwarf-2 -lc -lm -lstdc++ -lnosys -T$(LINK_FILES) \
 						-Wl,-u_printf_float,-Map=$(OUTPUTDIR)/$(TARGET).map,--cref,--no-warn-mismatch \
-						-specs=nano.specs -specs=nosys.specs
-
+						-specs=nano.specs -specs=nosys.specs \
+						-Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
+						-Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
 #################################################################################################
 ifdef HSE8M
-DEFINE    :=-DSTM32H750xx \
+DEFINE    +=-DSTM32H750xx \
 			-DHSE_VALUE=8000000 \
 			-DCSI_VALUE=4000000 \
 			-DHSI_VALUE=64000000 \
@@ -63,7 +90,7 @@ DEFINE    :=-DSTM32H750xx \
 			-DPLLQ_VALUE=4 \
 			-DPLLR_VALUE=2
 else ifdef HSE25M
-DEFINE    :=-DSTM32H750xx \
+DEFINE    +=-DSTM32H750xx \
 			-DHSE_VALUE=25000000 \
 			-DCSI_VALUE=4000000 \
 			-DHSI_VALUE=64000000 \
@@ -73,7 +100,7 @@ DEFINE    :=-DSTM32H750xx \
 			-DPLLQ_VALUE=4 \
 			-DPLLR_VALUE=2
 else
-DEFINE    :=-DSTM32H750xx \
+DEFINE    +=-DSTM32H750xx \
 			-DHSE_VALUE=16000000 \
 			-DCSI_VALUE=4000000 \
 			-DHSI_VALUE=64000000 \
@@ -124,10 +151,11 @@ $(OUTPUTDIR)/$(TARGET).elf:$(OBJS)
 	$(OBJCOPY) -O binary -S $(OUTPUTDIR)/$(TARGET).elf $(OUTPUTDIR)/$(TARGET).bin
 	$(OBJDUMP) -D -m arm $(OUTPUTDIR)/$(TARGET).elf > $(OUTPUTDIR)/$(TARGET).dis
 	$(SIZEINFO) $@
-	cp output/$(TARGET).bin /mnt/e/STM32/
+	cp $(OUTPUTDIR)/$(TARGET).bin /mnt/e/STM32/
 	sync
 
 $(SOBJS) : $(OUTPUTDIR)/%.o : %.s
+	$(call ensure_dir,$(OUTPUTDIR))
 	$(CC) -c $(ASMFLAGS) -o $@ $<
 
 $(COBJS) : $(OUTPUTDIR)/%.o : %.c
@@ -140,4 +168,4 @@ $(HPPOBJS) : $(OUTPUTDIR)/%.o : %.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCLUDE) -o $@ $<
 
 clean:
-	rm -rf $(OUTPUTDIR)/*
+	rm -rf $(OUTPUT)/*

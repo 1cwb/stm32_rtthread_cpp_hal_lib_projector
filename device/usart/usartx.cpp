@@ -1,6 +1,29 @@
 #include "usartx.hpp"
 #include "mgpiodrv.hpp"
 #include "mplatform.hpp"
+mResult usart::duplicateHal(const mDev::initCallbackExt& cb, UART_HandleTypeDef* uartHandle, DMA_HandleTypeDef* hdmaUsartxTx, DMA_HandleTypeDef* hdmaUsartxRx)
+{
+    if(!uartHandle)
+    {
+        return M_RESULT_EINVAL;
+    }
+    memcpy(&_uartHandle, uartHandle, sizeof(UART_HandleTypeDef));
+    if(hdmaUsartxTx)
+    {
+        memcpy(&_hdmaUsartxTx, hdmaUsartxTx, sizeof(DMA_HandleTypeDef));
+        _buseTxDma = true;
+    }
+    if(hdmaUsartxRx)
+    {
+        memcpy(&_hdmaUsartxRx, hdmaUsartxRx, sizeof(DMA_HandleTypeDef));
+        _buseRxDma = true;
+    }
+    if(cb)
+    {
+        cb(true);
+    }
+    return M_RESULT_EOK;
+}
 mResult usart::init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHandle, DMA_HandleTypeDef* hdmaUsartxTx, DMA_HandleTypeDef* hdmaUsartxRx)
 {
     _initcb = cb;
@@ -118,7 +141,7 @@ mResult usart::send(const uint8_t* data, uint32_t len)
         {
             return M_RESULT_EBUSY;
         }
-        SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
+        SCB_CleanInvalidateDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
         if(HAL_UART_Transmit_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             _transferComplete = true;
@@ -145,7 +168,7 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     else if(_recvMode == mDev::recvMode::RECV_MODE_DMA)
     {
-        SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
+        SCB_CleanInvalidateDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
         if(HAL_UART_Receive_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             return M_RESULT_ERROR;
@@ -161,7 +184,7 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     else if (_recvMode == mDev::recvMode::RECV_MODE_DMA_RECV_IDLE)
     {
-        SCB_CleanDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
+        SCB_CleanInvalidateDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), M_ALIGN(len,4)/4);
         if(HAL_UARTEx_ReceiveToIdle_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             return M_RESULT_ERROR;
@@ -172,7 +195,7 @@ mResult usart::recv(uint8_t* data, uint32_t len)
 }
 void usart::syncDataByAddr(uint32_t *addr, int32_t dsize)
 {
-    SCB_CleanDCache_by_Addr(addr, dsize);
+    SCB_CleanInvalidateDCache_by_Addr(addr, dsize);
 }
 extern "C" void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {

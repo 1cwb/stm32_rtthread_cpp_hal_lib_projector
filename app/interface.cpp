@@ -7,14 +7,16 @@
 #include "mthread.hpp"
 
 mcnHub hubUsb("hubusb", 64);
-mcnHub hubUsart2("hubUsart2", mDev::mUsart::RX_BUFF_LEN);
-mcnHub hubUsart3("hubUsart3", mDev::mUsart::RX_BUFF_LEN);
-mcnHub hubUsart4("hubUsart4", mDev::mUsart::RX_BUFF_LEN);
-mcnHub hubUsart5("hubUsart5", mDev::mUsart::RX_BUFF_LEN);
-mcnHub hubUsart6("hubUsart6", mDev::mUsart::RX_BUFF_LEN);
-mcnHub hubUsart8("hubUsart8", mDev::mUsart::RX_BUFF_LEN);
+mcnHub hubUsart1("hubUsart1", sizeof(mDev::mUsart::usartData));
+mcnHub hubUsart2("hubUsart2", sizeof(mDev::mUsart::usartData));
+mcnHub hubUsart3("hubUsart3", sizeof(mDev::mUsart::usartData));
+mcnHub hubUsart4("hubUsart4", sizeof(mDev::mUsart::usartData));
+mcnHub hubUsart5("hubUsart5", sizeof(mDev::mUsart::usartData));
+mcnHub hubUsart6("hubUsart6", sizeof(mDev::mUsart::usartData));
+mcnHub hubUsart8("hubUsart8", sizeof(mDev::mUsart::usartData));
 
 mcnNode* usbNode = nullptr;
+mcnNode* usart1Node = nullptr;
 mcnNode* usart2Node = nullptr;
 mcnNode* usart3Node = nullptr;
 mcnNode* usart4Node = nullptr;
@@ -30,6 +32,9 @@ int hubUsartInit(void)
 {
     hubUsb.init();
     usbNode = hubUsb.subscribe("vcom");
+
+    hubUsart1.init();
+    usart1Node = hubUsart1.subscribe("u1recv");
 
     hubUsart2.init();
     usart2Node = hubUsart2.subscribe("u2recv");
@@ -50,6 +55,7 @@ int hubUsartInit(void)
     usart8Node = hubUsart8.subscribe("u8recv");
 
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM);
+    mDev::mUsart* usartDev1 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART1);
     mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2);
     mDev::mUsart* usartDev3 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART3);
     mDev::mUsart* usartDev4 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART4);
@@ -60,70 +66,80 @@ int hubUsartInit(void)
     if(usbDev)
     {
         usbDev->registerInterruptCb([&](mDev::mDevice* dev, void* p){
-            mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+            //mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+            if(p)
+            {
+                hubUsb.publish(p, false);
+            }
+        });
+    }
+    if(usartDev1)
+    {
+        usartDev1->registerInterruptCb([](mDev::mDevice* dev, void* data){
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(data)
             {
-                hubUsb.publish(data->data, false);
+                hubUsart1.publish(data, false);
             }
         });
     }
     if(usartDev2)
     {
         usartDev2->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(data)
             {
-                hubUsart2.publish(pdata->data, false);
+                hubUsart2.publish(data, false);
             }
         });
     }
     if(usartDev3)
     {
         usartDev3->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(data)
             {
-                hubUsart3.publish(pdata->data, false);
+                hubUsart3.publish(data, false);
             }
         });
     }
     if(usartDev4)
     {
         usartDev4->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(data)
             {
-                hubUsart4.publish(pdata->data, false);
+                hubUsart4.publish(data, false);
             }
         });
     }
     if(usartDev5)
     {
         usartDev5->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(data)
             {
-                hubUsart5.publish(pdata->data, false);
+                hubUsart5.publish(data, false);
             }
         });
     }
     if(usartDev6)
     {
         usartDev6->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(data)
             {
-                hubUsart6.publish(pdata->data, false);
+                hubUsart6.publish(data, false);
             }
         });
     }
     if(usartDev8)
     {
         usartDev8->registerInterruptCb([](mDev::mDevice* dev, void* data){
-            mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
-            if(pdata)
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(data)
             {
-                hubUsart8.publish(pdata->data, false);
+                hubUsart8.publish(data, false);
             }
         });
     }
@@ -136,49 +152,64 @@ int hubUsartInit(void)
 }
 void usartRecvEnter(void* p)
 {
+    mDev::mUsart::usartData data;
     char buff[64] = {0};
     while(true)
     {
         if(hubUsb.poll(usbNode))
         {
-            memset(buff, 0, sizeof(buff));
-            hubUsb.copy(usbNode, buff);
+            //memset(buff, 0, sizeof(buff));
+            hubUsb.copy(usbNode, &data);
+            memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usbNode->getName() ,buff);
+        }
+        if(hubUsart1.poll(usart1Node))
+        {
+            //memset(buff, 0, sizeof(buff));
+            hubUsart1.copy(usart1Node, &data);
+            memcpy(buff, data.data, data.len);
+            printf("%s recv: %s\r\n",usart1Node->getName() ,buff);
         }
         if(hubUsart2.poll(usart2Node))
         {
-            memset(buff, 0, sizeof(buff));
-            hubUsart2.copy(usart2Node, buff);
+            //memset(buff, 0, sizeof(buff));
+            hubUsart2.copy(usart2Node, &data);
+            memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart2Node->getName() ,buff);
         }
         if(hubUsart3.poll(usart3Node))
         {
-            memset(buff, 0, sizeof(buff));
-            hubUsart3.copy(usart3Node, buff);
+            //memset(buff, 0, sizeof(buff));
+            hubUsart3.copy(usart3Node, &data);
+            memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart3Node->getName() ,buff);
         }
         if(hubUsart4.poll(usart4Node))
         {
-            memset(buff, 0, sizeof(buff));
-            hubUsart4.copy(usart4Node, buff);
+            //memset(buff, 0, sizeof(buff));
+            hubUsart4.copy(usart4Node, &data);
+            memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart4Node->getName() ,buff);
         }
         if(hubUsart5.poll(usart5Node))
         {
-            memset(buff, 0, sizeof(buff));
-            hubUsart5.copy(usart5Node, buff);
+            //memset(buff, 0, sizeof(buff));
+            hubUsart5.copy(usart5Node, &data);
+            memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart5Node->getName() ,buff);
         }
         if(hubUsart6.poll(usart6Node))
         {
-            memset(buff, 0, sizeof(buff));
-            hubUsart6.copy(usart6Node, buff);
+            //memset(buff, 0, sizeof(buff));
+            hubUsart6.copy(usart6Node, &data);
+            memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart6Node->getName() ,buff);
         }
         if(hubUsart8.poll(usart8Node))
         {
-            memset(buff, 0, sizeof(buff));
-            hubUsart8.copy(usart8Node, buff);
+            //memset(buff, 0, sizeof(buff));
+            hubUsart8.copy(usart8Node, &data);
+            memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart8Node->getName() ,buff);
         }
         mthread::threadDelay(10);

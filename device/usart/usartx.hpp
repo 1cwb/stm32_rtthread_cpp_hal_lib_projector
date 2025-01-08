@@ -7,7 +7,8 @@ class usart : public mDev::mUsart
 public:
     usart(const char* name):mDev::mUsart(name),_buseTxDma(false),_buseRxDma(false), _transferComplete(true) {}
     virtual ~usart() {}
-    mResult init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHandle,DMA_HandleTypeDef* hdmaUsartxTx, DMA_HandleTypeDef* hdmaUsartxRx);
+    mResult duplicateHal(const mDev::initCallbackExt& cb, UART_HandleTypeDef* uartHandle, DMA_HandleTypeDef* hdmaUsartxTx = nullptr, DMA_HandleTypeDef* hdmaUsartxRx = nullptr);
+    mResult init(const mDev::initCallbackExt& cb ,UART_HandleTypeDef* uartHandle,DMA_HandleTypeDef* hdmaUsartxTx = nullptr, DMA_HandleTypeDef* hdmaUsartxRx = nullptr);
     mResult deInit();
     mResult txDmaInit();
     mResult txDmaDeInit();
