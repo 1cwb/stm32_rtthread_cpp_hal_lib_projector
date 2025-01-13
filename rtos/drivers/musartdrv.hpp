@@ -50,7 +50,6 @@ public:
     void setRecvMode(recvMode mode) {_recvMode = mode;}
     recvMode getRecvMode() const {return _recvMode;}
     virtual void* getObj() {return nullptr;}
-    virtual void syncDataByAddr(uint32_t *addr, int32_t dsize){}
 public:
     constexpr static int RX_BUFF_LEN = 64;
 protected:

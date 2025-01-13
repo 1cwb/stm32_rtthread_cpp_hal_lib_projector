@@ -29,7 +29,6 @@ public:
 	    va_list args;
 	    va_start(args, format);
         _sem.semTake(WAITING_FOREVER);
-        syncDataByAddr((uint32_t*)_logBuff, LOG_BUFF_SIZE_UINT32);
 	    length = vsnprintf((char*)_logBuff, sizeof(_logBuff), (char*)format, args);
         if(send(_logBuff, length) != M_RESULT_EOK)
         {
@@ -49,7 +48,6 @@ public:
 	    va_list args;
 	    va_start(args, format);
         _sem.semTake(WAITING_FOREVER);
-        syncDataByAddr((uint32_t*)_logBuff, LOG_BUFF_SIZE_UINT32);
 	    length = vsnprintf((char*)_logBuff, sizeof(_logBuff), (char*)format, args);
         if(send(_logBuff, length) != M_RESULT_EOK)
         {
@@ -69,7 +67,6 @@ public:
 	    va_list args;
 	    va_start(args, format);
         _sem.semTake(WAITING_FOREVER);
-        syncDataByAddr((uint32_t*)_logBuff, LOG_BUFF_SIZE_UINT32);
 	    length = vsnprintf((char*)_logBuff, sizeof(_logBuff), (char*)format, args);
         if(send(_logBuff, length) != M_RESULT_EOK)
         {
@@ -89,7 +86,6 @@ public:
 	    va_list args;
 	    va_start(args, format);
         _sem.semTake(WAITING_FOREVER);
-        syncDataByAddr((uint32_t*)_logBuff, LOG_BUFF_SIZE_UINT32);
 	    length = vsnprintf((char*)_logBuff, sizeof(_logBuff), (char*)format, args);
         if(send(_logBuff, length) != M_RESULT_EOK)
         {
@@ -109,7 +105,6 @@ public:
 	    va_list args;
 	    va_start(args, format);
         _sem.semTake(WAITING_FOREVER);
-        syncDataByAddr((uint32_t*)_logBuff, LOG_BUFF_SIZE_UINT32);
 	    length = vsnprintf((char*)_logBuff, sizeof(_logBuff), (char*)format, args);
         if(send(_logBuff, length) != M_RESULT_EOK)
         {
@@ -122,7 +117,6 @@ public:
     void setLevel(logLevel level) {this->_level = level;}
 protected:
     virtual mResult send(const uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
-    virtual void syncDataByAddr(uint32_t* addr, uint32_t len) {}
 private:
     static constexpr uint16_t LOG_BUFF_SIZE = 128;
     static constexpr uint16_t LOG_BUFF_SIZE_UINT32 = 128/4;

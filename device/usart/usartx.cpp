@@ -142,7 +142,7 @@ mResult usart::send(const uint8_t* data, uint32_t len)
         {
             return M_RESULT_EBUSY;
         }
-        SCB_InvalidateDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), len);
+        SCB_CleanInvalidateDCache();
         if(HAL_UART_Transmit_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             _transferComplete = true;
@@ -171,7 +171,7 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     else if(_recvMode == mDev::recvMode::RECV_MODE_DMA)
     {
-        SCB_InvalidateDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), len);
+        SCB_CleanInvalidateDCache();
         if(HAL_UART_Receive_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             ALOGE("%s()%d error\n",__FUNCTION__,__LINE__);
@@ -189,7 +189,7 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     else if (_recvMode == mDev::recvMode::RECV_MODE_DMA_RECV_IDLE)
     {
-        SCB_InvalidateDCache_by_Addr(const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(data)), len);
+        SCB_CleanInvalidateDCache();
         if(HAL_UARTEx_ReceiveToIdle_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             ALOGE("%s()%d error\n",__FUNCTION__,__LINE__);
@@ -198,10 +198,6 @@ mResult usart::recv(uint8_t* data, uint32_t len)
         __HAL_DMA_DISABLE_IT(&_hdmaUsartxRx, DMA_IT_HT);
     }
     return M_RESULT_EOK;
-}
-void usart::syncDataByAddr(uint32_t *addr, int32_t dsize)
-{
-    SCB_InvalidateDCache_by_Addr(addr, dsize);
 }
 extern "C" void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 {
