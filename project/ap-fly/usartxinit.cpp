@@ -177,7 +177,7 @@ int initUsart()
     uart1->recvData(uart1->getRxBuff(),usart::RX_BUFF_LEN);
 
     huartX.Instance = USART2;
-    huartX.Init.BaudRate = 115200;
+    huartX.Init.BaudRate = 2000000;
     huartX.Init.WordLength = UART_WORDLENGTH_8B;
     huartX.Init.StopBits = UART_STOPBITS_1;
     huartX.Init.Parity = UART_PARITY_NONE;

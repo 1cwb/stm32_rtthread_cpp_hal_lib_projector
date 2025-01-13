@@ -10,8 +10,9 @@ export LINK_FILES :=
 APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
 DEFINE += -DAPP_VTABLE_ADDR=$(APP_FLASH_ORIGIN)
+DEFINE += -DDEBUG_UART_BOUNDRATE=4000000
 ######################################SUB_MK###################################################
-# 定义要跳过的文件夹，用空格分隔
+# 要编译的文件夹，用空格分隔
 ifdef BOOT
 BUILD_DIR := $(CURDIR)/bootloader $(CURDIR)/core $(CURDIR)/stm32h7hallib
 else
@@ -21,7 +22,6 @@ endif
 #$(info "$(BUILD_DIR)")
 SUBDIRS := $(shell find $(BUILD_DIR) -maxdepth 4 -type d)
 SUBMK += $(foreach dir, $(SUBDIRS), $(wildcard $(dir)/*.mk))
-#$(info "$(SUBMK)")
 include $(SUBMK)
 #$(shell sleep 5)
 ################################################################################################

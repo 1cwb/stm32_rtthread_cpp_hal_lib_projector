@@ -63,7 +63,7 @@ int main(void)
     /* System Clock Update */
     SystemCoreClockUpdate();
     delay_init(HAL_RCC_GetSysClockFreq()/1000000);//1US跑的tick数
-    uart_init(115200);
+    uart_init(DEBUG_UART_BOUNDRATE);
     //led_init();
     printf("Uboot runing...\r\n");
     printf("sys clock is %lu\r\n",HAL_RCC_GetSysClockFreq());

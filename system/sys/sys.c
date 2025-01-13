@@ -141,7 +141,7 @@ void hwInit()
     /* System Clock Update */
     SystemCoreClockUpdate();
     delay_init(HAL_RCC_GetSysClockFreq()/1000000);//1US跑的tick数
-    uart_init(115200);
+    uart_init(DEBUG_UART_BOUNDRATE);
     printf("sys clock is %lu\r\n",HAL_RCC_GetSysClockFreq());
     printf("HCLK clock is %lu\r\n",HAL_RCC_GetHCLKFreq());
 }

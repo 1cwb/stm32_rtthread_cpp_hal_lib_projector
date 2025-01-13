@@ -5,6 +5,7 @@
 #include <string>
 #include "project.hpp"
 #include "mthread.hpp"
+#include "sys.h"
 
 mcnHub hubUsb("hubusb", 64);
 mcnHub hubUsart1("hubUsart1", sizeof(mDev::mUsart::usartData));
@@ -169,6 +170,10 @@ void usartRecvEnter(void* p)
             hubUsart1.copy(usart1Node, &data);
             memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart1Node->getName() ,buff);
+            //if(strncmp("reboot", (char*)data.data,strlen("reboot")) == 0)
+            {
+                SoftReset();
+            }
         }
         if(hubUsart2.poll(usart2Node))
         {
@@ -212,7 +217,7 @@ void usartRecvEnter(void* p)
             memcpy(buff, data.data, data.len);
             printf("%s recv: %s\r\n",usart8Node->getName() ,buff);
         }
-        mthread::threadDelay(10);
+        mthread::threadDelay(5);
        // ((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5))->sendData((const uint8_t*)"helloworld\r\n", 13);
     }
 }
