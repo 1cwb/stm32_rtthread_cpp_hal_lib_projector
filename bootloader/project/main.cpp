@@ -10,7 +10,25 @@ static void JumpToApp(void)
 {
         uint32_t i=0;
         void (*SysMemBootJump)(void);        /* 声明一个函数指针 */
-        __IO uint32_t BootAddr = APP_VTABLE_ADDR; /* STM32H7的系统BootLoader地址 */
+        __IO uint32_t BootAddr = 0;
+        int sta = 0;
+
+        for(i = 0; i < 100; i++)
+        {
+            delay_ms(10);
+            if((sta = enterBootloader()) == 1)
+            {
+                break;
+            }
+        }
+        if(sta)
+        {
+            BootAddr = H7XX_BOOTLOADER_ADDR;/* STM32H7的系统BootLoader地址 */
+        }
+        else
+        {
+            BootAddr = APP_VTABLE_ADDR;
+        }
 
         /* 设置所有时钟到默认状态，使用HSI时钟 */
         uart_deinit();

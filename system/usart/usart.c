@@ -35,7 +35,7 @@ void uart_init(uint32_t bound)
 	UART1_Handler.Init.Mode=UART_MODE_TX_RX;	
 	
 	__HAL_RCC_GPIOA_CLK_ENABLE();		
-	__HAL_RCC_USART1_CLK_ENABLE();		
+	__HAL_RCC_USART1_CLK_ENABLE();
 
 	GPIO_Initure.Pin=GPIO_PIN_9;		
 	GPIO_Initure.Mode=GPIO_MODE_AF_PP;	

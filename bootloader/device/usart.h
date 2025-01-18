@@ -15,6 +15,7 @@ extern UART_HandleTypeDef UART1_Handler;
 extern uint8_t aRxBuffer[RXBUFFERSIZE];
 void uart_init(uint32_t bound);
 void uart_deinit();
+int enterBootloader(void);
 #ifdef __cplusplus
 }
 #endif

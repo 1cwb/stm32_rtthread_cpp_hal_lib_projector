@@ -9,6 +9,7 @@ export LINK_FILES :=
 ########################################MEM_MAP################################################
 APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
+DEFINE += -DH7XX_BOOTLOADER_ADDR=0x1FF09800
 DEFINE += -DAPP_VTABLE_ADDR=$(APP_FLASH_ORIGIN)
 DEFINE += -DDEBUG_UART_BOUNDRATE=4000000
 ######################################SUB_MK###################################################
