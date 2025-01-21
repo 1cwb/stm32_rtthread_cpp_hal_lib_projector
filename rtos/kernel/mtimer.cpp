@@ -69,7 +69,7 @@ mResult mTimer::timerCreate(const char *name,
  */
 mResult mTimer::timerDelete()
 {
-    register long level;
+    long level;
 
     /* timer check */
     MASSERT(mObject::getInstance()->objectGetType((mObject_t*)(&timer_)) == M_OBJECT_CLASS_TIMER);
@@ -131,7 +131,7 @@ void mTimer::init(  const char *name,
  */
 mResult mTimer::timerDetach()
 {
-    register long level;
+    long level;
 
     /* timer check */
     MASSERT(mObject::getInstance()->objectGetType((mObject_t*)(&timer_)) == M_OBJECT_CLASS_TIMER);
@@ -163,7 +163,7 @@ mResult mTimer::start()
 {
     unsigned int rowLvl;
     mList_t *timerList;
-    register long level;
+    long level;
     mList_t *rowHead[TIMER_SKIP_LIST_LEVEL];
     unsigned int tstNr;
     static unsigned int randomNr;
@@ -262,7 +262,7 @@ mResult mTimer::start()
  */
 mResult mTimer::stop()
 {
-    register long level;
+    long level;
 
     /* timer check */
     MASSERT(mObject::getInstance()->objectGetType((mObject_t*)(&timer_)) == M_OBJECT_CLASS_TIMER);
@@ -297,7 +297,7 @@ mResult mTimer::stop()
  */
 mResult mTimer::timerControl(mTimerCtrl cmd, void *arg)
 {
-    register long level;
+    long level;
 
     /* timer check */
     MASSERT(mObject::getInstance()->objectGetType((mObject_t*)(&timer_)) == M_OBJECT_CLASS_TIMER);
@@ -369,7 +369,7 @@ void mTimer::timerCheck(void)
 {
     struct mTimer_t *t;
     uint32_t currentTick;
-    register long level;
+    long level;
     mList_t list;
 
     //RT_DEBUG_LOG(RT_DEBUG_TIMER, ("timer check enter\n"));
@@ -454,7 +454,7 @@ void mTimer::timerInit(void (*timeout)(void *parameter), void *parameter, uint32
 uint32_t mTimer::timerListNextTimeout(mList_t timerList[])
 {
     struct mTimer_t *timer;
-    register long level;
+    long level;
     uint32_t timeoutTick = TICK_MAX;
 
     /* disable interrupt */

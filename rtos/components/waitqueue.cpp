@@ -66,7 +66,7 @@ mResult mWqueue::wait(int condition, int timeout)
 void mWqueue::wakeup(void* key)
 {
     long level;
-    register bool needSchedule = false;
+    bool needSchedule = false;
 
     mList_t* queueList = nullptr;
     mList_t* node = nullptr;

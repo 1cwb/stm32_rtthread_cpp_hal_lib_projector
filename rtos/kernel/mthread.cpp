@@ -6,7 +6,7 @@ mthread::mThreadHookCallbackFunc mthread::deInitHookCb_ = nullptr;
 
 void mthread::threadExti()
 {
-    register long level;
+    long level;
 
     /* get current thread */
     struct thread_t* & thread = mSchedule::getInstance()->getCurrentThread();
@@ -203,7 +203,7 @@ mResult mthread::startup()
  */
 mResult mthread::threadYield(void)
 {
-    register long level;
+    long level;
 
     /* set to current thread */
     struct thread_t*& thread = mSchedule::getInstance()->getCurrentThread();
@@ -244,7 +244,7 @@ mResult mthread::threadYield(void)
  */
 mResult mthread::threadSleep(uint32_t tick)
 {
-    register long temp;
+    long temp;
     /* set to current thread */
     struct thread_t*& thread = mSchedule::getInstance()->getCurrentThread();
 
@@ -295,7 +295,7 @@ mResult mthread::threadDelay(uint32_t tick)
  */
 mResult mthread::threadDelayUntil(uint32_t *tick, uint32_t incTick)
 {
-    register long level;
+    long level;
     struct thread_t *thread;
 
     MASSERT(tick != nullptr);
@@ -371,7 +371,7 @@ mResult mthread::threadMdelay(int32_t ms)
  */
 mResult mthread::threadControl(mthreadCtrlCmd cmd, void *arg)
 {
-    register long temp;
+    long temp;
 
     /* thread check */
     MASSERT(mObject::getInstance()->objectGetType((mObject_t*)(&thData_)) == M_OBJECT_CLASS_THREAD);
@@ -452,7 +452,7 @@ mResult mthread::threadControl(mthreadCtrlCmd cmd, void *arg)
  */
 mResult mthread::threadSuspend(thread_t* thread)
 {
-    register long temp;
+    long temp;
 
     /* thread check */
     MASSERT(thread != nullptr);
@@ -493,7 +493,7 @@ mResult mthread::threadSuspend(thread_t* thread)
  */
 mResult mthread::threadResume()
 {
-    register long temp;
+    long temp;
 
     /* thread check */
     MASSERT(mObject::getInstance()->objectGetType((mObject_t*)(&thData_)) == M_OBJECT_CLASS_THREAD);
@@ -748,7 +748,7 @@ mResult mthread::threadCreate(const char *name,
 /* must be invoke witch rt_hw_interrupt_disable */
 void mthread::threadCleanupExecute(thread_t* thread)
 {
-    register long level;
+    long level;
     level = HW::hwInterruptDisable();
 
     /* invoke thread cleanup */

@@ -50,7 +50,7 @@ void mSchedule::schedulerStackCheck(thread_t *thread)
  */
 void mSchedule::systemSchedulerInit(void)
 {
-    //register long offset;
+    //long offset;
 
     mIrq::getInstance()->interruptNestReset();
 
@@ -82,11 +82,11 @@ void mSchedule::systemSchedulerInit(void)
  */
 void mSchedule::systemSchedulerStart(void)
 {
-    register thread_t *toThread;
-    register unsigned long highestReadyPriority;
+    thread_t *toThread;
+    unsigned long highestReadyPriority;
 
 #if THREAD_PRIORITY_MAX > 32
-    register unsigned long number;
+    unsigned long number;
 
     number = mKservice::getInstance()->__rt_ffs(threadReadyPriorityGroup_) - 1;
     highestReadyPriority = (number << 3) + mKservice::getInstance()->__rt_ffs(threadReadyTable_[number]) - 1;
@@ -122,12 +122,12 @@ void mSchedule::schedule(void)
     /* check the scheduler is enabled or not */
     if (schedulerLockNest_ == 0)
     {
-        register unsigned long highestReadyPriority;
+        unsigned long highestReadyPriority;
 
 #if THREAD_PRIORITY_MAX <= 32
         highestReadyPriority = mKservice::getInstance()->__rt_ffs(threadReadyPriorityGroup_) - 1;
 #else
-        register unsigned long number;
+        unsigned long number;
 
         number = mKservice::getInstance()->__rt_ffs(threadReadyPriorityGroup_) - 1;
         highestReadyPriority = (number << 3) + mKservice::getInstance()->__rt_ffs(threadReadyTable_[number]) - 1;
@@ -196,7 +196,7 @@ void mSchedule::schedule(void)
 */
 void mSchedule::scheduleInsertThread(thread_t *thread)
 {
-    register long temp;
+    long temp;
 
     MASSERT(thread != nullptr);
 
@@ -240,7 +240,7 @@ void mSchedule::scheduleInsertThread(thread_t *thread)
 */
 void mSchedule::scheduleRemoveThread(thread_t *thread)
 {
-    register long temp;
+    long temp;
 
     MASSERT(thread != nullptr);
 
@@ -285,7 +285,7 @@ void mSchedule::scheduleRemoveThread(thread_t *thread)
  */
 void mSchedule::enterCritical(void)
 {
-    register long level;
+    long level;
 
     /* disable interrupt */
     level = HW::hwInterruptDisable();
@@ -305,7 +305,7 @@ void mSchedule::enterCritical(void)
  */
 void mSchedule::exitCritical(void)
 {
-    register long level;
+    long level;
 
     /* disable interrupt */
     level = HW::hwInterruptDisable();

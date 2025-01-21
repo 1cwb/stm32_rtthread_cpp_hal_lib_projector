@@ -11,7 +11,7 @@ APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
 DEFINE += -DH7XX_BOOTLOADER_ADDR=0x1FF09800
 DEFINE += -DAPP_VTABLE_ADDR=$(APP_FLASH_ORIGIN)
-DEFINE += -DDEBUG_UART_BOUNDRATE=4000000
+DEFINE += -DDEBUG_UART_BOUNDRATE=2000000
 ######################################SUB_MK###################################################
 # 要编译的文件夹，用空格分隔
 ifdef BOOT
@@ -69,8 +69,8 @@ MCU_FLAGS       	:= $(CPU) $(ARM_INSTRUCTION) $(FPU) $(FLOAT_ABT)
 ##################################################COMPILE_FLAGS#################################
 C_COMPILE_FLAGS 	:= -lc -lm -lnosys -std=c11 -Wall -fdata-sections -ffunction-sections -g0 -gdwarf-2 -Os
 
-CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys -fno-rtti -std=c++11 -fcheck-new -fno-exceptions -fno-builtin -Wall \
-						-fdata-sections -ffunction-sections -g0 -gdwarf-2 -Os -Wl,-gc-section
+CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys -fno-rtti -std=c++17 -fcheck-new -fno-exceptions -fno-builtin -Wall \
+						-fdata-sections -ffunction-sections -g0 -gdwarf-2 -Os -Wl,-gc-section -faligned-new
 
 ASM_COMPILE_FLAGS 	:= -x assembler-with-cpp -Wa,-mimplicit-it=thumb
 #################################################################################################

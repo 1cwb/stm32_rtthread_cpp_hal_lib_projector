@@ -49,7 +49,7 @@ public:
     virtual void getCardInfo(mDev::MSDMMC_CARD_INFO *CardInfo){}
     virtual bool isCardDetected(){return false;}
 
-    virtual MSDMMC_TRANSFER_MODE setTransferMode(MSDMMC_TRANSFER_MODE mode) {_transferMode = mode;}
+    virtual void setTransferMode(MSDMMC_TRANSFER_MODE mode) {_transferMode = mode;}
     virtual MSDMMC_TRANSFER_MODE getTransferMode() const {return _transferMode;}
 protected:
     MSDMMC_TRANSFER_MODE _transferMode = MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_NORMAL;

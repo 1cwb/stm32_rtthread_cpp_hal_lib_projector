@@ -178,7 +178,7 @@ int main(void)
     });
     tim1->start();
 #endif
-    uint32_t j;
+    //uint32_t j;
     while(1)
     {
         if(led0)

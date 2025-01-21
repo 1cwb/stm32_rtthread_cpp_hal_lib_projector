@@ -95,7 +95,7 @@ int mObject::objectGetPointers(mObjectClassType type, mObject_t **pointers, int 
  */
 void mObject::objectInit(mObject_t *object, mObjectClassType type, const char *name)
 {
-    register long temp;
+    long temp;
     struct mList_t *node = nullptr;
     struct mObjectInformation_t *information;
 
@@ -149,7 +149,7 @@ void mObject::objectInit(mObject_t *object, mObjectClassType type, const char *n
  */
 void mObject::objectDetach(mObject_t* object)
 {
-    register long temp;
+    long temp;
 
     /* object check */
     MASSERT(object != nullptr);
@@ -178,7 +178,7 @@ void mObject::objectDetach(mObject_t* object)
  */
 mResult mObject::objectAdd(struct mObject_t *object, const mObjectClassType type, const char *name)
 {
-    register long temp;
+    long temp;
     struct mObjectInformation_t *information;
 
     //RT_DEBUG_NOT_IN_INTERRUPT;
@@ -225,7 +225,7 @@ mResult mObject::objectAdd(struct mObject_t *object, const mObjectClassType type
  */
 void mObject::objectRemove(struct mObject_t* object)
 {
-    register long temp;
+    long temp;
 
     /* object check */
     MASSERT(object != nullptr);

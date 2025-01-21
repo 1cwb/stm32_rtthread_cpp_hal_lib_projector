@@ -161,7 +161,7 @@ mResult  mIpc::ipcListResume(mList_t* list)
 mResult mIpc::ipcListResumeAll(mIpcObject_t* ipcObj)
 {
     struct thread_t *thread;
-    register unsigned long temp;
+    unsigned long temp;
 
     /* wakeup all suspended threads */
     while (!ipcObj->suspendThread.isEmpty())
@@ -191,7 +191,7 @@ mResult mIpc::ipcListResumeAll(mIpcObject_t* ipcObj)
 mResult mIpc::ipcListResumeAll(mList_t *list)
 {
     struct thread_t *thread;
-    register long temp;
+    long temp;
 
     /* wakeup all suspended threads */
     while (!list->isEmpty())
@@ -339,7 +339,7 @@ mResult  mSemaphore::semTake(int32_t time)
     {
         return M_RESULT_EOK;
     }
-    register long temp;
+    long temp;
     struct thread_t *thread;
 
     /* parameter check */
@@ -444,8 +444,8 @@ mResult  mSemaphore::semRelease()
     {
         return M_RESULT_EOK;
     }
-    register long temp;
-    register bool needSchedule;
+    long temp;
+    bool needSchedule;
 
     /* parameter check */
     MASSERT(mObject::getInstance()->objectGetType((mObject_t*)&sem_) == M_OBJECT_CLASS_SEMAPHORE);
@@ -603,7 +603,7 @@ mResult mMutex::mutexTake(int32_t time)
     {
         return M_RESULT_EOK;
     }
-    register long temp;
+    long temp;
     struct thread_t *thread;
 
     /* this function must not be used in interrupt even if time = 0 */
@@ -744,7 +744,7 @@ mResult mMutex::mutexRelease()
     {
         return M_RESULT_EOK;
     }
-    register long temp;
+    long temp;
     struct thread_t *thread;
     bool needSchedule;
 
@@ -914,8 +914,8 @@ mResult mEvent::send(uint32_t set)
     }
     struct mList_t *n;
     struct thread_t *thread;
-    register unsigned long level;
-    register long status;
+    unsigned long level;
+    long status;
     bool needSchedule;
 
     /* parameter check */
@@ -1029,8 +1029,8 @@ mResult mEvent::recv(uint32_t  set,
         return M_RESULT_EOK;
     }
     struct thread_t *thread;
-    register long level;
-    register long status;
+    long level;
+    long status;
 
     //RT_DEBUG_IN_THREAD_CONTEXT;
 
@@ -1216,7 +1216,7 @@ mResult mMessagequeue::init(const char *name,
         return M_RESULT_ERROR;
     }
     struct mqMessage_t *head;
-    register long temp;
+    long temp;
 
     /* initialize object */
     mObject::getInstance()->objectInit((mObject_t*)this, M_OBJECT_CLASS_MESSAGEQUEUE, name);
@@ -1307,7 +1307,7 @@ mResult mMessagequeue::sendWait(const void *buffer, uint32_t size, int32_t timeo
     {
         return M_RESULT_ERROR;
     }
-    register long temp;
+    long temp;
     struct mqMessage_t *msg;
     uint32_t tickDelta;
     struct thread_t *thread;
@@ -1494,7 +1494,7 @@ mResult mMessagequeue::urgent(const void *buffer, uint32_t size)
     {
         return M_RESULT_EOK;
     }
-    register long temp;
+    long temp;
     struct mqMessage_t *msg;
 
     /* parameter check */
@@ -1592,7 +1592,7 @@ mResult mMessagequeue::recv( void *buffer, uint32_t  size, int32_t timeout)
         return M_RESULT_EOK;
     }
     struct thread_t *thread;
-    register long temp;
+    long temp;
     struct mqMessage_t *msg;
     uint32_t tickDelta;
 

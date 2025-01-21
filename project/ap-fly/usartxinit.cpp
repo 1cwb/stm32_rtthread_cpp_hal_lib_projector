@@ -125,7 +125,7 @@ extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
   __HAL_UNLOCK(huart);
   if(huart == usartx->usartHandle())
   {
-    printf("error happend %s ErrorCode = %d\r\n",usartx->getDeviceName(),huart->ErrorCode);
+    printf("error happend %s ErrorCode = %ld\r\n",usartx->getDeviceName(),huart->ErrorCode);
     usartx->setRecvMode(usartx->getRecvMode());
     usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
   }
@@ -177,7 +177,7 @@ int initUsart()
     uart1->recvData(uart1->getRxBuff(),usart::RX_BUFF_LEN);
 
     huartX.Instance = USART2;
-    huartX.Init.BaudRate = 2000000;
+    huartX.Init.BaudRate = DEBUG_UART_BOUNDRATE;
     huartX.Init.WordLength = UART_WORDLENGTH_8B;
     huartX.Init.StopBits = UART_STOPBITS_1;
     huartX.Init.Parity = UART_PARITY_NONE;
