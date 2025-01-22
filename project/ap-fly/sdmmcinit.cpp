@@ -1,8 +1,58 @@
 #include "sdmmc.hpp"
 #include "gpio.hpp"
 #include "project.hpp"
+#include <stm32h7xx_hal_sd.h>
+#include <stm32h750xx.h>
 
 static sdmmc* sd1 = nullptr;
+
+/**
+  * @brief Read DMA Buffer 0 Transfer completed callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SDEx_Read_DMADoubleBuffer0CpltCallback(SD_HandleTypeDef *hsd)
+{
+  //SCB_InvalidateDCache_by_Addr(Buffer0, BUFFER_WORD_SIZE*4);
+  //ReadError += Buffercmp(Buffer0, BUFFERSIZE, DATA_PATTERN0 + (RBuff_0 * (uint32_t)0x00010000));
+  //RBuff_0++;
+
+}
+
+/**
+  * @brief Read DMA Buffer 1 Transfer completed callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SDEx_Read_DMADoubleBuffer1CpltCallback(SD_HandleTypeDef *hsd)
+{
+  //SCB_InvalidateDCache_by_Addr(Buffer1, BUFFER_WORD_SIZE*4);
+  //ReadError += Buffercmp(Buffer1, BUFFERSIZE, DATA_PATTERN1 + (RBuff_1 * (uint32_t)0x00010000));
+  //RBuff_1++;
+}
+
+/**
+  * @brief Write DMA Buffer 0 Transfer completed callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SDEx_Write_DMADoubleBuffer0CpltCallback(SD_HandleTypeDef *hsd)
+{
+  //WBuff_0++;
+  //Fill_Buffer(Buffer0, BUFFERSIZE, DATA_PATTERN0 + (WBuff_0 * (uint32_t)0x00010000));
+
+}
+
+/**
+  * @brief Write DMA Buffer 1 Transfer completed callbacks
+  * @param hsd: SD handle
+  * @retval None
+  */
+void HAL_SDEx_Write_DMADoubleBuffer1CpltCallback(SD_HandleTypeDef *hsd)
+{
+  //WBuff_1++;
+  //Fill_Buffer(Buffer1, BUFFERSIZE, DATA_PATTERN1 + (WBuff_1 * (uint32_t)0x00010000));
+}
 
 /**
   * @brief SD Abort callbacks
@@ -98,17 +148,17 @@ int sdmmcInit()
             __HAL_RCC_GPIOD_CLK_ENABLE();
             /* D0(PC8), D1(PC9), D2(PC10), D3(PC11), CK(PC12), CMD(PD2) */
             gpiox gpioSDMMCD0("sdgpiod0");
-            gpioSDMMCD0.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
+            gpioSDMMCD0.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_8, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
             gpiox gpioSDMMCD1("sdgpiod1");
-            gpioSDMMCD1.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
+            gpioSDMMCD1.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
             gpiox gpioSDMMCD2("sdgpiod2");
-            gpioSDMMCD2.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_10, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
+            gpioSDMMCD2.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_10, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
             gpiox gpioSDMMCD3("sdgpiod3");
-            gpioSDMMCD3.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_11, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
+            gpioSDMMCD3.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_11, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
             gpiox gpioSDMMCCK("sdgpiock");
-            gpioSDMMCCK.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_12, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
+            gpioSDMMCCK.init([](bool b){if(b)__HAL_RCC_GPIOC_CLK_ENABLE();}, GPIOC, GPIO_PIN_12, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
             gpiox gpioSDMMCCMD("sdgpiocmd");
-            gpioSDMMCCMD.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();}, GPIOD, GPIO_PIN_2, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
+            gpioSDMMCCMD.init([](bool b){if(b)__HAL_RCC_GPIOD_CLK_ENABLE();}, GPIOD, GPIO_PIN_2, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF12_SDIO1);
 
             __HAL_RCC_SDMMC1_FORCE_RESET();
             __HAL_RCC_SDMMC1_RELEASE_RESET();
@@ -116,6 +166,7 @@ int sdmmcInit()
             /* NVIC configuration for SDIO interrupts */
             HAL_NVIC_SetPriority(SDMMC1_IRQn, 5, 0);
             HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
+            printf("tony init sd\r\n");
         }
         else
         {
@@ -128,6 +179,30 @@ int sdmmcInit()
             __HAL_RCC_SDMMC1_CLK_DISABLE();
         }
     }, &uSdHandle);
+    mDev::MSDMMC_CARD_INFO CardInfo;
+    sd1->setTransferMode(mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_NORMAL);
+    sd1->getCardInfo(&CardInfo);
+    printf("card info: %d\n", CardInfo.cardType);
+    printf("card version: %d\n", CardInfo.cardVersion);
+    printf("card cardSpeed: %d\n", CardInfo.cardSpeed);
+    if(sd1->erase(0,100) != M_RESULT_EOK)
+    {
+        printf("erase failed\n");
+    }
+    //HAL_Delay(1000);
+    uint32_t data = 100;
+    if(sd1->writeBlocks(&data, 0, 0) != M_RESULT_EOK)
+    {
+        printf("write failed\n");
+    }
+    //HAL_Delay(1000);
+    data=0;
+    if(sd1->readBlocks(&data, 0, 0) != M_RESULT_EOK)
+    {
+        printf("write failed\n");
+    }
+    //HAL_Delay(1000);
+    printf("read data = %u\r\n",data);
     return 0;
 }
 INIT_EXPORT(sdmmcInit, "0.4");

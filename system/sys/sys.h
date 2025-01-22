@@ -20,7 +20,7 @@
 #define D3_MEM   __attribute__((section(".ramd3")))
 #define D3_MEM_ALIGN(x)   __attribute__((section(".ramd3"))) __attribute__((aligned(x)))
 
-HAL_StatusTypeDef Stm32_Clock_Init(uint32_t pllm, uint32_t plln, uint32_t pllp, uint32_t pllq, uint32_t pllr);
+HAL_StatusTypeDef Stm32_Clock_Init();
 void hwInit();
 void SoftReset(void);
 #ifdef __cplusplus

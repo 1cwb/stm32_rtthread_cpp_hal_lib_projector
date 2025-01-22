@@ -1,4 +1,5 @@
 #include "sdmmc.hpp"
+#include "mklog.hpp"
 
 sdmmc::sdmmc(const char* name, mDev::mGpio* detectPin) : mDev::mSDMMC(name),mDetectPin(detectPin)
 {
@@ -18,11 +19,18 @@ mResult sdmmc::init(const mDev::initCallbackExt& cb ,SD_HandleTypeDef* sdhandle)
     }
     if(!isCardDetected())
     {
+        ALOGE("%s()%d isCardDetected Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     /* HAL SD initialization */
     if(HAL_SD_Init(&uSdHandle) != HAL_OK)
     {
+        ALOGE("%s()%d HAL_SD_INIT Fail\r\n",__FUNCTION__,__LINE__);
+        return M_RESULT_ERROR;
+    }
+    if(getCardState() != mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
+    {
+        ALOGE("%s()%d getCardState Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     return M_RESULT_EOK;

@@ -115,6 +115,10 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
           .data = usartx->getRxBuff(),
           .len = Size,
         };
+        if(usartx->buseRxDma())
+        {
+            SCB_InvalidateDCache_by_Addr((uint32_t*)usartx->getRxBuff(), usart::RX_BUFF_LEN);
+        }
         usartx->runInterruptCb(&rxdata);
         usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
     }
@@ -227,12 +231,6 @@ int initUsart()
       /* DMA1_Stream1_IRQn interrupt configuration */
       HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
       HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
-
-      RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-
-      PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2;
-      PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
-      HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
 
         /* Peripheral clock enable */
         __HAL_RCC_USART2_CLK_ENABLE();

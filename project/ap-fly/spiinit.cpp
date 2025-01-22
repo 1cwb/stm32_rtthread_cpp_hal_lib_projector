@@ -35,10 +35,6 @@ int spiInit()
     spi1->init([](bool b){
         if(b)
         {
-            RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-            PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SPI1;
-            PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI1CLKSOURCE_CLKP;
-            HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
             __HAL_RCC_SPI1_CLK_ENABLE();
             gpiox spi1mosi("spi1sck");
             spi1mosi.init([](bool b){if(b)__HAL_RCC_GPIOA_CLK_ENABLE();},GPIOA, GPIO_PIN_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF5_SPI1);

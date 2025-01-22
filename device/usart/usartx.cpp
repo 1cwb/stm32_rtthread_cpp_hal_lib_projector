@@ -171,7 +171,6 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     else if(_recvMode == mDev::recvMode::RECV_MODE_DMA)
     {
-        SCB_CleanInvalidateDCache();
         if(HAL_UART_Receive_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             ALOGE("%s()%d error\n",__FUNCTION__,__LINE__);
@@ -189,7 +188,6 @@ mResult usart::recv(uint8_t* data, uint32_t len)
     }
     else if (_recvMode == mDev::recvMode::RECV_MODE_DMA_RECV_IDLE)
     {
-        SCB_CleanInvalidateDCache();
         if(HAL_UARTEx_ReceiveToIdle_DMA(&_uartHandle, data, len) != HAL_OK)
         {
             ALOGE("%s()%d error\n",__FUNCTION__,__LINE__);

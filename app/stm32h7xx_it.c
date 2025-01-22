@@ -21,6 +21,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_it.h"
 #include "stm32h7xx_hal.h"
+#include "stdio.h"
 /** @addtogroup STM32H7xx_HAL_Examples
   * @{
   */
