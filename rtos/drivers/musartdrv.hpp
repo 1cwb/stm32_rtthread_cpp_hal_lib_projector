@@ -55,7 +55,6 @@ public:
 protected:
     virtual mResult send(const uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
     virtual mResult recv(uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
-    uint8_t _rxBuff[RX_BUFF_LEN];
     transferMode _transferMode;
     recvMode _recvMode;
 private:

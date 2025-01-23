@@ -155,6 +155,7 @@ void usartRecvEnter(void* p)
 {
     mDev::mUsart::usartData data;
     char buff[64] = {0};
+    //int ret = 0;
     while(true)
     {
         if(hubUsb.poll(usbNode))
@@ -218,7 +219,14 @@ void usartRecvEnter(void* p)
             printf("%s recv: %s\r\n",usart8Node->getName() ,buff);
         }
         mthread::threadDelay(5);
-       // ((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5))->sendData((const uint8_t*)"helloworld\r\n", 13);
+        //snprintf(buff, sizeof(buff), "usart2 %d\r\n", ret++);
+        //((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2))->sendData((const uint8_t*)buff, strlen(buff)+1);
+        //((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART3))->sendData((const uint8_t*)"helloworld\r\n", 13);
+        //((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART4))->sendData((const uint8_t*)"helloworld\r\n", 13);
+        //((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5))->sendData((const uint8_t*)"helloworld\r\n", 13);
+        //((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART6))->sendData((const uint8_t*)"helloworld\r\n", 13);
+        //((mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART8))->sendData((const uint8_t*)"helloworld\r\n", 13);
+
     }
 }
 TASK_EXPORT(hubUsartInit, "0.1");

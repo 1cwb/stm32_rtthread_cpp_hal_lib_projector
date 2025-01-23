@@ -11,7 +11,7 @@ APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
 DEFINE += -DH7XX_BOOTLOADER_ADDR=0x1FF09800
 DEFINE += -DAPP_VTABLE_ADDR=$(APP_FLASH_ORIGIN)
-DEFINE += -DDEBUG_UART_BOUNDRATE=115200
+DEFINE += -DDEBUG_UART_BOUNDRATE=2000000
 ######################################SUB_MK###################################################
 # 要编译的文件夹，用空格分隔
 ifdef BOOT
