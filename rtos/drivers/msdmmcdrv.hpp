@@ -42,8 +42,8 @@ class mSDMMC : public mDevice
 public:
     explicit mSDMMC(const char* name) : mDevice(name){}
     virtual ~mSDMMC() = default;
-    virtual mResult readBlocks(uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks) {return M_RESULT_EOK;}
-    virtual mResult writeBlocks(uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks){return M_RESULT_EOK;}
+    virtual mResult readBlocks(uint8_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks) {return M_RESULT_EOK;}
+    virtual mResult writeBlocks(uint8_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks){return M_RESULT_EOK;}
     virtual mResult erase(uint32_t StartAddr, uint32_t EndAddr){return M_RESULT_EOK;}
     virtual mDev::MSDMMC_CARD_STATE getCardState(){return MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK;}
     virtual void getCardInfo(mDev::MSDMMC_CARD_INFO *CardInfo){}

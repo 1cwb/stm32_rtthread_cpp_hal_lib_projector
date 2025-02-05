@@ -1,9 +1,10 @@
 #include "sdmmc.hpp"
 #include "mklog.hpp"
 
-sdmmc::sdmmc(const char* name, mDev::mGpio* detectPin) : mDev::mSDMMC(name),mDetectPin(detectPin)
+sdmmc::sdmmc(const char* name, uint32_t dmaBuffSize, mDev::mGpio* detectPin) : mDev::mSDMMC(name), buffSize(dmaBuffSize), txBuff(nullptr), rxBuff(nullptr), mDetectPin(detectPin)
 {
-
+    txBuff =(new alignas(32) uint8_t[dmaBuffSize]);
+    rxBuff =(new alignas(32) uint8_t[dmaBuffSize]);
 }
 sdmmc::~sdmmc()
 {
@@ -15,7 +16,7 @@ mResult sdmmc::init(const mDev::initCallbackExt& cb ,SD_HandleTypeDef* sdhandle)
     if(sdhandle)
     {
         memcpy(&uSdHandle, sdhandle, sizeof(SD_HandleTypeDef));
-        uSdHandle.State = HAL_SD_STATE_RESET;
+        HAL_SD_DeInit(&uSdHandle);
     }
     if(!isCardDetected())
     {
@@ -33,6 +34,7 @@ mResult sdmmc::init(const mDev::initCallbackExt& cb ,SD_HandleTypeDef* sdhandle)
         ALOGE("%s()%d getCardState Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
+    printf("tony init 0k \r\n");
     return M_RESULT_EOK;
 }
 mResult sdmmc::deInit()
@@ -44,7 +46,7 @@ mResult sdmmc::deInit()
   }
   return M_RESULT_EOK;
 }
-mResult sdmmc::readBlocks(uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
+mResult sdmmc::readBlocks(uint8_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
     if(_transferMode == mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA)
     {
@@ -69,7 +71,7 @@ mResult sdmmc::readBlocks(uint32_t *pData, uint32_t ReadAddr, uint32_t NumOfBloc
         }        
     }
 }
-mResult sdmmc::writeBlocks(uint32_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
+mResult sdmmc::writeBlocks(uint8_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
     if(_transferMode == mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA)
     {
@@ -122,6 +124,23 @@ bool sdmmc::isCardDetected()
         return mDetectPin->getLevel() == mDev::mGpio::GPIOLEVEL::LEVEL_LOW;
     }
     return true;
+}
+
+bool sdmmc::waitSdCardReady()
+{
+    uint32_t loop = ((uint32_t)0x00100000U);
+    
+    /* Wait for the Erasing process is completed */
+    /* Verify that SD card is ready to use after the Erase */
+    while(loop > 0)
+    {
+        loop--;
+        if(HAL_SD_GetCardState(&uSdHandle) == HAL_SD_CARD_TRANSFER)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 extern "C" void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
