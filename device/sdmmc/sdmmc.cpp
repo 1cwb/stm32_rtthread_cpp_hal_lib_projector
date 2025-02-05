@@ -34,7 +34,6 @@ mResult sdmmc::init(const mDev::initCallbackExt& cb ,SD_HandleTypeDef* sdhandle)
         ALOGE("%s()%d getCardState Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
-    printf("tony init 0k \r\n");
     return M_RESULT_EOK;
 }
 mResult sdmmc::deInit()
@@ -48,6 +47,11 @@ mResult sdmmc::deInit()
 }
 mResult sdmmc::readBlocks(uint8_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks)
 {
+    if(!waitSdCardReady())
+    {
+        printf("Error: %s() SDMMC INTERFACE BUSY\r\n",__FUNCTION__);
+        return M_RESULT_EBUSY;
+    }
     if(_transferMode == mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA)
     {
         if( HAL_SD_ReadBlocks_DMA(&uSdHandle, (uint8_t *)pData, ReadAddr, NumOfBlocks) == HAL_OK)
@@ -73,8 +77,14 @@ mResult sdmmc::readBlocks(uint8_t *pData, uint32_t ReadAddr, uint32_t NumOfBlock
 }
 mResult sdmmc::writeBlocks(uint8_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks)
 {
+    if(!waitSdCardReady())
+    {
+        printf("Error: %s() SDMMC INTERFACE BUSY\r\n",__FUNCTION__);
+        return M_RESULT_EBUSY;
+    }
     if(_transferMode == mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA)
     {
+        SCB_CleanDCache_by_Addr((uint32_t*)txBuff, buffSize);
         if( HAL_SD_WriteBlocks_DMA(&uSdHandle, (uint8_t *)pData, WriteAddr, NumOfBlocks) == HAL_OK)
         {
             return M_RESULT_EOK;

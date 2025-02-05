@@ -79,8 +79,12 @@ extern "C" void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
     sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
     if(hsd == sdx->sdmmcHandle())
     {
-        mDev::MSDMMC_IRQ_TYPE type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ABORT;
-        sdx->runInterruptCb(&type);
+        mDev::MSDMMCdata data = {
+          .type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ABORT,
+          .data = nullptr,
+          .len = 0,
+        };
+        sdx->runInterruptCb(&data);
     }
 }
 
@@ -94,8 +98,12 @@ extern "C" void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
     sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
     if(hsd == sdx->sdmmcHandle())
     {
-        mDev::MSDMMC_IRQ_TYPE type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_COMPLETE;
-        sdx->runInterruptCb(&type);
+          mDev::MSDMMCdata data = {
+          .type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_COMPLETE,
+          .data = nullptr,
+          .len = 0,
+        };
+        sdx->runInterruptCb(&data);
     }
 }
 
@@ -109,12 +117,16 @@ extern "C" void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
     sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
     if(hsd == sdx->sdmmcHandle())
     {
-        mDev::MSDMMC_IRQ_TYPE type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_RX_COMPLETE;
         if(sdx->getTransferMode() == mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA)
         {
             SCB_InvalidateDCache_by_Addr((uint32_t*)sd1->getRxBuff(), sd1->getTxRxBuffSize());
         }
-        sdx->runInterruptCb(&type);
+          mDev::MSDMMCdata data = {
+          .type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_RX_COMPLETE,
+          .data = sdx->getRxBuff(),
+          .len = sdx->getTxRxBuffSize(),
+        };
+        sdx->runInterruptCb(&data);
     }
 }
 
@@ -128,9 +140,12 @@ extern "C" void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
     sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
     if(hsd == sdx->sdmmcHandle())
     {
-        mDev::MSDMMC_IRQ_TYPE type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ERROR;
-        sdx->runInterruptCb(&type);
-        printf("Error %s()%d = %d\r\n",__FUNCTION__,__LINE__,hsd->ErrorCode);
+          mDev::MSDMMCdata data = {
+          .type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ERROR,
+          .data = nullptr,
+          .len = 0,
+        };
+        sdx->runInterruptCb(&data);
     }
 }
   
@@ -191,10 +206,6 @@ int sdmmcInit()
         else
         {
             HAL_NVIC_DisableIRQ(SDMMC1_IRQn);
-
-            /* DeInit GPIO pins can be done in the application
-            (by surcharging this __weak function) */
-
             /* Disable SDMMC1 clock */
             __HAL_RCC_SDMMC1_CLK_DISABLE();
         }
@@ -202,10 +213,33 @@ int sdmmcInit()
 
     mDev::MSDMMC_CARD_INFO CardInfo;
     sd1->setTransferMode(mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA);
-    sd1->getCardInfo(&CardInfo);
-    printf("card info: %d\n", CardInfo.cardType);
-    printf("card version: %d\n", CardInfo.cardVersion);
-    printf("card cardSpeed: %d\n", CardInfo.cardSpeed);
+    sd1->registerInterruptCb([](mDev::mDevice* dev, void* p){
+        mDev::MSDMMCdata* data = (mDev::MSDMMCdata*)p;
+        switch(data->type)
+        {
+            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ABORT:
+                printf("abort\r\n");
+                break;
+            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_COMPLETE:
+                printf("tx complete\r\n");
+                break;
+            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_RX_COMPLETE:
+                printf("rx complete\r\n");
+                break;
+            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ERROR:
+                printf("error\r\n");
+                break;
+            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_1V8_MODE_SET:
+                printf("tx 1.8v set\r\n");
+                break;
+            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_1V8_MODE_RESET:
+                printf("tx 1.8v reset\r\n");
+                break;
+            default:
+                break;
+        }
+    });
+
     if(sd1->erase(0, 1024) != M_RESULT_EOK)
     {
         printf("erase failed\n");
@@ -220,13 +254,13 @@ int index = 0;
     sd1->getTxBuff()[index] = index+9;
     }
     memcpy(sd1->getTxBuff(),"hellow world you mother fuck+++++\r\n",strlen("hellow world you mother fuck+++++\r\n")+1);
-    SCB_CleanDCache_by_Addr((uint32_t*)sd1->getTxBuff(), sd1->getTxRxBuffSize());
 
+HAL_Delay(1000);
     if(sd1->writeBlocks(sd1->getTxBuff(), 0, sd1->getNbBlockSize()) != M_RESULT_EOK)
     {
       printf("Error %s()%d\r\n",__FUNCTION__,__LINE__);
     }
-    HAL_Delay(1000);
+HAL_Delay(1000);
     if(sd1->readBlocks(sd1->getRxBuff(), 0, sd1->getNbBlockSize()) != M_RESULT_EOK)
     {
       printf("Error %s()%d\r\n",__FUNCTION__,__LINE__);

@@ -37,6 +37,8 @@ enum class MSDMMC_TRANSFER_MODE
     SDMMC_TRANSFER_MODE_DMA,
 };
 
+using MSDMMCdata = devCbData<uint8_t*, MSDMMC_IRQ_TYPE>;
+
 class mSDMMC : public mDevice
 {
 public:

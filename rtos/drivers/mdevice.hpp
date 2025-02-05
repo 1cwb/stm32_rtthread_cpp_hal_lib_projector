@@ -4,9 +4,10 @@
 #include <string>
 namespace mDev
 {
-template<typename T>
+template<typename T, typename TYPE = int32_t>
 struct devCbData
 {
+    TYPE type;
     T data;
     uint32_t len;
 };
