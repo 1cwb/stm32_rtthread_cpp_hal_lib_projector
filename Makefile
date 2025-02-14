@@ -17,7 +17,7 @@ DEFINE += -DDEBUG_UART_BOUNDRATE=2000000
 ifdef BOOT
 BUILD_DIR := $(CURDIR)/bootloader $(CURDIR)/core $(CURDIR)/stm32h7hallib
 else
-BUILD_DIR := $(CURDIR)/app $(CURDIR)/core $(CURDIR)/stm32h7hallib $(CURDIR)/device $(CURDIR)/project $(CURDIR)/rtos $(CURDIR)/system
+BUILD_DIR := $(CURDIR)/app $(CURDIR)/core $(CURDIR)/stm32h7hallib $(CURDIR)/device $(CURDIR)/project $(CURDIR)/rtos $(CURDIR)/system $(CURDIR)/3rdlib
 endif
 
 #$(info "$(BUILD_DIR)")

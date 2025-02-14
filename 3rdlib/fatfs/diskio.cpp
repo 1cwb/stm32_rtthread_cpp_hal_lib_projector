@@ -9,11 +9,12 @@
 
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
+#include "fatfsinit.hpp"
 
 /* Definitions of physical drive number for each drive */
-#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
+//#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
 #define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-#define DEV_USB		2	/* Example: Map USB MSD to physical drive 2 */
+//#define DEV_USB		2	/* Example: Map USB MSD to physical drive 2 */
 
 
 /*-----------------------------------------------------------------------*/
@@ -24,6 +25,7 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
+#if 0
 	DSTATUS stat;
 	int result;
 
@@ -50,6 +52,8 @@ DSTATUS disk_status (
 		return stat;
 	}
 	return STA_NOINIT;
+#endif
+	return RES_OK;
 }
 
 
@@ -62,6 +66,7 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
+	#if 0
 	DSTATUS stat;
 	int result;
 
@@ -88,6 +93,8 @@ DSTATUS disk_initialize (
 		return stat;
 	}
 	return STA_NOINIT;
+	#endif
+	return RES_OK;
 }
 
 
@@ -103,6 +110,7 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
+	#if 0
 	DRESULT res;
 	int result;
 
@@ -136,6 +144,12 @@ DRESULT disk_read (
 	}
 
 	return RES_PARERR;
+	#endif
+	if(sdread(buff, sector, count) != 0)
+	{
+		return RES_ERROR;
+	}
+	return RES_OK;
 }
 
 
@@ -153,6 +167,7 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
+	#if 0
 	DRESULT res;
 	int result;
 
@@ -186,6 +201,12 @@ DRESULT disk_write (
 	}
 
 	return RES_PARERR;
+	#endif
+	if(sdwrite((uint8_t*)buff, sector, count) != 0)
+	{
+		return RES_ERROR;
+	}
+	return RES_OK;
 }
 
 #endif
@@ -201,6 +222,7 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
+	#if 0
 	DRESULT res;
 	int result;
 
@@ -225,5 +247,11 @@ DRESULT disk_ioctl (
 	}
 
 	return RES_PARERR;
+	#endif
+	if(sdioctl(pdrv, cmd, buff)!=0)
+	{
+			return RES_ERROR;
+	}
+	return RES_OK;
 }
 

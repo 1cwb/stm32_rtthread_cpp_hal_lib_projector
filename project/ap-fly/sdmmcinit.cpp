@@ -6,21 +6,6 @@
 
 static sdmmc* sd1 = nullptr;
 /* Private define ------------------------------------------------------------*/
-#if 0
-#define DATA_SIZE              ((uint32_t)0x2800U) /* Data Size 10k */
-
-/* ------ Buffer Size ------ */
-#define BUFFER_SIZE            ((uint32_t)0x400U) /* 1Ko */
-
-#define NB_BLOCK_BUFFER        BUFFER_SIZE / BLOCKSIZE /* Number of Block (512o) by Buffer */
-#define BUFFER_WORD_SIZE       (BUFFER_SIZE>>2)        /* Buffer size in Word */
-
-
-#define SD_TIMEOUT             ((uint32_t)0x00100000U)
-#define ADDRESS                ((uint32_t)0x00000000U) /* SD Address to write/read data */
-uint8_t sd1->getTxBuff()[BUFFER_WORD_SIZE*4];
-uint8_t sd1->getRxBuff()[BUFFER_WORD_SIZE*4];
-#endif
 /**
   * @brief Read DMA Buffer 0 Transfer completed callbacks
   * @param hsd: SD handle
@@ -201,7 +186,6 @@ int sdmmcInit()
             /* NVIC configuration for SDIO interrupts */
             HAL_NVIC_SetPriority(SDMMC1_IRQn, 5, 0);
             HAL_NVIC_EnableIRQ(SDMMC1_IRQn);
-            printf("tony init sd\r\n");
         }
         else
         {
@@ -211,7 +195,6 @@ int sdmmcInit()
         }
     }, &uSdHandle);
 
-    mDev::MSDMMC_CARD_INFO CardInfo;
     sd1->setTransferMode(mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA);
     sd1->registerInterruptCb([](mDev::mDevice* dev, void* p){
         mDev::MSDMMCdata* data = (mDev::MSDMMCdata*)p;
@@ -239,7 +222,7 @@ int sdmmcInit()
                 break;
         }
     });
-
+#if 1
     if(sd1->erase(0, 1024) != M_RESULT_EOK)
     {
         printf("erase failed\n");
@@ -265,25 +248,7 @@ HAL_Delay(1000);
     {
       printf("Error %s()%d\r\n",__FUNCTION__,__LINE__);
     }
-/*
-    memset(rxdata, 0, 1024);
-    if(sd1->writeBlocks(data,((uint32_t)0x00000400U) , 2) != M_RESULT_EOK)
-    {
-        printf("write failed\n");
-    }
-    SCB_CleanDCache_by_Addr((uint32_t*)data, 1024);
-    if(sd1->waitSdCardReady())
-    {
-      printf("sd ready\r\n");
-    }
-    SCB_CleanDCache_by_Addr((uint32_t*)rxdata, 1024);
-    if(sd1->readBlocks(rxdata, ((uint32_t)0x00000400U) , 2) != M_RESULT_EOK)
-    {
-        printf("read failed\n");
-    }
-    //HAL_Delay(1000);
-    printf("read data = %s\r\n",(char*)rxdata);
-*/
+
 HAL_Delay(2000);
 index = 0;
             printf(" ********************* Check data ********************** \r\n");
@@ -303,6 +268,7 @@ index = 0;
                 printf("%x \r\n", sd1->getRxBuff()[i]);
             }
             printf("%s\r\n",sd1->getRxBuff());
+#endif
     return 0;
 }
 INIT_EXPORT(sdmmcInit, "0.4");
