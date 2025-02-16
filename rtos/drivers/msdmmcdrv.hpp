@@ -42,7 +42,7 @@ using MSDMMCdata = devCbData<uint8_t*, MSDMMC_IRQ_TYPE>;
 class mSDMMC : public mDevice
 {
 public:
-    explicit mSDMMC(const char* name) : mDevice(name){}
+    explicit mSDMMC(const char* name, uint32_t buffsize) : mDevice(name), buffSize(buffsize){}
     virtual ~mSDMMC() = default;
     virtual mResult readBlocks(uint8_t *pData, uint32_t ReadAddr, uint32_t NumOfBlocks) {return M_RESULT_EOK;}
     virtual mResult writeBlocks(uint8_t *pData, uint32_t WriteAddr, uint32_t NumOfBlocks){return M_RESULT_EOK;}
@@ -53,7 +53,13 @@ public:
 
     virtual void setTransferMode(MSDMMC_TRANSFER_MODE mode) {_transferMode = mode;}
     virtual MSDMMC_TRANSFER_MODE getTransferMode() const {return _transferMode;}
+    uint8_t* getTxBuff() {return txBuff;}
+    uint8_t* getRxBuff() {return rxBuff;}
+    uint32_t getTxRxBuffSize() const {return buffSize;}
 protected:
+    uint32_t buffSize = 0;
+    uint8_t* txBuff = nullptr;
+    uint8_t* rxBuff = nullptr;
     MSDMMC_TRANSFER_MODE _transferMode = MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_NORMAL;
 };
 }

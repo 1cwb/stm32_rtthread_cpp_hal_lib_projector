@@ -9,7 +9,6 @@
 
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
-#include "fatfsinit.hpp"
 
 /* Definitions of physical drive number for each drive */
 //#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
@@ -145,10 +144,6 @@ DRESULT disk_read (
 
 	return RES_PARERR;
 	#endif
-	if(sdread(buff, sector, count) != 0)
-	{
-		return RES_ERROR;
-	}
 	return RES_OK;
 }
 
@@ -202,10 +197,6 @@ DRESULT disk_write (
 
 	return RES_PARERR;
 	#endif
-	if(sdwrite((uint8_t*)buff, sector, count) != 0)
-	{
-		return RES_ERROR;
-	}
 	return RES_OK;
 }
 
@@ -248,10 +239,6 @@ DRESULT disk_ioctl (
 
 	return RES_PARERR;
 	#endif
-	if(sdioctl(pdrv, cmd, buff)!=0)
-	{
-			return RES_ERROR;
-	}
 	return RES_OK;
 }
 

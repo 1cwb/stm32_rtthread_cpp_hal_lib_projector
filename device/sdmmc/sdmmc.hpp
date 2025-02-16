@@ -18,16 +18,10 @@ public:
     virtual void getCardInfo(mDev::MSDMMC_CARD_INFO *CardInfo)override;
     virtual bool isCardDetected()override;
     bool waitSdCardReady();
-    uint8_t* getTxBuff() {return txBuff;}
-    uint8_t* getRxBuff() {return rxBuff;}
-    uint32_t getTxRxBuffSize() const {return buffSize;}
     uint32_t getNbBlockSize() {return buffSize / BLOCKSIZE;}
     SD_HandleTypeDef* sdmmcHandle() {return &uSdHandle;}
 public:
     SD_HandleTypeDef uSdHandle;
 private:
-    uint32_t buffSize;
-    uint8_t* txBuff;
-    uint8_t* rxBuff;
     mDev::mGpio* mDetectPin;
 };

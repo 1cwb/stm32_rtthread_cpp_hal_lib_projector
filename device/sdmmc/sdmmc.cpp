@@ -1,7 +1,7 @@
 #include "sdmmc.hpp"
 #include "mklog.hpp"
 
-sdmmc::sdmmc(const char* name, uint32_t dmaBuffSize, mDev::mGpio* detectPin) : mDev::mSDMMC(name), buffSize(dmaBuffSize), txBuff(nullptr), rxBuff(nullptr), mDetectPin(detectPin)
+sdmmc::sdmmc(const char* name, uint32_t dmaBuffSize, mDev::mGpio* detectPin) : mDev::mSDMMC(name, dmaBuffSize), mDetectPin(detectPin)
 {
     txBuff =(new alignas(32) uint8_t[dmaBuffSize]);
     rxBuff =(new alignas(32) uint8_t[dmaBuffSize]);

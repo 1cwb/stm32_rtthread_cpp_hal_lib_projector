@@ -231,7 +231,7 @@ int sdmmcInit()
     {
       printf("sd ready\r\n");
     }
-int index = 0;
+unsigned index = 0;
     for (; index < 1023; index++)
     {
     sd1->getTxBuff()[index] = index+9;
