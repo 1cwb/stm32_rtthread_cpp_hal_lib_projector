@@ -196,33 +196,7 @@ int sdmmcInit()
     }, &uSdHandle);
 
     sd1->setTransferMode(mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA);
-    sd1->registerInterruptCb([](mDev::mDevice* dev, void* p){
-        mDev::MSDMMCdata* data = (mDev::MSDMMCdata*)p;
-        switch(data->type)
-        {
-            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ABORT:
-                printf("abort\r\n");
-                break;
-            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_COMPLETE:
-                printf("tx complete\r\n");
-                break;
-            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_RX_COMPLETE:
-                printf("rx complete\r\n");
-                break;
-            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ERROR:
-                printf("error\r\n");
-                break;
-            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_1V8_MODE_SET:
-                printf("tx 1.8v set\r\n");
-                break;
-            case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_1V8_MODE_RESET:
-                printf("tx 1.8v reset\r\n");
-                break;
-            default:
-                break;
-        }
-    });
-#if 1
+#if 0
     if(sd1->erase(0, 1024) != M_RESULT_EOK)
     {
         printf("erase failed\n");

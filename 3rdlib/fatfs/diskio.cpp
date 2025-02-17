@@ -9,6 +9,7 @@
 
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
+#include "fatfsdrv.hpp"
 
 /* Definitions of physical drive number for each drive */
 //#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
@@ -24,35 +25,34 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-#if 0
 	DSTATUS stat;
 	int result;
 
 	switch (pdrv) {
+		/*
 	case DEV_RAM :
 		result = RAM_disk_status();
 
 		// translate the reslut code here
 
 		return stat;
-
+*/
 	case DEV_MMC :
-		result = MMC_disk_status();
+		result = SD_status(0);
 
 		// translate the reslut code here
 
 		return stat;
-
+/*
 	case DEV_USB :
 		result = USB_disk_status();
 
 		// translate the reslut code here
 
 		return stat;
+*/
 	}
 	return STA_NOINIT;
-#endif
-	return RES_OK;
 }
 
 
@@ -65,35 +65,33 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	#if 0
 	DSTATUS stat;
 	int result;
 
 	switch (pdrv) {
-	case DEV_RAM :
+	/*case DEV_RAM :
 		result = RAM_disk_initialize();
 
 		// translate the reslut code here
 
 		return stat;
-
+*/
 	case DEV_MMC :
-		result = MMC_disk_initialize();
+		result = SD_initialize(0);
 
 		// translate the reslut code here
 
 		return stat;
-
+/*
 	case DEV_USB :
 		result = USB_disk_initialize();
 
 		// translate the reslut code here
 
 		return stat;
+*/
 	}
 	return STA_NOINIT;
-	#endif
-	return RES_OK;
 }
 
 
@@ -109,11 +107,11 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	#if 0
 	DRESULT res;
 	int result;
 
 	switch (pdrv) {
+/*
 	case DEV_RAM :
 		// translate the arguments here
 
@@ -122,16 +120,16 @@ DRESULT disk_read (
 		// translate the reslut code here
 
 		return res;
-
+*/
 	case DEV_MMC :
 		// translate the arguments here
 
-		result = MMC_disk_read(buff, sector, count);
+		result = SD_read(0, buff, sector, count);
 
 		// translate the reslut code here
 
 		return res;
-
+/*
 	case DEV_USB :
 		// translate the arguments here
 
@@ -140,11 +138,10 @@ DRESULT disk_read (
 		// translate the reslut code here
 
 		return res;
+*/
 	}
 
 	return RES_PARERR;
-	#endif
-	return RES_OK;
 }
 
 
@@ -162,11 +159,11 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	#if 0
 	DRESULT res;
 	int result;
 
 	switch (pdrv) {
+/*
 	case DEV_RAM :
 		// translate the arguments here
 
@@ -175,16 +172,16 @@ DRESULT disk_write (
 		// translate the reslut code here
 
 		return res;
-
+*/
 	case DEV_MMC :
 		// translate the arguments here
 
-		result = MMC_disk_write(buff, sector, count);
+		result = SD_write(0, buff, sector, count);
 
 		// translate the reslut code here
 
 		return res;
-
+/*
 	case DEV_USB :
 		// translate the arguments here
 
@@ -193,11 +190,10 @@ DRESULT disk_write (
 		// translate the reslut code here
 
 		return res;
+*/
 	}
 
 	return RES_PARERR;
-	#endif
-	return RES_OK;
 }
 
 #endif
@@ -213,32 +209,40 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-	#if 0
 	DRESULT res;
 	int result;
 
 	switch (pdrv) {
+		/*
 	case DEV_RAM :
 
 		// Process of the command for the RAM drive
 
 		return res;
-
+*/
 	case DEV_MMC :
-
+		result = SD_ioctl(0, cmd, buff);
 		// Process of the command for the MMC/SD card
 
 		return res;
-
+/*
 	case DEV_USB :
 
 		// Process of the command the USB drive
 
 		return res;
+*/
 	}
 
 	return RES_PARERR;
-	#endif
-	return RES_OK;
 }
 
+/**
+  * @brief  Gets Time from RTC
+  * @param  None
+  * @retval Time in DWORD
+  */
+DWORD get_fattime (void)
+{
+  return 0;
+}
