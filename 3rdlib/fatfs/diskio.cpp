@@ -13,7 +13,7 @@
 
 /* Definitions of physical drive number for each drive */
 //#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
-#define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
+#define DEV_MMC		0	/* Example: Map MMC/SD card to physical drive 1 */
 //#define DEV_USB		2	/* Example: Map USB MSD to physical drive 2 */
 
 
@@ -25,7 +25,7 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat;
+	DSTATUS stat = RES_OK;
 	int result;
 
 	switch (pdrv) {
@@ -38,6 +38,7 @@ DSTATUS disk_status (
 		return stat;
 */
 	case DEV_MMC :
+	printf("TONY DEVMMC\r\n");
 		result = SD_status(0);
 
 		// translate the reslut code here
@@ -65,7 +66,7 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat;
+	DSTATUS stat = RES_OK;
 	int result;
 
 	switch (pdrv) {
@@ -77,6 +78,7 @@ DSTATUS disk_initialize (
 		return stat;
 */
 	case DEV_MMC :
+	printf("TONY DEVMMC init\r\n");
 		result = SD_initialize(0);
 
 		// translate the reslut code here
@@ -107,7 +109,7 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	DRESULT res;
+	DRESULT res = RES_OK;
 	int result;
 
 	switch (pdrv) {
@@ -159,7 +161,7 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	DRESULT res;
+	DRESULT res = RES_OK;
 	int result;
 
 	switch (pdrv) {
@@ -209,7 +211,7 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-	DRESULT res;
+	DRESULT res = RES_OK;
 	int result;
 
 	switch (pdrv) {

@@ -19,12 +19,12 @@ static mDev::mSDMMC* sd0 = nullptr;
 static DSTATUS SD_CheckStatus(BYTE lun)
 {
   Stat = STA_NOINIT;
-
+  printf("tony %s()\r\n",__FUNCTION__);
   if(sd0->getCardState() == mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
   {
     Stat &= ~STA_NOINIT;
   }
-
+printf("tony %s() STAT = %d\r\n",__FUNCTION__,Stat);
   return Stat;
 }
 
