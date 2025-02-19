@@ -26,7 +26,7 @@
 #include "musartdrv.hpp"
 #include "project.hpp"
 #include "ff.h"
-
+#include "fatfsff.hpp"
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
 #define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )

@@ -25,8 +25,7 @@ DSTATUS disk_status (
 	BYTE pdrv		/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat = RES_OK;
-	int result;
+	DSTATUS result;
 
 	switch (pdrv) {
 		/*
@@ -38,12 +37,11 @@ DSTATUS disk_status (
 		return stat;
 */
 	case DEV_MMC :
-	printf("TONY DEVMMC\r\n");
 		result = SD_status(0);
 
 		// translate the reslut code here
 
-		return stat;
+		return result;
 /*
 	case DEV_USB :
 		result = USB_disk_status();
@@ -66,8 +64,7 @@ DSTATUS disk_initialize (
 	BYTE pdrv				/* Physical drive nmuber to identify the drive */
 )
 {
-	DSTATUS stat = RES_OK;
-	int result;
+	DSTATUS result;
 
 	switch (pdrv) {
 	/*case DEV_RAM :
@@ -78,12 +75,11 @@ DSTATUS disk_initialize (
 		return stat;
 */
 	case DEV_MMC :
-	printf("TONY DEVMMC init\r\n");
 		result = SD_initialize(0);
 
 		// translate the reslut code here
 
-		return stat;
+		return result;
 /*
 	case DEV_USB :
 		result = USB_disk_initialize();
@@ -109,8 +105,7 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	DRESULT res = RES_OK;
-	int result;
+	DRESULT result;
 
 	switch (pdrv) {
 /*
@@ -130,7 +125,7 @@ DRESULT disk_read (
 
 		// translate the reslut code here
 
-		return res;
+		return result;
 /*
 	case DEV_USB :
 		// translate the arguments here
@@ -161,8 +156,7 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	DRESULT res = RES_OK;
-	int result;
+	DRESULT result;
 
 	switch (pdrv) {
 /*
@@ -182,7 +176,7 @@ DRESULT disk_write (
 
 		// translate the reslut code here
 
-		return res;
+		return result;
 /*
 	case DEV_USB :
 		// translate the arguments here
@@ -211,8 +205,7 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-	DRESULT res = RES_OK;
-	int result;
+	DRESULT result;
 
 	switch (pdrv) {
 		/*
@@ -226,7 +219,7 @@ DRESULT disk_ioctl (
 		result = SD_ioctl(0, cmd, buff);
 		// Process of the command for the MMC/SD card
 
-		return res;
+		return result;
 /*
 	case DEV_USB :
 
