@@ -1,11 +1,14 @@
 #include "fatfsdrv.hpp"
 #include "sys.h"
+#include "mipc.hpp"
+#include "mscheduler.hpp"
 
 #define SD_TIMEOUT 5 * 1000
 #define SD_DEFAULT_BLOCK_SIZE 512
 
 static volatile DSTATUS Stat = STA_NOINIT;
 static volatile  UINT  WriteStatus = 0, ReadStatus = 0;
+static mEvent sdEvent;
 
 static DSTATUS SD_CheckStatus(BYTE lun);
 DSTATUS SD_initialize (BYTE);
@@ -19,12 +22,10 @@ static mDev::mSDMMC* sd0 = nullptr;
 static DSTATUS SD_CheckStatus(BYTE lun)
 {
   Stat = STA_NOINIT;
-  printf("tony %s()\r\n",__FUNCTION__);
   if(sd0->getCardState() == mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
   {
     Stat &= ~STA_NOINIT;
   }
-printf("tony %s() STAT = %d\r\n",__FUNCTION__,Stat);
   return Stat;
 }
 
@@ -36,6 +37,7 @@ printf("tony %s() STAT = %d\r\n",__FUNCTION__,Stat);
  DSTATUS SD_initialize(BYTE lun)
  {
     sd0 = (mDev::mSDMMC*)mDev::mPlatform::getInstance()->getDevice("sd0");
+    sdEvent.init("sdev",mIpcFlag::IPC_FLAG_FIFO);
    if(sd0)
    {
      Stat = SD_CheckStatus(lun);
@@ -49,10 +51,12 @@ printf("tony %s() STAT = %d\r\n",__FUNCTION__,Stat);
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_COMPLETE:
             WriteStatus = 1;
+            sdEvent.send(2);
                 printf("tx complete\r\n");
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_RX_COMPLETE:
             ReadStatus = 1;
+            sdEvent.send(1);
                 printf("rx complete\r\n");
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ERROR:
@@ -93,50 +97,87 @@ DSTATUS SD_status(BYTE lun)
  {
      mResult ret = M_RESULT_ERROR;
      uint32_t timeout;
+     uint32_t eventData = 0;
+     unsigned int i;
      ReadStatus = 0;
 
-    unsigned int i;
-
-    for (i = 0; i < count; i++) 
-    { 
-
-        ret = sd0->readBlocks(sd0->getRxBuff(), (uint32_t)sector++, 1);
-
-        if(ret == M_RESULT_EOK)
-        {
-            /* Wait that the reading process is completed or a timeout occurs */
-            timeout = HAL_GetTick();
-            while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
-            {
-                
-            }
-            /* incase of a timeout return error */
-            if (ReadStatus == 0)
-            {
-                break;
-            }
-            else
-            {
-                ReadStatus = 0;
-                timeout = HAL_GetTick();
-
-                while((HAL_GetTick() - timeout) < SD_TIMEOUT)
-                {
-                    if (sd0->getCardState() == mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
-                    {
-                        memcpy(buff, sd0->getRxBuff(), BLOCKSIZE);
-                        buff += BLOCKSIZE;
-                        
-                        break;
-                    }
-                }
-            }
-        }
-        else
-        {
-            break;
-        }
+    if(!mSchedule::getInstance()->bScheduleStarted())
+    {
+      for (i = 0; i < count; i++) 
+      {
+          ret = sd0->readBlocks(sd0->getRxBuff(), (uint32_t)sector++, 1);
+  
+          if(ret == M_RESULT_EOK)
+          {
+              /* Wait that the reading process is completed or a timeout occurs */
+              timeout = HAL_GetTick();
+              while((ReadStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
+              {
+                  
+              }
+              /* incase of a timeout return error */
+              if (ReadStatus == 0)
+              {
+                  break;
+              }
+              else
+              {
+                  ReadStatus = 0;
+                  timeout = HAL_GetTick();
+  
+                  while((HAL_GetTick() - timeout) < SD_TIMEOUT)
+                  {
+                      if (sd0->getCardState() == mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
+                      {
+                          memcpy(buff, sd0->getRxBuff(), BLOCKSIZE);
+                          buff += BLOCKSIZE;
+                          
+                          break;
+                      }
+                  }
+              }
+          }
+          else
+          {
+              break;
+          }
+      }
     }
+    else
+    {
+      for (i = 0; i < count; i++) 
+      {
+          ret = sd0->readBlocks(sd0->getRxBuff(), (uint32_t)sector++, 1);
+          if(ret == M_RESULT_EOK)
+          {
+             if(sdEvent.recv(1, EVENT_FLAG_AND | EVENT_FLAG_CLEAR, SD_TIMEOUT, &eventData) == M_RESULT_EOK)
+             {
+                 if(ReadStatus == 0)
+                 {
+                  break;
+                 }
+                 else
+                 {
+                   ReadStatus = 0;
+                   if (sd0->getCardState() == mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
+                   {
+                       memcpy(buff, sd0->getRxBuff(), BLOCKSIZE);
+                       buff += BLOCKSIZE;
+                   }
+                 }
+             }
+             else
+             {
+              break;
+             }
+          }
+          else
+          {
+              break;
+          }
+      }
+    }
+
     if ((i == count) && (ret == M_RESULT_EOK))
     {
       return RES_OK;
@@ -156,51 +197,92 @@ DSTATUS SD_status(BYTE lun)
  {
     mResult ret = M_RESULT_ERROR;
     uint32_t timeout;
-    WriteStatus = 0;
+    uint32_t eventData = 0;
     uint32_t i;
-    
-    for (i = 0; i < count; i++)
+    WriteStatus = 0;
+
+    if(!mSchedule::getInstance()->bScheduleStarted())
     {
-        WriteStatus = 0;
-        
-        memcpy((void *)sd0->getTxBuff(), (void *)buff, BLOCKSIZE);
-        buff += BLOCKSIZE;
-
-        ret = sd0->writeBlocks(sd0->getTxBuff(), (uint32_t)sector++, 1);
-        if(ret == M_RESULT_EOK)
+        for (i = 0; i < count; i++)
         {
-            /* Wait that writing process is completed or a timeout occurs */
-
-            timeout = HAL_GetTick();
-            while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
-            {
-            }
+            WriteStatus = 0;
             
-            /* incase of a timeout return error */
-            if (WriteStatus == 0)
+            memcpy((void *)sd0->getTxBuff(), (void *)buff, BLOCKSIZE);
+            buff += BLOCKSIZE;
+    
+            ret = sd0->writeBlocks(sd0->getTxBuff(), (uint32_t)sector++, 1);
+            if(ret == M_RESULT_EOK)
             {
-                break;
-            }
-            else
-            {
-                WriteStatus = 0;
+                /* Wait that writing process is completed or a timeout occurs */
+    
                 timeout = HAL_GetTick();
-
-                while((HAL_GetTick() - timeout) < SD_TIMEOUT)
+                while((WriteStatus == 0) && ((HAL_GetTick() - timeout) < SD_TIMEOUT))
                 {
-                    if (sd0->getCardState() == mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
+                }
+                
+                /* incase of a timeout return error */
+                if (WriteStatus == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    WriteStatus = 0;
+                    timeout = HAL_GetTick();
+    
+                    while((HAL_GetTick() - timeout) < SD_TIMEOUT)
                     {
-                        break;
+                        if (sd0->getCardState() == mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
+                        {
+                            break;
+                        }
                     }
                 }
             }
-        }
-        else
+            else
+            {
+                break;
+            }
+        }  
+    }
+    else
+    {
+        for (i = 0; i < count; i++)
         {
-            break;
+            WriteStatus = 0;
+            
+            memcpy((void *)sd0->getTxBuff(), (void *)buff, BLOCKSIZE);
+            buff += BLOCKSIZE;
+    
+            ret = sd0->writeBlocks(sd0->getTxBuff(), (uint32_t)sector++, 1);
+            if(ret == M_RESULT_EOK)
+            {
+                if(sdEvent.recv(2, EVENT_FLAG_AND | EVENT_FLAG_CLEAR, SD_TIMEOUT, &eventData) == M_RESULT_EOK)
+                {
+                    if(WriteStatus == 0)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        WriteStatus = 0;
+                        if (sd0->getCardState() != mDev::MSDMMC_CARD_STATE::SDMMC_TRANSFER_OK)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            else
+            {
+                break;
+            }
         }
     }
-
     if ((i == count) && (ret == M_RESULT_EOK))
     {
         return RES_OK;           

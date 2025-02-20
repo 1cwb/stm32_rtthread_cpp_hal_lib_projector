@@ -267,7 +267,7 @@ mResult mthread::threadSleep(uint32_t tick)
     mSchedule::getInstance()->schedule();
 
     /* clear error number of this thread to RT_EOK */
-    if (thread->error == -M_RESULT_ETIMEOUT)
+    if (thread->error == M_RESULT_ETIMEOUT)
         thread->error = M_RESULT_EOK;
 
     return M_RESULT_EOK;
@@ -324,7 +324,7 @@ mResult mthread::threadDelayUntil(uint32_t *tick, uint32_t incTick)
         mSchedule::getInstance()->schedule();
 
         /* clear error number of this thread to RT_EOK */
-        if (thread->error == -M_RESULT_ETIMEOUT)
+        if (thread->error == M_RESULT_ETIMEOUT)
         {
             thread->error = M_RESULT_EOK;
         }
