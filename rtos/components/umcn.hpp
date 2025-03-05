@@ -79,7 +79,7 @@ private:
     mEvent _event;
     static std::list<mcnHub*, mMemAllocator<mcnHub*>> _mcnHubList;
     static mTimer _freqTimer;
-    static mAtomic<bool> _btimerInit;
+    static atomic<bool> _btimerInit;
 };
 
 class mcnNode

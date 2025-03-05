@@ -2,7 +2,7 @@
 #include <cstring>
 std::list<mcnHub*, mMemAllocator<mcnHub*>> mcnHub::_mcnHubList;
 mTimer mcnHub::_freqTimer;
-mAtomic<bool> mcnHub::_btimerInit(false);
+atomic<bool> mcnHub::_btimerInit(false);
 
 mResult mcnHub::init()
 {
