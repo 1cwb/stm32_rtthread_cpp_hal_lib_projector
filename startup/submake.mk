@@ -1,4 +1,4 @@
-CURRENT_DIR := $(CURDIR)/app
+CURRENT_DIR := $(CURDIR)/startup
 
 SUBDIRS := $(shell find $(CURRENT_DIR) -maxdepth 3 -type d)
 

@@ -70,7 +70,7 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 		sum += data_to_send[i];
 	data_to_send[_cnt++]=sum;
 
-    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM))->send(data_to_send,_cnt);
+    //((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM))->send(data_to_send,_cnt);
 }
 
 /*
@@ -97,6 +97,7 @@ static void CreateNewFile(void)
 	if (result != FR_OK)
 	{
 		printf("挂载文件系统失败 (%s)\r\n", mFatFs::errToStr(result));
+        return;
 	}
 
 	/* 打开文件 */
@@ -177,11 +178,13 @@ int main(void)
         led2->toggle();
     }, nullptr);
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 2000, 20, [&](void* param){
+        if(mag1)
         mag1->updateData();
+        if(mb1)
         mb1->updateData();
         //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);
         //ALOGI("YAW:%d ROLL:%10f PITCH:%10f P%10f\r\n",/*imu1->getYaw()*/mag1->getMageX(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
-
+        if(imu2)
         ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
        //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
         //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());

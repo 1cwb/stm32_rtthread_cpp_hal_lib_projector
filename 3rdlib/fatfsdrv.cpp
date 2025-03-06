@@ -37,11 +37,15 @@ static DSTATUS SD_CheckStatus(BYTE lun)
  DSTATUS SD_initialize(BYTE lun)
  {
     sd0 = (mDev::mSDMMC*)mDev::mPlatform::getInstance()->getDevice("sd0");
+    if(!sd0)
+    {
+      return STA_NOINIT;
+    }
     sdEvent.init("sdev",mIpcFlag::IPC_FLAG_FIFO);
-   if(sd0)
-   {
-     Stat = SD_CheckStatus(lun);
-   }
+    if(sd0)
+    {
+        Stat = SD_CheckStatus(lun);
+    }
        sd0->registerInterruptCb([](mDev::mDevice* dev, void* p){
         mDev::MSDMMCdata* data = (mDev::MSDMMCdata*)p;
         switch(data->type)

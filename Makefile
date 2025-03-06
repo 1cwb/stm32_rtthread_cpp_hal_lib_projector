@@ -6,6 +6,12 @@ export SRC_CXX_FILES :=
 export SRC_HPP_FILES :=
 export SRC_INCDIR :=
 export LINK_FILES :=
+export BOARD_TYPE :=
+#######################################BOARD_TYPE#############################################
+export AP_FLY_BOARD := 1
+export RC_FLY_BOARD := 2
+export DEMO_BOARD := 3
+BOARD_TYPE := $(DEMO_BOARD)
 ########################################MEM_MAP################################################
 APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
@@ -17,7 +23,7 @@ DEFINE += -DDEBUG_UART_BOUNDRATE=2000000
 ifdef BOOT
 BUILD_DIR := $(CURDIR)/bootloader $(CURDIR)/core $(CURDIR)/stm32h7hallib
 else
-BUILD_DIR := $(CURDIR)/app $(CURDIR)/core $(CURDIR)/stm32h7hallib $(CURDIR)/device $(CURDIR)/project $(CURDIR)/rtos $(CURDIR)/system $(CURDIR)/3rdlib
+BUILD_DIR := $(CURDIR)/startup $(CURDIR)/core $(CURDIR)/stm32h7hallib $(CURDIR)/device $(CURDIR)/project $(CURDIR)/rtos $(CURDIR)/system $(CURDIR)/3rdlib
 endif
 
 #$(info "$(BUILD_DIR)")
@@ -80,7 +86,7 @@ EXTRA_LINK_FLAGS	:= -g -gdwarf-2 -lc -lm -lstdc++ -lnosys -T$(LINK_FILES) \
 						-Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
 						-Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
 #################################################################################################
-ifdef HSE8M
+ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
 DEFINE    +=-DSTM32H750xx \
 			-DHSE_VALUE=8000000 \
 			-DCSI_VALUE=4000000 \
@@ -90,7 +96,7 @@ DEFINE    +=-DSTM32H750xx \
 			-DPLLP_VALUE=2 \
 			-DPLLQ_VALUE=4 \
 			-DPLLR_VALUE=2
-else ifdef HSE25M
+else ifeq ($(BOARD_TYPE), $(DEMO_BOARD))
 DEFINE    +=-DSTM32H750xx \
 			-DHSE_VALUE=25000000 \
 			-DCSI_VALUE=4000000 \
@@ -99,8 +105,13 @@ DEFINE    +=-DSTM32H750xx \
 			-DPLLN_VALUE=192 \
 			-DPLLP_VALUE=2 \
 			-DPLLQ_VALUE=4 \
-			-DPLLR_VALUE=2
-else
+			-DPLLR_VALUE=2 \
+			-DPLL2M_VALUE=5 \
+			-DPLL2N_VALUE=40 \
+			-DPLL2P_VALUE=2 \
+			-DPLL2Q_VALUE=2 \
+			-DPLL2R_VALUE=2
+else ifeq ($(BOARD_TYPE), $(AP_FLY_BOARD))
 DEFINE    +=-DSTM32H750xx \
 			-DHSE_VALUE=16000000 \
 			-DCSI_VALUE=4000000 \
@@ -115,8 +126,6 @@ DEFINE    +=-DSTM32H750xx \
 			-DPLL2P_VALUE=2 \
 			-DPLL2Q_VALUE=1 \
 			-DPLL2R_VALUE=1
-AP_FLY_BOARD := 1
-export AP_FLY_BOARD
 endif
 DEFINE    +=-DTHREAD_TICK_PER_SECOND=1000
 ###############################################################

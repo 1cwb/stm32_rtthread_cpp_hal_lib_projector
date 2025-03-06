@@ -1,0 +1,2 @@
+CURRENT_DIR := $(CURDIR)/project
+SRC_INCDIR += $(CURRENT_DIR)

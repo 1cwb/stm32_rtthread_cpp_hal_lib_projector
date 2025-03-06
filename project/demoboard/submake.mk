@@ -1,5 +1,5 @@
-ifeq ($(BOARD_TYPE), $(AP_FLY_BOARD))
-CURRENT_DIR := $(CURDIR)/project/ap-fly
+ifeq ($(BOARD_TYPE), $(DEMO_BOARD))
+CURRENT_DIR := $(CURDIR)/project/demoboard
 SUBDIRS := $(shell find $(CURRENT_DIR) -maxdepth 3 -type d)
 
 CURRENT_SRC_DIR := $(SUBDIRS)
