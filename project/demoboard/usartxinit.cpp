@@ -164,13 +164,14 @@ int initUsart()
     DMA_HandleTypeDef hdma_usartx_tx;
     DMA_HandleTypeDef hdma_usartx_rx;
     uart1 = new usart(DEV_USART1);
+#if 0
     uart2 = new usart(DEV_USART2);
     uart3 = new usart(DEV_USART3);
     uart4 = new usart(DEV_USART4);
     uart5 = new usart(DEV_USART5);
     uart6 = new usart(DEV_USART6);
     uart8 = new usart(DEV_USART8);
-
+#endif
     uart1->duplicateHal([](bool benable){
         HAL_NVIC_EnableIRQ(USART1_IRQn);
         HAL_NVIC_SetPriority(USART1_IRQn,3,3);
@@ -179,7 +180,7 @@ int initUsart()
     uart1->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
     uart1->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
     uart1->recvData(uart1->getRxBuff(),usart::RX_BUFF_LEN);
-
+#if 0
     huartX.Instance = USART2;
     huartX.Init.BaudRate = DEBUG_UART_BOUNDRATE;
     huartX.Init.WordLength = UART_WORDLENGTH_8B;
@@ -331,6 +332,7 @@ int initUsart()
     uart8->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
     uart8->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
     uart8->recvData(uart8->getRxBuff(),usart::RX_BUFF_LEN);
+#endif
     return 0;
 }
 INIT_EXPORT(initUsart, "0.1");
