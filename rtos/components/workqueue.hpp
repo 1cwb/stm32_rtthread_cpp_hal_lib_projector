@@ -10,7 +10,7 @@ class workItem
 public:
     workItem(const char* name, uint32_t scheduleTime, uint16_t period, workItemCallback run, void* param):
     _name(name),
-    _scheduleTime(scheduleTime),
+    _scheduleTime(SCHEDULE_DELAY(scheduleTime)),
     _run(run),
     _param(param),
     _period(period) {}

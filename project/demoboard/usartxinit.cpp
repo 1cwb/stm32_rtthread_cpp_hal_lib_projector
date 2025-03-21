@@ -160,9 +160,11 @@ void Debug_printf(const char *format, ...)
 
 int initUsart()
 {
+  #if 0
     UART_HandleTypeDef huartX;
     DMA_HandleTypeDef hdma_usartx_tx;
     DMA_HandleTypeDef hdma_usartx_rx;
+#endif
     uart1 = new usart(DEV_USART1);
 #if 0
     uart2 = new usart(DEV_USART2);
