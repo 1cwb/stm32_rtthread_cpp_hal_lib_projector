@@ -2,7 +2,6 @@
 #include "gpio.hpp"
 #include "project.hpp"
 #include <stm32h7xx_hal_sd.h>
-#include <stm32h750xx.h>
 
 static sdmmc* sd1 = nullptr;
 /* Private define ------------------------------------------------------------*/

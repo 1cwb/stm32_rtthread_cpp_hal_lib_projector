@@ -17,7 +17,7 @@ APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
 DEFINE += -DH7XX_BOOTLOADER_ADDR=0x1FF09800
 DEFINE += -DAPP_VTABLE_ADDR=$(APP_FLASH_ORIGIN)
-DEFINE += -DDEBUG_UART_BOUNDRATE=2000000
+DEFINE += -DDEBUG_UART_BOUNDRATE=921600
 ######################################SUB_MK###################################################
 # 要编译的文件夹，用空格分隔
 ifdef BOOT
@@ -87,7 +87,7 @@ EXTRA_LINK_FLAGS	:= -g -gdwarf-2 -lc -lm -lstdc++ -lnosys -T$(LINK_FILES) \
 						-Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
 #################################################################################################
 ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
-DEFINE    +=-DSTM32H750xx \
+DEFINE    +=-DSTM32H430xx \
 			-DHSE_VALUE=8000000 \
 			-DCSI_VALUE=4000000 \
 			-DHSI_VALUE=64000000 \
@@ -97,7 +97,7 @@ DEFINE    +=-DSTM32H750xx \
 			-DPLLQ_VALUE=4 \
 			-DPLLR_VALUE=2
 else ifeq ($(BOARD_TYPE), $(DEMO_BOARD))
-DEFINE    +=-DSTM32H750xx \
+DEFINE    +=-DSTM32H743xx \
 			-DHSE_VALUE=25000000 \
 			-DCSI_VALUE=4000000 \
 			-DHSI_VALUE=64000000 \
@@ -112,7 +112,7 @@ DEFINE    +=-DSTM32H750xx \
 			-DPLL2Q_VALUE=2 \
 			-DPLL2R_VALUE=2
 else ifeq ($(BOARD_TYPE), $(AP_FLY_BOARD))
-DEFINE    +=-DSTM32H750xx \
+DEFINE    +=-DSTM32H743xx \
 			-DHSE_VALUE=16000000 \
 			-DCSI_VALUE=4000000 \
 			-DHSI_VALUE=64000000 \

@@ -321,11 +321,11 @@ private:
 
 class mMessagequeue : public mIpc
 {
+public:
     struct mqMessage_t
     {
         struct mqMessage_t *next;
     };
-public:
     mMessagequeue() : bInited_(false)
     {
     }
@@ -431,6 +431,8 @@ public:
      * @return the error code
      */
     mResult control(int cmd, void *arg);
+    uint16_t getMaxSize() const {return msg_.maxMsgs;}
+    uint16_t getUsedSize() const {return msg_.entry;}
 private:
     mMessagequeue_t msg_;
     bool bInited_;
