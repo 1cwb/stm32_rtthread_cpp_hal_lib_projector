@@ -199,7 +199,6 @@ int uartRecvQueueInit(void)
 void usartRecvEnter(void* p)
 {
     interfaceData ifdata;
-    char buff[64] = {0};
     while(true)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
@@ -207,7 +206,7 @@ void usartRecvEnter(void* p)
             switch(ifdata.id)
             {
                 case UART_ID_VCOM:
-                for(int i = 0; i < ifdata.len; i++)
+                for(uint32_t i = 0; i < ifdata.len; i++)
                 {
                   printf("%x", ifdata.data[i]);
                 }
