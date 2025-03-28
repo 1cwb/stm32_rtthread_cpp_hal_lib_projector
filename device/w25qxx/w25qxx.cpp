@@ -62,8 +62,8 @@ mResult W25QXX::QSPIW25QxxInit(void)
 	{
 		return M_RESULT_ERROR;
 	}
-	QSPIW25QxxReset();							          // 复位器件
-	Device_ID = QSPIW25QxxReadID(); 		                  // 读取器件ID
+	reset();							          // 复位器件
+	Device_ID = readID(); 		                  // 读取器件ID
 	
 	if( Device_ID == W25Qxx_FLASH_ID )		                  // 进行匹配
 	{
@@ -127,7 +127,7 @@ mResult W25QXX::QSPIW25QxxAutoPollingMemReady(void)
 *	说    明: 无	
 *************************************************************************************************/
 
-mResult W25QXX::QSPIW25QxxReset(void)	
+mResult W25QXX::reset(void)	
 {
 	mDev::QSPICommand s_command;	// QSPI传输配置
 
@@ -175,7 +175,7 @@ mResult W25QXX::QSPIW25QxxReset(void)
 *	说    明: 无	
 **************************************************************************************************/
 
-uint32_t W25QXX::QSPIW25QxxReadID(void)	
+uint32_t W25QXX::readID(void)	
 {
 	mDev::QSPICommand s_command;	// QSPI传输配置
 	uint8_t	QSPI_ReceiveBuff[3];		// 存储QSPI读到的数据
@@ -218,36 +218,35 @@ uint32_t W25QXX::QSPIW25QxxReadID(void)
 *	函数功能: 将QSPI设置为内存映射模式
 *	说    明: 设置为内存映射模式时，只能读，不能写！！！	
 **************************************************************************************************/
-#if 0
-int8_t W25QXX::QSPIW25QxxMemoryMappedMode(void)
+mResult W25QXX::memoryMappedMode(void)
 {
 	mDev::QSPICommand      s_command;				 // QSPI传输配置
-	QSPI_MemoryMappedTypeDef s_mem_mapped_cfg;	 // 内存映射访问参数
+	mDev::QSPIMemoryMappedCfg s_mem_mapped_cfg;	 // 内存映射访问参数
 
-	s_command.InstructionMode   = QSPI_INSTRUCTION_1_LINE;    		// 1线指令模式
-	s_command.AddressSize       = QSPI_ADDRESS_24_BITS;            // 24位地址
-	s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;  		// 无交替字节 
-	s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;     		// 禁止DDR模式
-	s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY; 		// DDR模式中数据延迟，这里用不到
-	s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;			// 每次传输数据都发送指令	
-	s_command.AddressMode 		 = QSPI_ADDRESS_4_LINES; 				// 4线地址模式
-	s_command.DataMode    		 = QSPI_DATA_4_LINES;    				// 4线数据模式
+	s_command.InstructionMode   = mDev::E_QSPI_INSTRUCTION_1_LINE;    		// 1线指令模式
+	s_command.AddressSize       = mDev::E_QSPI_ADDRESS_24_BITS;            // 24位地址
+	s_command.AlternateByteMode = mDev::E_QSPI_ALTERNATE_BYTES_NONE;  		// 无交替字节 
+	s_command.DdrMode           = mDev::E_QSPI_DDR_MODE_DISABLE;     		// 禁止DDR模式
+	s_command.DdrHoldHalfCycle  = mDev::E_QSPI_DDR_HHC_ANALOG_DELAY; 		// DDR模式中数据延迟，这里用不到
+	s_command.SIOOMode          = mDev::E_QSPI_SIOO_INST_EVERY_CMD;			// 每次传输数据都发送指令	
+	s_command.AddressMode 		 = mDev::E_QSPI_ADDRESS_4_LINES; 				// 4线地址模式
+	s_command.DataMode    		 = mDev::E_QSPI_DATA_4_LINES;    				// 4线数据模式
 	s_command.DummyCycles 		 = 6;                    				// 空周期个数
 	s_command.Instruction 		 = W25Qxx_CMD_FastReadQuad_IO; 		// 1-4-4模式下(1线指令4线地址4线数据)，快速读取指令
 	
-	s_mem_mapped_cfg.TimeOutActivation = QSPI_TIMEOUT_COUNTER_DISABLE; // 禁用超时计数器, nCS 保持激活状态
+	s_mem_mapped_cfg.TimeOutActivation = mDev::E_QSPI_TIMEOUT_COUNTER_DISABLE; // 禁用超时计数器, nCS 保持激活状态
 	s_mem_mapped_cfg.TimeOutPeriod     = 0;									 // 超时判断周期
 
-	QSPIW25QxxReset();		// 复位W25Qxx
+	reset();		// 复位W25Qxx
 	
-	if (HAL_QSPI_MemoryMapped(&hqspi, &s_command, &s_mem_mapped_cfg) != M_RESULT_EOK)	// 进行配置
+	if (_qspi->memoryMapped(&s_command, &s_mem_mapped_cfg) != M_RESULT_EOK)	// 进行配置
 	{
-		return W25Qxx_ERROR_MemoryMapped; 	// 设置内存映射模式错误
+		return M_RESULT_ERROR; 	// 设置内存映射模式错误
 	}
 
 	return M_RESULT_EOK; // 配置成功
 }
-#endif
+
 /*************************************************************************************************
 *	函 数 名: QSPIW25QxxWriteEnable
 *	入口参数: 无
@@ -317,7 +316,7 @@ mResult W25QXX::QSPIW25QxxWriteEnable(void)
 *
 **************************************************************************************************/
 
-mResult W25QXX::QSPIW25QxxSectorErase(uint32_t SectorAddress)	
+mResult W25QXX::sectorErase(uint32_t SectorAddress)	
 {
 	mDev::QSPICommand s_command;	// QSPI传输配置
 	
@@ -369,7 +368,7 @@ mResult W25QXX::QSPIW25QxxSectorErase(uint32_t SectorAddress)
 *
 *************************************************************************************************/
 
-mResult W25QXX::QSPIW25QxxBlockErase32K (uint32_t SectorAddress)	
+mResult W25QXX::blockErase32K (uint32_t SectorAddress)	
 {
 	mDev::QSPICommand s_command;	// QSPI传输配置
 	
@@ -422,7 +421,7 @@ mResult W25QXX::QSPIW25QxxBlockErase32K (uint32_t SectorAddress)
 *
 **************************************************************************************************/
 
-mResult W25QXX::QSPIW25QxxBlockErase64K (uint32_t SectorAddress)	
+mResult W25QXX::blockErase64K (uint32_t SectorAddress)	
 {
 	mDev::QSPICommand s_command;	// QSPI传输配置
 	
@@ -474,7 +473,7 @@ mResult W25QXX::QSPIW25QxxBlockErase64K (uint32_t SectorAddress)
 *
 *************************************************************************************************/
 
-mResult W25QXX::QSPIW25QxxChipErase (void)	
+mResult W25QXX::chipErase (void)	
 {
 	mDev::QSPICommand s_command;		// QSPI传输配置
 	mDev::QSPIAutoPolling s_config;	// 轮询等待配置参数
@@ -525,7 +524,7 @@ mResult W25QXX::QSPIW25QxxChipErase (void)
 
 /**********************************************************************************************************
 *
-*	函 数 名: QSPIW25QxxWritePage
+*	函 数 名: writePage
 *
 *	入口参数: pBuffer 		 - 要写入的数据
 *				 WriteAddr 		 - 要写入 W25Qxx 的地址
@@ -546,7 +545,7 @@ mResult W25QXX::QSPIW25QxxChipErase (void)
 *
 ***********************************************************************************************************/
 
-mResult W25QXX::QSPIW25QxxWritePage(uint8_t* pBuffer, uint32_t WriteAddr, uint16_t NumByteToWrite)
+mResult W25QXX::writePage(uint8_t* pBuffer, uint32_t WriteAddr, uint16_t NumByteToWrite)
 {
 	mDev::QSPICommand s_command;	// QSPI传输配置	
 	
@@ -610,7 +609,7 @@ mResult W25QXX::QSPIW25QxxWritePage(uint8_t* pBuffer, uint32_t WriteAddr, uint16
 *
 **********************************************************************************************************/
 
-mResult W25QXX::QSPIW25QxxWriteBuffer(uint8_t* pBuffer, uint32_t WriteAddr, uint32_t Size)
+mResult W25QXX::writeBuffer(uint8_t* pBuffer, uint32_t WriteAddr, uint32_t Size)
 {	
 	uint32_t end_addr, current_size, current_addr;
 	uint8_t *write_data;  // 要写入的数据
@@ -635,7 +634,7 @@ mResult W25QXX::QSPIW25QxxWriteBuffer(uint8_t* pBuffer, uint32_t WriteAddr, uint
 		}
 
 		// 按页写入数据
-		else if(QSPIW25QxxWritePage(write_data, current_addr, current_size) != M_RESULT_EOK)
+		else if(writePage(write_data, current_addr, current_size) != M_RESULT_EOK)
 		{
 			return M_RESULT_ERROR;
 		}
@@ -685,7 +684,7 @@ mResult W25QXX::QSPIW25QxxWriteBuffer(uint8_t* pBuffer, uint32_t WriteAddr, uint
 *
 *****************************************************************************************************************FANKE************/
 
-mResult W25QXX::QSPIW25QxxReadBuffer(uint8_t* pBuffer, uint32_t ReadAddr, uint32_t NumByteToRead)
+mResult W25QXX::readBuffer(uint8_t* pBuffer, uint32_t ReadAddr, uint32_t NumByteToRead)
 {
 	mDev::QSPICommand s_command;	// QSPI传输配置
 	

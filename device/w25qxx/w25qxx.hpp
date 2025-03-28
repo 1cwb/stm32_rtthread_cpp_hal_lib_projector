@@ -1,5 +1,6 @@
 #pragma once
 #include "mqspidrv.hpp"
+#include "mspiflashdrv.hpp"
 
 /*----------------------------------------------- 命名参数宏 -------------------------------------------*/
 
@@ -41,24 +42,22 @@
 
 
 /*----------------------------------------------- 函数声明 ---------------------------------------------------*/
-class W25QXX : public mDev::mDevice
+class W25QXX : public mDev::mMspiflash
 {
 public:
-    W25QXX(const char* name):mDev::mDevice(name){}
+    W25QXX(const char* name):mDev::mMspiflash(name){}
     ~W25QXX(){}
+    virtual mResult reset(void) override;					                                            // 复位器件
+    virtual uint32_t readID(void) override;						                                        // 读取器件ID
+    virtual mResult memoryMappedMode(void) override;			                                        // 进入内存映射模式
+    virtual mResult sectorErase(uint32_t SectorAddress) override;			                            // 扇区擦除，4K字节， 参考擦除时间 45ms
+    virtual mResult blockErase32K (uint32_t SectorAddress) override;		                            // 块擦除，  32K字节，参考擦除时间 120ms
+    virtual mResult blockErase64K (uint32_t SectorAddress) override;		                            // 块擦除，  64K字节，参考擦除时间 150ms，实际使用建议使用64K擦除，擦除的时间最快
+    virtual mResult chipErase (void) override;	                                                        // 整片擦除，参考擦除时间 20S
+    virtual mResult	writePage(uint8_t* pBuffer, uint32_t WriteAddr, uint16_t NumByteToWrite) override;	// 按页写入，最大256字节
+    virtual mResult	writeBuffer(uint8_t* pData, uint32_t WriteAddr, uint32_t Size) override;			// 写入数据，最大不能超过flash芯片的大小		
+    virtual mResult readBuffer(uint8_t* pBuffer, uint32_t ReadAddr, uint32_t NumByteToRead) override;	// 读取数据，最大不能超过flash芯片的大小
     mResult	QSPIW25QxxInit(void);						// W25Qxx初始化
-    mResult QSPIW25QxxReset(void);					// 复位器件
-    uint32_t QSPIW25QxxReadID(void);					// 读取器件ID
-    mResult QSPIW25QxxMemoryMappedMode(void);		// 进入内存映射模式
-        
-    mResult QSPIW25QxxSectorErase(uint32_t SectorAddress);		// 扇区擦除，4K字节， 参考擦除时间 45ms
-    mResult QSPIW25QxxBlockErase32K (uint32_t SectorAddress);	// 块擦除，  32K字节，参考擦除时间 120ms
-    mResult QSPIW25QxxBlockErase64K (uint32_t SectorAddress);	// 块擦除，  64K字节，参考擦除时间 150ms，实际使用建议使用64K擦除，擦除的时间最快
-    mResult QSPIW25QxxChipErase (void);                         // 整片擦除，参考擦除时间 20S
-    
-    mResult	QSPIW25QxxWritePage(uint8_t* pBuffer, uint32_t WriteAddr, uint16_t NumByteToWrite);	// 按页写入，最大256字节
-    mResult	QSPIW25QxxWriteBuffer(uint8_t* pData, uint32_t WriteAddr, uint32_t Size);				// 写入数据，最大不能超过flash芯片的大小
-    mResult QSPIW25QxxReadBuffer(uint8_t* pBuffer, uint32_t ReadAddr, uint32_t NumByteToRead);	// 读取数据，最大不能超过flash芯片的大小
 private:
     mResult QSPIW25QxxAutoPollingMemReady(void);
     mResult QSPIW25QxxWriteEnable(void);

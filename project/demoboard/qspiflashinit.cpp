@@ -11,8 +11,8 @@ int qspiflashInit()
     {
         return -1;
     }
-#if 0
-    if(w25qxx->QSPIW25QxxChipErase() != M_RESULT_EOK)
+#if 1
+    if(w25qxx->chipErase() != M_RESULT_EOK)
     {
         printf("erase chip fail\r\n");
         return -1;
@@ -21,11 +21,11 @@ int qspiflashInit()
 #endif
 uint8_t buf[10] = {0,1,2,3,4,5,6,7,7,7};
 uint8_t rbuf[10] = {0};
-if(w25qxx->QSPIW25QxxWriteBuffer(buf, 0x00, 10) != M_RESULT_EOK)
+if(w25qxx->writeBuffer(buf, 0x00, 10) != M_RESULT_EOK)
 {
     return -1;
 }
-if(w25qxx->QSPIW25QxxReadBuffer(rbuf, 0x00, 10) != M_RESULT_EOK)
+if(w25qxx->readBuffer(rbuf, 0x00, 10) != M_RESULT_EOK)
 {
     return -1;
 }
