@@ -104,7 +104,7 @@ HAL_StatusTypeDef Stm32_Clock_Init()
     * 配置串口 2 / 3 / 4 / 5 / 7 / 8 的时钟源来自: PCLK1 = 120Mhz
     * USB 工作需要 48MHz 的时钟,可以由 PLL1Q,PLL3Q 和 HSI48 提供,这里配置时钟源是 HSI48
     */
-    PeriphClkInitStruct.PeriphClockSelection = /*RCC_PERIPHCLK_QSPI |RCC_PERIPHCLK_FMC |*/ \
+    PeriphClkInitStruct.PeriphClockSelection =  RCC_PERIPHCLK_QSPI |RCC_PERIPHCLK_FMC | \
                                                 RCC_PERIPHCLK_USART16 | RCC_PERIPHCLK_USART234578 \
                                                | RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USB \
                                                | RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_SDMMC;	   	// 设置时钟
@@ -116,8 +116,8 @@ HAL_StatusTypeDef Stm32_Clock_Init()
     PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_0;
     PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
     PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
-    //PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_PLL;
-    //PeriphClkInitStruct.QspiClockSelection = RCC_QSPICLKSOURCE_D1HCLK;
+    PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_PLL;
+    PeriphClkInitStruct.QspiClockSelection = RCC_FMCCLKSOURCE_PLL2;
     PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
     PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;

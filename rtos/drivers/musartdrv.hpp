@@ -4,20 +4,6 @@
 
 namespace mDev 
 {
-enum class transferMode
-{
-    TRANSFER_MODE_NOMAL,
-    TRANSFER_MODE_IT,
-    TRANSFER_MODE_DMA,
-};
-enum class recvMode
-{
-    RECV_MODE_NOMAL,
-    RECV_MODE_IT,
-    RECV_MODE_DMA,
-    RECV_MODE_IT_RECV_IDLE,
-    RECV_MODE_DMA_RECV_IDLE
-};
 class mUsart : public mDevice
 {
 public:
@@ -49,7 +35,6 @@ public:
     void setTransferMode(transferMode mode) {_transferMode = mode;}
     void setRecvMode(recvMode mode) {_recvMode = mode;}
     recvMode getRecvMode() const {return _recvMode;}
-    virtual void* getObj() {return nullptr;}
 public:
     constexpr static int RX_BUFF_LEN = 64;
 protected:

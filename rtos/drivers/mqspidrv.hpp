@@ -1,5 +1,6 @@
 #pragma once
 #include "mdevice.hpp"
+#include "mgpiodrv.hpp"
 
 namespace mDev
 {
@@ -127,18 +128,38 @@ struct QSPIAutoPolling
   QSPIAutomaticStop AutomaticStop;      /* Specifies if automatic polling is stopped after a match.
                                   This parameter can be a value of @ref E_QSPI_AutomaticStop */
 };
+
+struct QSPIMemoryMappedCfg
+{
+    uint32_t TimeOutPeriod;      /* Specifies the number of clock to wait when the FIFO is full before to release the chip select.
+                                    This parameter can be any value between 0 and 0xFFFF */
+    QSPITimeOutActivation TimeOutActivation;  /* Specifies if the timeout counter is enabled to release the chip select.
+                                    This parameter can be a value of @ref QSPI_TimeOutActivation */
+};
+
 class mQspi : public mDevice
 {
 public:
     mQspi() = delete;
-    explicit mQspi(const char* name) : mDevice(name){}
+    explicit mQspi(const char* name) : mDevice(name), _transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL){}
     virtual ~mQspi(){}
     virtual mResult sendCmd(QSPICommand* cmd) {return M_RESULT_ERROR;}
     virtual mResult sendData(uint8_t *buf) {return M_RESULT_ERROR;}
     virtual mResult receive(uint8_t *buf) {return M_RESULT_ERROR;}
     virtual mResult autoPolling(QSPICommand* cmd, QSPIAutoPolling* poll, uint32_t timeout) {return M_RESULT_ERROR;}
+    inline virtual void csEnable(mDev::mGpio* cspin){}
+    inline virtual void csDisable(mDev::mGpio* cspin){}
+    virtual mResult memoryMapped(QSPICommand* cmd, QSPIMemoryMappedCfg* cfg){return M_RESULT_EOK;}
+    void setTransferMode(transferMode mode) {_transferMode = mode;}
+    void setRecvMode(recvMode mode) {_recvMode = mode;}
+    recvMode getRecvMode() const {return _recvMode;}
 protected:
     virtual mResult remapCmd(QSPICommand* cmd, void* dst) = 0;
     virtual mResult remapAutoPolling(QSPIAutoPolling* poll, void* dst) = 0;
+    virtual mResult remapMemMapCfg(QSPIMemoryMappedCfg* cfg, void* dst) = 0;
+
+protected:
+    transferMode _transferMode;
+    recvMode _recvMode;
 };
 }

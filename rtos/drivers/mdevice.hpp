@@ -4,6 +4,21 @@
 #include <string>
 namespace mDev
 {
+enum class transferMode
+{
+    TRANSFER_MODE_NOMAL,
+    TRANSFER_MODE_IT,
+    TRANSFER_MODE_DMA,
+};
+enum class recvMode
+{
+    RECV_MODE_NOMAL,
+    RECV_MODE_IT,
+    RECV_MODE_DMA,
+    RECV_MODE_IT_RECV_IDLE,
+    RECV_MODE_DMA_RECV_IDLE
+};
+
 template<typename T, typename TYPE = int32_t>
 struct devCbData
 {

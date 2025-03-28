@@ -22,7 +22,6 @@ public:
 
     virtual mResult send(const uint8_t* data, uint32_t len) override;
     virtual mResult recv(uint8_t* data, uint32_t len) override;
-    virtual void* getObj() override {return this;}
     bool buseTxDma()const {return _buseTxDma;}
     bool buseRxDma() const {return _buseRxDma;}
     bool btransferComplete()  {return _transferComplete;}

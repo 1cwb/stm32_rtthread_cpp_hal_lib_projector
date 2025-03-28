@@ -29,29 +29,116 @@ mResult Qspi::sendCmd(mDev::QSPICommand* cmd)
         ALOGE("%s()%d remapCmd Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
-    if (HAL_QSPI_Command(&hQspi, &dst, HAL_QSPI_TIMEOUT_DEFAULT_VALUE) != HAL_OK) 
+    if(_transferMode == mDev::transferMode::TRANSFER_MODE_NOMAL)
     {
-        ALOGE("%s()%d HAL_QSPI_Command Fail\r\n",__FUNCTION__,__LINE__);
+        if (HAL_QSPI_Command(&hQspi, &dst, HAL_QSPI_TIMEOUT_DEFAULT_VALUE) != HAL_OK) 
+        {
+            ALOGE("%s()%d HAL_QSPI_Command Fail\r\n",__FUNCTION__,__LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else if(_transferMode == mDev::transferMode::TRANSFER_MODE_IT)
+    {
+        if (HAL_QSPI_Command_IT(&hQspi, &dst)!= HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Command_IT Fail\r\n",__FUNCTION__,__LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else if(_transferMode == mDev::transferMode::TRANSFER_MODE_DMA)
+    {
+        if (HAL_QSPI_Command_IT(&hQspi, &dst)!= HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Command_IT Fail\r\n",__FUNCTION__,__LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else
+    {
+        ALOGE("%s()%d Invalid transfer mode\r\n", __FUNCTION__, __LINE__);
         return M_RESULT_ERROR;
     }
     return M_RESULT_EOK;
 }
 mResult Qspi::sendData(uint8_t *buf)
 {
-    if (HAL_QSPI_Transmit(&hQspi, (uint8_t *)buf, HAL_QSPI_TIMEOUT_DEFAULT_VALUE)!= HAL_OK)
+    if (!buf)
     {
-        ALOGE("%s()%d HAL_QSPI_Transmit Fail\r\n",__FUNCTION__,__LINE__);
+        ALOGE("%s()%d Invalid parameters\r\n", __FUNCTION__, __LINE__);
         return M_RESULT_ERROR;
     }
+
+    if (_transferMode == mDev::transferMode::TRANSFER_MODE_NOMAL)
+    {
+        if (HAL_QSPI_Transmit(&hQspi, buf, HAL_QSPI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Transmit Fail\r\n", __FUNCTION__, __LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else if (_transferMode == mDev::transferMode::TRANSFER_MODE_IT)
+    {
+        if (HAL_QSPI_Transmit_IT(&hQspi, buf) != HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Transmit_IT Fail\r\n", __FUNCTION__, __LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else if (_transferMode == mDev::transferMode::TRANSFER_MODE_DMA)
+    {
+        if (HAL_QSPI_Transmit_DMA(&hQspi, buf) != HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Transmit_DMA Fail\r\n", __FUNCTION__, __LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else
+    {
+        ALOGE("%s()%d Invalid transfer mode\r\n", __FUNCTION__, __LINE__);
+        return M_RESULT_ERROR;
+    }
+
     return M_RESULT_EOK;
 }
+
 mResult Qspi::receive(uint8_t *buf)
 {
-    if (HAL_QSPI_Receive(&hQspi, (uint8_t *)buf, HAL_QSPI_TIMEOUT_DEFAULT_VALUE)!= HAL_OK)
+    if (!buf)
     {
-        ALOGE("%s()%d HAL_QSPI_Receive Fail\r\n",__FUNCTION__,__LINE__);
+        ALOGE("%s()%d Invalid parameters\r\n", __FUNCTION__, __LINE__);
         return M_RESULT_ERROR;
     }
+
+    if (_recvMode == mDev::recvMode::RECV_MODE_NOMAL)
+    {
+        if (HAL_QSPI_Receive(&hQspi, buf, HAL_QSPI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Receive Fail\r\n", __FUNCTION__, __LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else if (_recvMode == mDev::recvMode::RECV_MODE_IT)
+    {
+        if (HAL_QSPI_Receive_IT(&hQspi, buf) != HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Receive_IT Fail\r\n", __FUNCTION__, __LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else if (_recvMode == mDev::recvMode::RECV_MODE_DMA)
+    {
+        if (HAL_QSPI_Receive_DMA(&hQspi, buf) != HAL_OK)
+        {
+            ALOGE("%s()%d HAL_QSPI_Receive_DMA Fail\r\n", __FUNCTION__, __LINE__);
+            return M_RESULT_ERROR;
+        }
+    }
+    else
+    {
+        ALOGE("%s()%d Invalid transfer mode\r\n", __FUNCTION__, __LINE__);
+        return M_RESULT_ERROR;
+    }
+
     return M_RESULT_EOK;
 }
 mResult Qspi::autoPolling(mDev::QSPICommand* cmd, mDev::QSPIAutoPolling* poll, uint32_t timeout)
@@ -68,10 +155,20 @@ mResult Qspi::autoPolling(mDev::QSPICommand* cmd, mDev::QSPIAutoPolling* poll, u
         ALOGE("%s()%d remapAutoPolling Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
-    if (HAL_QSPI_AutoPolling(&hQspi, &dst, &polldst, HAL_QSPI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
-	{
-		return M_RESULT_ETIMEOUT; // 轮询等待无响应
-	}
+    if(_transferMode == mDev::transferMode::TRANSFER_MODE_NOMAL && _recvMode == mDev::recvMode::RECV_MODE_NOMAL)
+    {
+        if (HAL_QSPI_AutoPolling(&hQspi, &dst, &polldst, timeout) != HAL_OK)
+        {
+            return M_RESULT_ETIMEOUT; // 轮询等待无响应
+        }
+    }
+    else
+    {
+        if (HAL_QSPI_AutoPolling_IT(&hQspi, &dst, &polldst) != HAL_OK)
+        {
+            return M_RESULT_ETIMEOUT; // 轮询等待无响应
+        }
+    }
     return M_RESULT_EOK;
 }
 
@@ -98,7 +195,8 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
         p->InstructionMode = QSPI_INSTRUCTION_4_LINES;
         break;
     default:
-        return M_RESULT_ERROR;
+        p->InstructionMode = QSPI_INSTRUCTION_NONE;
+        break;
     }
 
     // 指令
@@ -120,7 +218,8 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
         p->AddressMode = QSPI_ADDRESS_4_LINES;
         break;
     default:
-        return M_RESULT_ERROR;
+        p->AddressMode = QSPI_ADDRESS_NONE;
+        break;
     }
 
     // 地址大小
@@ -139,7 +238,8 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
         p->AddressSize = QSPI_ADDRESS_32_BITS;
         break;
     default:
-        return M_RESULT_ERROR;
+        p->AddressSize = QSPI_ADDRESS_8_BITS;
+        break;
     }
 
     // 地址
@@ -161,7 +261,8 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
         p->AlternateByteMode = QSPI_ALTERNATE_BYTES_4_LINES;
         break;
     default:
-        return M_RESULT_ERROR;
+        p->AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+        break;
     }
 
     // 替代字节大小
@@ -180,7 +281,8 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
         p->AlternateBytesSize = QSPI_ALTERNATE_BYTES_32_BITS;
         break;
     default:
-        return M_RESULT_ERROR;
+        p->AlternateBytesSize = QSPI_ALTERNATE_BYTES_8_BITS;
+        break;
     }
 
     // 替代字节
@@ -202,7 +304,8 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
         p->DataMode = QSPI_DATA_4_LINES;
         break;
     default:
-        return M_RESULT_ERROR;
+        p->DataMode = QSPI_DATA_NONE;
+        break;
     }
 
     // 数据长度
@@ -220,6 +323,58 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
     // SIO采样延迟
     p->SIOOMode = (cmd->SIOOMode == mDev::E_QSPI_SIOO_INST_EVERY_CMD) ? QSPI_SIOO_INST_EVERY_CMD : QSPI_SIOO_INST_ONLY_FIRST_CMD;
 
+    return M_RESULT_EOK;
+}
+mResult Qspi::remapMemMapCfg(mDev::QSPIMemoryMappedCfg* cfg, void* dst)
+{
+    if (!cfg || !dst)
+    {
+        ALOGE("%s()%d Invalid parameters\r\n", __FUNCTION__, __LINE__);
+        return M_RESULT_ERROR;
+    }
+
+    QSPI_MemoryMappedTypeDef* p = (QSPI_MemoryMappedTypeDef*)dst;
+
+    // 超时计数器时钟预分频
+    switch (cfg->TimeOutActivation)
+    {
+    case mDev::E_QSPI_TIMEOUT_COUNTER_DISABLE:
+        p->TimeOutActivation = QSPI_TIMEOUT_COUNTER_DISABLE;
+        break;
+    case mDev::E_QSPI_TIMEOUT_COUNTER_ENABLE:
+        p->TimeOutActivation = QSPI_TIMEOUT_COUNTER_ENABLE;
+        break;
+    default:
+        ALOGE("%s()%d Invalid TimeOutActivation\r\n", __FUNCTION__, __LINE__);
+        return M_RESULT_ERROR;
+    }
+
+    // 超时周期
+    p->TimeOutPeriod = cfg->TimeOutPeriod;
+
+    return M_RESULT_EOK;
+}
+mResult Qspi::memoryMapped(mDev::QSPICommand* cmd, mDev::QSPIMemoryMappedCfg* cfg)
+{
+    if(!cmd ||!cfg)
+        return M_RESULT_ERROR;
+
+    QSPI_CommandTypeDef dst;
+    if(remapCmd(cmd, &dst) != M_RESULT_EOK)
+    {
+        ALOGE("%s()%d remapCmd Fail\r\n",__FUNCTION__,__LINE__);
+        return M_RESULT_ERROR;
+    }
+    QSPI_MemoryMappedTypeDef hlcfg;
+    if(remapMemMapCfg(cfg, &hlcfg)!= M_RESULT_EOK)
+    {
+        ALOGE("%s()%d remapMemMapCfg Fail\r\n",__FUNCTION__,__LINE__);
+        return M_RESULT_ERROR;
+    }
+    if(HAL_QSPI_MemoryMapped(&hQspi, (QSPI_CommandTypeDef*)&dst, (QSPI_MemoryMappedTypeDef *)&hlcfg)!=HAL_OK)
+    {
+        return M_RESULT_ERROR;
+    }
     return M_RESULT_EOK;
 }
 mResult Qspi::remapAutoPolling(mDev::QSPIAutoPolling* poll, void* dst)
@@ -252,7 +407,8 @@ mResult Qspi::remapAutoPolling(mDev::QSPIAutoPolling* poll, void* dst)
         p->AutomaticStop = QSPI_AUTOMATIC_STOP_ENABLE;
         break;
     default:
-        return M_RESULT_ERROR;
+        p->AutomaticStop = QSPI_AUTOMATIC_STOP_DISABLE;
+        break;
     }
 
     // 状态掩码
@@ -268,6 +424,29 @@ mResult Qspi::remapAutoPolling(mDev::QSPIAutoPolling* poll, void* dst)
     p->StatusBytesSize = poll->StatusBytesSize;
 
     return M_RESULT_EOK;
+}
+
+void Qspi::csEnable(mDev::mGpio* cspin)
+{
+    if(cspin)
+    {
+        cspin->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+    }
+    else
+    {
+        KLOGE("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
+    }
+}
+void Qspi::csDisable(mDev::mGpio* cspin)
+{
+    if(cspin)
+    {
+        cspin->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+    }
+    else
+    {
+        KLOGE("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
+    }
 }
 
 extern "C" void HAL_QSPI_MspInit(QSPI_HandleTypeDef* hqspi)
