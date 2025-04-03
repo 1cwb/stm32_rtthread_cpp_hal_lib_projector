@@ -30,25 +30,8 @@ int lcdInit()
     
     lcd0->setBackColor(LCD_CYAN);
     lcd0->clearRect(0,0,240,40);
-    //lcd0->showString(0,0,"hellow world");
-    #if 0
-    while(0)
-    {
-        lcd0->setBackColor(LCD_BLUE);
-        lcd0->clear();
-        HAL_Delay(1000);
-        lcd0->setBackColor(LCD_RED);
-        lcd0->clear();
-        HAL_Delay(1000);
-        lcd0->setBackColor(LCD_GREEN);
-        lcd0->clear();
-        HAL_Delay(1000);
-        lcd0->setBackColor(LCD_BLACK);
-        lcd0->clear();
-        HAL_Delay(1000);
-
-    }
-    #endif
+    lcd0->setColor(LCD_RED);
+    lcd0->showText(10,10,"hellow world\r\n");
     return 0;
 }
 INIT_EXPORT(lcdInit, "0.5");

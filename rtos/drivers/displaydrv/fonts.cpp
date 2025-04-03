@@ -963,29 +963,24 @@ Fonts ASCII_Font12 = {
     0                    // 该参数只有汉字字模用到，表示二维数组的行大小
 };
 
-void getFonts(FontType type, Fonts** asccifonts, Fonts** cHFonts)
+void getFonts(FontType type, Fonts** asccifonts)
 {
     switch (type)
     {
     case FONT_TYPE_32:
          *asccifonts = &ASCII_Font32;
-         *cHFonts = &CH_Font32;
         break;
     case FONT_TYPE_24:
         *asccifonts = &ASCII_Font24;
-        *cHFonts = &CH_Font24;
         break;
     case FONT_TYPE_20:
         *asccifonts = &ASCII_Font20;
-        *cHFonts = &CH_Font20;
         break;
     case FONT_TYPE_16:
         *asccifonts = &ASCII_Font16;
-        *cHFonts = &CH_Font16;
         break;
     case FONT_TYPE_12:
         *asccifonts = &ASCII_Font12;
-        *cHFonts = &CH_Font12;
         break;
     default:
         break;

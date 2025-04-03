@@ -144,7 +144,7 @@ public:
     void setFont(FontType type)
     {
         fontType = type;
-        getFonts(fontType, &asciiFonts, &cHFonts);
+        getFonts(fontType, &asciiFonts);
     }
     FontType getFontType(){return fontType;}
     void clear()
@@ -230,77 +230,9 @@ public:
         setAddress(x,y,x,y);	//	设置坐标 
         writeData16bit(color);
     }
-    void showChinese(uint16_t x, uint16_t y, char *pText)
-    {
-        uint16_t  i=0,index = 0, counter = 0;	// 计数变量
-        uint16_t  addr;	// 字模地址
-        uint8_t   disChar;	//字模的值
-        uint16_t  Xaddress = 0; //水平坐标
-    
-        while(1)
-        {		
-            // 对比数组中的汉字编码，用以定位该汉字字模的地址		
-            if ( *(cHFonts->pTable + (i+1)*cHFonts->sizes + 0)==*pText && *(cHFonts->pTable + (i+1)*cHFonts->sizes + 1)==*(pText+1) )	
-            {   
-                addr=i;	// 字模地址偏移
-                break;
-            }				
-            i+=2;	// 每个中文字符编码占两字节
-    
-            if(i >= cHFonts->tableRows)	break;	// 字模列表中无相应的汉字	
-        }	
-        i=0;
-        for(index = 0; index <cHFonts->sizes; index++)
-        {	
-            disChar = *(cHFonts->pTable + (addr)*cHFonts->sizes + index);	// 获取相应的字模地址
-            
-            for(counter = 0; counter < 8; counter++)
-            { 
-                if(disChar & 0x01)	
-                {	
-                    if(bytesPerPixel == 2)
-                    {
-                        lcdBuff[i] = (color>>8)&0xff;	// 当前模值不为0时，使用画笔色绘点
-                        lcdBuff[i+1] = color&0xff;			// 当前模值不为0时，使用画笔色绘点 
-                    }
-                    else if(bytesPerPixel == 3)
-                    {
-                        lcdBuff[i] =  (color>>16)&0xff;	// 当前模值不为0时，使用画笔色绘点
-                        lcdBuff[i+1] =  (color>>8)&0xff;	// 当前模值不为0时，使用画笔色绘点
-                        lcdBuff[i+2] =  color&0xff;			// 当前模值不为0时，使用画笔色绘点
-                    }
-                }
-                else		
-                {
-                    if(bytesPerPixel == 2)
-                    {
-                        lcdBuff[i] =  (backColor>>8)&0xff;	// 当前模值不为0时，使用画笔色绘点
-                        lcdBuff[i+1] =  backColor&0xff;			// 当前模值不为0时，使用画笔色绘点
-                    }
-                    else if(bytesPerPixel == 3)
-                    {
-                        lcdBuff[i] =  (backColor>>16)&0xff;	// 当前模值不为0时，使用画笔色绘点
-                        lcdBuff[i+1] =  (backColor>>8)&0xff;	// 当前模值不为0时，使用画笔色绘点
-                        lcdBuff[i+2] =  backColor&0xff;			// 当前模值不为0时，使用画笔色绘点
-                    }
-                }
-                i+=bytesPerPixel;
-                disChar >>= 1;
-                Xaddress++;  //水平坐标自加
-                
-                if( Xaddress == cHFonts->width ) 	//	如果水平坐标达到了字符宽度，则退出当前循环
-                {														//	进入下一行的绘制
-                    Xaddress = 0;
-                    break;
-                }
-            }	
-        }	
-       setAddress( x, y, x+cHFonts->width-1, y+cHFonts->height-1);	   // 设置坐标	
-       writeBuff(lcdBuff,cHFonts->width*cHFonts->height*bytesPerPixel);            // 写入显存
-    }
     void showText(uint16_t x, uint16_t y, char *pText)
     {
-        if(!cHFonts || !asciiFonts)
+        if(!asciiFonts)
         {
             return;
         }
@@ -311,12 +243,6 @@ public:
                 showChar(x,y,*pText);	// 显示ASCII
                 x+=asciiFonts->width;				// 水平坐标调到下一个字符处
                 pText++;								// 字符串地址+1
-            }
-            else					// 若字符为汉字
-            {			
-                showChinese(x,y,pText);	// 显示汉字
-                x+=cHFonts->width;				// 水平坐标调到下一个字符处
-                pText+=2;								// 字符串地址+2，汉字的编码要2字节
             }
         }	
     }
@@ -773,7 +699,6 @@ protected:
     uint8_t      xOffset;          // X坐标偏移，用于设置屏幕控制器的显存写入方式
     uint8_t      yOffset;          // Y坐标偏移，用于设置屏幕控制器的显存写入方式
     Fonts        *asciiFonts = nullptr;	    // 英文字体，ASCII字符集
-    Fonts        *cHFonts = nullptr;		    // 中文字体（同时也包含英文字体）
     FontType      fontType = FONT_TYPE_MAX;
     DispNumMode   showNumMode = Fill_SPACE;		// 数字显示模式
     Direction     direction = DIRECTION_H;		// 显示方向

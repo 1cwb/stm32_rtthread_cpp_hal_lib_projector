@@ -20,4 +20,4 @@ enum FontType
     FONT_TYPE_MAX,
 };
 
-void getFonts(FontType type, Fonts** asccifonts, Fonts** cHFonts);
+void getFonts(FontType type, Fonts** asccifonts);
