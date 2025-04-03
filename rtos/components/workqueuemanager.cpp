@@ -23,19 +23,23 @@ mResult workQueueManager::init()
         wqList[0] = new workQueue();
         if(!wqList[0])
         {
+            KLOGE("new workQueue fail");
             break;
         }
         if(wqList[0]->init(WORKQUEUE_LP_WORK, 20, 4096, 6) != M_RESULT_EOK)
         {
+            KLOGE("Init %s Fail",WORKQUEUE_LP_WORK);
             break;
         }
         wqList[1] = new workQueue();
         if(!wqList[1])
         {
+            KLOGE("new workQueue fail");
             break;
         }
         if(wqList[1]->init(WORKQUEUE_HP_WORK, 20, 4096, 4) != M_RESULT_EOK)
         {
+            KLOGE("Init %s Fail",WORKQUEUE_HP_WORK);
             break;
         }
         return M_RESULT_EOK;

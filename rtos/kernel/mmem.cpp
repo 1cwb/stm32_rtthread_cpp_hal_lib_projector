@@ -75,6 +75,7 @@ void *mMem::malloc(unsigned long size)
 
     if (size == 0 || !bInit_)
     {
+        KLOGE("malloc size %lu, or mem not init",size);
         return nullptr;
     }
 
@@ -96,7 +97,7 @@ void *mMem::malloc(unsigned long size)
     if (size > memSizeAligned_)
     {
         //RT_DEBUG_LOG(RT_DEBUG_MEM, ("no memory\n"));
-
+        KLOGE("malloc size(%lu) > memSizeAligned(%lu)" ,size,memSizeAligned_);
         return nullptr;
     }
 
@@ -200,6 +201,8 @@ void *mMem::malloc(unsigned long size)
     }
 
     memSem_.semRelease();
+    KLOGE("Memory not enough!");
+    printf("total memory = %lu, free memory = %lu\r\n",total(), used());
     return nullptr;
 }
 /**
