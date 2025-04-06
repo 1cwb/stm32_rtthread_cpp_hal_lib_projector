@@ -676,6 +676,22 @@ public:
         setAddress(x,y,x+width-1,y+height-1);
         writeBuff(DataBuff,width*height*bytesPerPixel);
     }
+    uint16_t getpWidth() const
+    {
+        return pwidth;
+    }
+    uint16_t getpHeight() const
+    {
+        return pheight;
+    }
+    uint16_t getWidth() const
+    {
+        return width;
+    }
+    uint16_t getHeight() const
+    {
+        return height;
+    }
 protected:
     virtual void setAddress(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) = 0;
     virtual void writeCommand(uint8_t command) = 0;

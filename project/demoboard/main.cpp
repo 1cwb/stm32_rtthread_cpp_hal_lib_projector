@@ -27,6 +27,9 @@
 #include "project.hpp"
 #include "ff.h"
 #include "fatfsff.hpp"
+#include "lvgl.h"
+#include "lv_demo_benchmark.h"
+
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
 #define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
@@ -132,6 +135,15 @@ static void CreateNewFile(void)
 
 int main(void)
 {
+    mthread* lvglthread = mthread::create("lvglth", 2048, 8, 20, [](void* p){
+        while(true)
+        {
+            lv_timer_handler();
+            mthread::threadMdelay(5);
+        }
+    },nullptr);
+    lvglthread->startup();
+    lv_demo_stress();
     mEvent mevent;
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
 

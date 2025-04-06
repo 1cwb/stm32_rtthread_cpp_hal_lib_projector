@@ -25,13 +25,14 @@ int lcdInit()
     lcd0 = new Lcd169(DEV_LCD0, 240, 280, 0, 20, 16);//RGB565 16 BIT 显示
     
     lcd0->init(spi5,dc,nullptr,bl,nullptr);
-    
+#if 0
     lcd0->clear();
     
     lcd0->setBackColor(LCD_CYAN);
     lcd0->clearRect(0,0,240,40);
     lcd0->setColor(LCD_RED);
     lcd0->showText(10,10,"hellow world\r\n");
+#endif
     return 0;
 }
 INIT_EXPORT(lcdInit, "0.5");
