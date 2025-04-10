@@ -7,7 +7,7 @@ class mSpi : public mDevice
 {
 public:
     mSpi() = delete;
-    explicit mSpi(const char* name) : mDevice(name){}
+    explicit mSpi(const char* name) : mDevice(name),_transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL){}
     virtual ~mSpi() = default;
     inline virtual void csEnable(mDev::mGpio* cspin){}
     inline virtual void csDisable(mDev::mGpio* cspin){}
@@ -65,7 +65,13 @@ public:
         }
         return ret; 
     }
-private:
-
+    void setTransferMode(transferMode mode) {_transferMode = mode;}
+    void setRecvMode(recvMode mode) {_recvMode = mode;}
+    recvMode getRecvMode() const {return _recvMode;}
+    virtual bool btransferComplete() = 0;
+protected:
+    transferMode _transferMode;
+    recvMode _recvMode;
+    //volatile bool _transferComplete;
 };
 }

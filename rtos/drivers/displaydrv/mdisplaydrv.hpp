@@ -59,7 +59,7 @@ public:
     color(0),backColor(0),bitPerPixel(bitPerPixel),bytesPerPixel(bitPerPixel/8),width(width),height(height),xOffset(xOffset),yOffset(yOffset)
     {
         lcdBuffSize = bytesPerPixel*1024;
-        lcdBuff = new uint8_t[lcdBuffSize];
+        lcdBuff = new alignas(32) uint8_t[lcdBuffSize];
     }
     virtual ~mDisplay()
     {
@@ -669,7 +669,7 @@ public:
              setAddress( x, Yaddress , x+width-1,i+y);	   // 设置坐标	
              writeBuff(lcdBuff,width*(i+1+y-Yaddress)*bytesPerPixel);    // 写入显存     
           }
-        }	
+        }
     }
     void copyBuffer(uint16_t x, uint16_t y,uint16_t width,uint16_t height,uint8_t *DataBuff)
     {

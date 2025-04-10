@@ -123,6 +123,7 @@ void Lcd169::writeCommand(uint8_t command)
     cmdEnable();
     if(spix)
     {
+		spix->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
         spix->write(&command, 1);
     }
 }
@@ -131,6 +132,7 @@ void Lcd169::writeData8bit(uint8_t data)
     dataEnable();
     if(spix)
     {
+		spix->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
         spix->write(&data, 1);
     }
 }
@@ -143,6 +145,7 @@ void Lcd169::writeData16bit(uint16_t data)
     lcd_data_buff[1] = data;
     if(spix)
     {
+		spix->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
         spix->write(lcd_data_buff, 2);
     }
 }
@@ -151,6 +154,7 @@ void Lcd169::writeBuff(uint8_t *DataBuff, uint16_t DataSize)
 	dataEnable();      // 数据指令选择 引脚输出高电平，代表本次传输 数据	
     if(spix)
     {
+		spix->setTransferMode(mDev::transferMode::TRANSFER_MODE_DMA);
         spix->write(DataBuff, DataSize);
     }
 }

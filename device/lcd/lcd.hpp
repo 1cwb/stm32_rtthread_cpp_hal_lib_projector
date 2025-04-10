@@ -10,7 +10,6 @@ public:
     void init(mDev::mSpi* spix, mDev::mGpio* dc, mDev::mGpio* rst, mDev::mGpio* bl, mDev::mGpio* cs);
     void backlightlOn() {if(bl){bl->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);}}
     void backlightlOff() {if(bl){bl->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);}}
-
 protected:
     virtual void setAddress(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2) override;
     virtual void writeCommand(uint8_t command) override;

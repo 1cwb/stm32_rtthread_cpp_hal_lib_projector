@@ -29,6 +29,7 @@
 #include "fatfsff.hpp"
 #include "lvgl.h"
 #include "lv_demo_benchmark.h"
+#include "mdisplaydrv.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -135,7 +136,8 @@ static void CreateNewFile(void)
 
 int main(void)
 {
-    mthread* lvglthread = mthread::create("lvglth", 2048, 8, 20, [](void* p){
+    mthread* lvglthread = mthread::create("lvglth", 2048, 5, 20, [](void* p){
+        mDev::mDisplay* disp = (mDev::mDisplay*)mDev::mPlatform::getInstance()->getDevice(DEV_LCD0);
         while(true)
         {
             lv_timer_handler();
@@ -143,7 +145,7 @@ int main(void)
         }
     },nullptr);
     lvglthread->startup();
-    lv_demo_stress();
+    lv_demo_benchmark();
     mEvent mevent;
     mevent.init("mEvnet1", IPC_FLAG_FIFO);
 
