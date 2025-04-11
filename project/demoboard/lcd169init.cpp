@@ -23,7 +23,9 @@ int lcdInit()
         return -1;
     }
     lcd0 = new Lcd169(DEV_LCD0, 240, 280, 0, 20, 16);//RGB565 16 BIT 显示
-    
+    spi5->registerInterruptCb([](mDev::mDevice* p, void* pdata){
+        lcd0->runInterruptCb(pdata);
+    });
     lcd0->init(spi5,dc,nullptr,bl,nullptr);
 #if 0
     lcd0->clear();

@@ -24,6 +24,7 @@ extern "C" void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
     spix* pspix = containerof(hspi, spix, _spixHandle);
     if(hspi == pspix->spixHandle())
     {
+        pspix->runInterruptCb(nullptr);
         //printf("%s transfer cmp\r\n",pspix->getDeviceName());
     }
 }

@@ -33,6 +33,7 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 /**********************
  *  STATIC VARIABLES
  **********************/
+static lv_disp_drv_t disp_drv;                         /*Descriptor of a display driver*/
 static uint16_t MY_DISP_HOR_RES = 0;
 static uint16_t MY_DISP_VER_RES = 0;
 //#define MY_DISP_HOR_RES 240
@@ -101,7 +102,6 @@ void lv_port_disp_init(void)
      * Register the display in LVGL
      *----------------------------------*/
 
-    static lv_disp_drv_t disp_drv;                         /*Descriptor of a display driver*/
     lv_disp_drv_init(&disp_drv);                    /*Basic initialization*/
 
     /*Set up the functions to access to your display*/
@@ -139,6 +139,9 @@ static void disp_init(void)
     pDisplay = (mDev::mDisplay*)(mDev::mPlatform::getInstance()->getDevice("lcd0"));
     MY_DISP_HOR_RES = pDisplay->getWidth();
     MY_DISP_VER_RES = pDisplay->getHeight();
+    pDisplay->registerInterruptCb([](mDev::mDevice* p, void* pdata){
+        lv_disp_flush_ready(&disp_drv);
+    });
 }
 
 /*Flush the content of the internal buffer the specific area on the display
@@ -163,7 +166,7 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
     #endif
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
-    lv_disp_flush_ready(disp_drv);
+    //lv_disp_flush_ready(disp_drv);
 }
 
 /*OPTIONAL: GPU INTERFACE*/

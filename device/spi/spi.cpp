@@ -79,7 +79,6 @@ mResult spix::write(const uint8_t* buff, size_t len)
     }
     else if(_transferMode == mDev::transferMode::TRANSFER_MODE_DMA)
     {
-        //SCB_CleanInvalidateDCache();
         SCB_CleanInvalidateDCache_by_Addr((uint32_t*)buff, len);
 
         if(HAL_SPI_Transmit_DMA(&_spixHandle, buff, len)!= HAL_OK)
@@ -87,7 +86,6 @@ mResult spix::write(const uint8_t* buff, size_t len)
             KLOGE("Error: %s()%d\r\n",__FUNCTION__,__LINE__);
             return M_RESULT_ERROR;
         }
-        while(HAL_SPI_GetState(&_spixHandle)!=HAL_SPI_STATE_READY);
     }
     return M_RESULT_EOK;
 }
@@ -147,8 +145,6 @@ mResult spix::writeRead(uint8_t* txbuff, uint8_t* rxbuff, size_t len)
             KLOGE("Error: %s()%d\r\n",__FUNCTION__,__LINE__);
             return M_RESULT_ERROR;
         }
-        while (HAL_SPI_GetState(&_spixHandle)!=HAL_SPI_STATE_READY);
-        
     }
     return M_RESULT_EOK;
 }
