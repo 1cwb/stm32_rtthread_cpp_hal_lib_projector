@@ -85,6 +85,7 @@ EXTRA_LINK_FLAGS	:= -g -gdwarf-2 -lc -lm -lstdc++ -lnosys -T$(LINK_FILES) \
 						-specs=nano.specs -specs=nosys.specs \
 						-Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
 						-Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
+
 #################################################################################################
 ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
 DEFINE    +=-DSTM32H430xx \
@@ -110,7 +111,10 @@ DEFINE    +=-DSTM32H743xx \
 			-DPLL2N_VALUE=40 \
 			-DPLL2P_VALUE=2 \
 			-DPLL2Q_VALUE=2 \
-			-DPLL2R_VALUE=2
+			-DPLL2R_VALUE=2 \
+			-DUSE_SDRAM=1 \
+			-DSDRAM_ORIGIN=0xC0000000 \
+			-DSDRAM_LEN=16384
 else ifeq ($(BOARD_TYPE), $(AP_FLY_BOARD))
 DEFINE    +=-DSTM32H743xx \
 			-DHSE_VALUE=16000000 \

@@ -7,8 +7,14 @@
 #include "mklog.hpp"
 #include "usart.h"
 
+
+#if USE_SDRAM
+#define MEM_HEAP_SIZE 16384 * 1024 // 16M
+static uint8_t* memHeap = SDRAM_MEM_ADDR;
+#else
 #define MEM_HEAP_SIZE 256 * 1024 // 256K
 D2_MEM_ALIGN(M_ALIGN_SIZE) static uint8_t memHeap[MEM_HEAP_SIZE];
+#endif
 
 class LOG : public mKlog
 {
@@ -40,5 +46,6 @@ void boardInit(void)
 {
     hwInit();
     LOG::getInstance()->setLevel(LOG_LEVEL_DEBUG);
+    printf("xxxxx\r\n");
     mMem::getInstance()->init(memHeap, memHeap + MEM_HEAP_SIZE);
 }

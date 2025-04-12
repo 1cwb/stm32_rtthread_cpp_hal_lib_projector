@@ -20,6 +20,10 @@
 #define D3_MEM   __attribute__((section(".ramd3")))
 #define D3_MEM_ALIGN(x)   __attribute__((section(".ramd3"))) __attribute__((aligned(x)))
 
+#if USE_SDRAM
+#define SDRAM_MEM_ADDR   (uint8_t*)SDRAM_ORIGIN
+#endif
+
 HAL_StatusTypeDef Stm32_Clock_Init();
 void hwInit();
 void SoftReset(void);

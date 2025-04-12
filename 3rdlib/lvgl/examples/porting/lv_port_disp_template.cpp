@@ -5,6 +5,9 @@
 
  /*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
 #include "mdisplaydrv.hpp"
+#if USE_SDRAM
+#include "sys.h"
+#endif
 #if 1
 
 /*********************
@@ -78,25 +81,26 @@ void lv_port_disp_init(void)
      *      This way LVGL will always provide the whole rendered screen in `flush_cb`
      *      and you only need to change the frame buffer's address.
      */
+    static lv_disp_draw_buf_t draw_buf_dsc;
 #if 0
     /* Example for 1) */
-    static lv_disp_draw_buf_t draw_buf_dsc_1;
     static lv_color_t buf_1[MY_DISP_HOR_RES * 10];                          /*A buffer for 10 rows*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+    lv_disp_draw_buf_init(&draw_buf_dsc, buf_1, NULL, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
 #endif
+#if (!USE_SDRAM)
     /* Example for 2) */
-    static lv_disp_draw_buf_t draw_buf_dsc_2;
     //static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];// = new lv_color_t[MY_DISP_HOR_RES * 10];                        /*A buffer for 10 rows*/
     //static lv_color_t buf_2_2[MY_DISP_HOR_RES * 10];// = new lv_color_t[MY_DISP_HOR_RES * 10];                        /*An other buffer for 10 rows*/
     static lv_color_t* buf_2_1 = (lv_color_t*)(new alignas(32) uint8_t [MY_DISP_HOR_RES * 10* sizeof(lv_color_t)]);//lv_color_t[MY_DISP_HOR_RES * 10];
     static lv_color_t* buf_2_2 = (lv_color_t*)(new alignas(32) uint8_t [MY_DISP_HOR_RES * 10* sizeof(lv_color_t)]); //lv_color_t[MY_DISP_HOR_RES * 10];
-    lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
-#if 0
+    lv_disp_draw_buf_init(&draw_buf_dsc, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+#else 
     /* Example for 3) also set disp_drv.full_refresh = 1 below*/
-    static lv_disp_draw_buf_t draw_buf_dsc_3;
-    static lv_color_t buf_3_1[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*A screen sized buffer*/
-    static lv_color_t buf_3_2[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*Another screen sized buffer*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_3, buf_3_1, buf_3_2, MY_DISP_VER_RES * LV_VER_RES_MAX);   /*Initialize the display buffer*/
+    //static lv_color_t buf_3_1[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*A screen sized buffer*/
+    //static lv_color_t buf_3_2[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*Another screen sized buffer*/
+    static lv_color_t* buf_3_1 = (lv_color_t*)(new alignas(32) uint8_t [MY_DISP_HOR_RES * MY_DISP_VER_RES* sizeof(lv_color_t)]);//lv_color_t[MY_DISP_HOR_RES * 10];
+    static lv_color_t* buf_3_2 = (lv_color_t*)(new alignas(32) uint8_t [MY_DISP_HOR_RES * MY_DISP_VER_RES* sizeof(lv_color_t)]); //lv_color_t[MY_DISP_HOR_RES * 10];
+    lv_disp_draw_buf_init(&draw_buf_dsc, buf_3_1, buf_3_2, MY_DISP_VER_RES * MY_DISP_VER_RES);   /*Initialize the display buffer*/
 #endif
     /*-----------------------------------
      * Register the display in LVGL
@@ -114,7 +118,7 @@ void lv_port_disp_init(void)
     disp_drv.flush_cb = disp_flush;
 
     /*Set a display buffer*/
-    disp_drv.draw_buf = &draw_buf_dsc_2;
+    disp_drv.draw_buf = &draw_buf_dsc;
 
     /*Required for Example 3)*/
     //disp_drv.full_refresh = 1

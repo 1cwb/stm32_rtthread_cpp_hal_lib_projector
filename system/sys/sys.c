@@ -2,6 +2,9 @@
 #include "mpu.h"
 #include "delay.h"
 #include "usart.h"
+#if USE_SDRAM 
+#include "sdram.h"
+#endif
 /**
  * @brief       时钟设置函数
  * @param       plln: PLL1倍频系数(PLL倍频), 取值范围: 4~512.
@@ -180,6 +183,21 @@ void hwInit()
     delay_init(HAL_RCC_GetSysClockFreq()/1000000);//1US跑的tick数
     uart_init(DEBUG_UART_BOUNDRATE);
     printAllClk();
+    #if USE_SDRAM 
+    if(MX_FMC_Init() != HAL_OK)
+    {
+        printf("ERROR MX_FMC_Init\r\n");
+    }
+    else
+    {
+        printf("MX_FMC_Init OK\r\n");
+    }
+    if(SDRAM_Check() != HAL_OK)
+    {
+        printf("ERROR Check SDRAM Fail\r\n");
+    }
+    printf("MX_FMC_CHECK OK\r\n");
+    #endif
 }
 
 void SoftReset(void)
