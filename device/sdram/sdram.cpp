@@ -1,4 +1,4 @@
-#include "sdram.h"   
+#include "sdram.hpp"   
 
 SDRAM_HandleTypeDef hsdram1;			// SDRAM_HandleTypeDef 结构体变量
 

@@ -89,21 +89,20 @@ void Lcd169::init(mDev::mSpi* spix, mDev::mGpio* dc, mDev::mGpio* rst, mDev::mGp
 
 	writeCommand(0x21);       // 打开反显，因为面板是常黑型，操作需要反过来
 
- // 退出休眠指令，LCD控制器在刚上电、复位时，会自动进入休眠模式 ，因此操作屏幕之前，需要退出休眠  
+ 	// 退出休眠指令，LCD控制器在刚上电、复位时，会自动进入休眠模式 ，因此操作屏幕之前，需要退出休眠  
 	writeCommand(0x11);       // 退出休眠 指令
     delay_ms(120);
-                   // 需要等待120ms，让电源电压和时钟电路稳定下来
+    // 需要等待120ms，让电源电压和时钟电路稳定下来
 
- // 打开显示指令，LCD控制器在刚上电、复位时，会自动关闭显示 
+ 	// 打开显示指令，LCD控制器在刚上电、复位时，会自动关闭显示 
 	writeCommand(0x29);       // 打开显示   	
 	
-// 以下进行一些驱动的默认设置
-    setDirection(mDev::DIRECTION_V);  	      //	设置显示方向
+ 	// 以下进行一些驱动的默认设置
+    setDirection(mDev::DIRECTION_V);  //	设置显示方向
 	setBackColor(LCD_BLUE);           // 设置背景色
- 	setColor(LCD_WHITE);               // 设置画笔色  
-	clear();                           // 清屏
-    setFont(FONT_TYPE_24);
-    setShowNumMode(mDev::Fill_ZERO);
+ 	setColor(LCD_WHITE);              // 设置画笔色  
+	setFont(FONT_TYPE_24);
+	setShowNumMode(mDev::Fill_ZERO);
     bl->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
 }
 void Lcd169::setAddress(uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2)

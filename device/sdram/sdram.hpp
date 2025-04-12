@@ -1,8 +1,4 @@
-#ifndef __SDRAM_H__
-#define __SDRAM_H__
-#ifdef __cplusplus
- extern "C" {
-#endif
+#pragma once
 #include "sys.h"
 //HCLK = 240 
 //SDRAM CLOCK = 240/2 = 120
@@ -26,7 +22,3 @@
 
 HAL_StatusTypeDef	MX_FMC_Init(void);			// SDRAM初始化
 HAL_StatusTypeDef SDRAM_Check();
-#ifdef __cplusplus
-}
-#endif 
-#endif

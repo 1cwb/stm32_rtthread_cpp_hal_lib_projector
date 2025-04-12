@@ -116,8 +116,8 @@ HAL_StatusTypeDef Stm32_Clock_Init()
     PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_0;
     PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
     PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
-    PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_PLL;
-    PeriphClkInitStruct.QspiClockSelection = RCC_FMCCLKSOURCE_PLL2;
+    PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_D1HCLK;
+    PeriphClkInitStruct.QspiClockSelection = RCC_QSPICLKSOURCE_D1HCLK;
     PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
     PeriphClkInitStruct.Usart16ClockSelection = RCC_USART16CLKSOURCE_D2PCLK2;
     PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
@@ -137,6 +137,42 @@ HAL_StatusTypeDef Stm32_Clock_Init()
     HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
     return HAL_OK;
 }
+
+void printAllClk()
+{
+    PLL1_ClocksTypeDef PLL1_Clocks;
+    PLL2_ClocksTypeDef PLL2_Clocks;
+    PLL3_ClocksTypeDef PLL3_Clocks;
+
+    HAL_RCCEx_GetPLL1ClockFreq(&PLL1_Clocks);
+    HAL_RCCEx_GetPLL2ClockFreq(&PLL2_Clocks);
+    HAL_RCCEx_GetPLL3ClockFreq(&PLL3_Clocks);
+
+    printf("PLL1_Clocks.PLL1P = %lu\r\n",PLL1_Clocks.PLL1_P_Frequency);
+    printf("PLL1_Clocks.PLL1Q = %lu\r\n",PLL1_Clocks.PLL1_Q_Frequency);
+    printf("PLL1_Clocks.PLL1R = %lu\r\n",PLL1_Clocks.PLL1_R_Frequency);
+    printf("PLL2_Clocks.PLL2P = %lu\r\n",PLL2_Clocks.PLL2_P_Frequency);
+    printf("PLL2_Clocks.PLL2Q = %lu\r\n",PLL2_Clocks.PLL2_Q_Frequency);
+    printf("PLL2_Clocks.PLL2R = %lu\r\n",PLL2_Clocks.PLL2_R_Frequency);
+    printf("PLL3_Clocks.PLL3P = %lu\r\n",PLL3_Clocks.PLL3_P_Frequency);
+    printf("PLL3_Clocks.PLL3Q = %lu\r\n",PLL3_Clocks.PLL3_Q_Frequency);
+    printf("PLL3_Clocks.PLL3R = %lu\r\n",PLL3_Clocks.PLL3_R_Frequency);
+    printf("sys clock is %lu\r\n",HAL_RCC_GetSysClockFreq());
+    printf("HCLK clock is %lu\r\n",HAL_RCC_GetHCLKFreq());
+    printf("PCLK1 clock is %lu\r\n",HAL_RCC_GetPCLK1Freq());
+    printf("PCLK2 clock is %lu\r\n",HAL_RCC_GetPCLK2Freq());
+    printf("HCLK3 clock is %lu\r\n",HAL_RCC_GetHCLKFreq());
+    printf("SPI1/2/3 peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI123));
+    printf("ADC peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_ADC));
+    printf("SDMMC peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SDMMC));
+    printf("SPI5 peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI5));
+    #if defined(QUADSPI)
+    printf("QSPI peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_QSPI));
+    #endif /* QUADSPI */
+    printf("QSPI peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_FMC));
+
+}
+
 void hwInit()
 {
     MPU_SetProtection();
@@ -148,8 +184,7 @@ void hwInit()
     SystemCoreClockUpdate();
     delay_init(HAL_RCC_GetSysClockFreq()/1000000);//1US跑的tick数
     uart_init(DEBUG_UART_BOUNDRATE);
-    printf("sys clock is %lu\r\n",HAL_RCC_GetSysClockFreq());
-    printf("HCLK clock is %lu\r\n",HAL_RCC_GetHCLKFreq());
+    printAllClk();
 }
 
 void SoftReset(void)
