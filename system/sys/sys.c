@@ -166,11 +166,6 @@ void printAllClk()
     printf("ADC peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_ADC));
     printf("SDMMC peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SDMMC));
     printf("SPI5 peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI5));
-    #if defined(QUADSPI)
-    printf("QSPI peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_QSPI));
-    #endif /* QUADSPI */
-    printf("QSPI peripheral clock = %lu\r\n",HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_FMC));
-
 }
 
 void hwInit()
