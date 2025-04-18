@@ -46,6 +46,5 @@ void boardInit(void)
 {
     hwInit();
     LOG::getInstance()->setLevel(LOG_LEVEL_DEBUG);
-    printf("xxxxx\r\n");
     mMem::getInstance()->init(memHeap, memHeap + MEM_HEAP_SIZE);
 }
