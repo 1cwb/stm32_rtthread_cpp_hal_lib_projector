@@ -110,7 +110,7 @@ HAL_StatusTypeDef Stm32_Clock_Init()
     PeriphClkInitStruct.PeriphClockSelection =  RCC_PERIPHCLK_QSPI |RCC_PERIPHCLK_FMC | \
                                                 RCC_PERIPHCLK_USART16 | RCC_PERIPHCLK_USART234578 \
                                                | RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USB \
-                                               | RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_SDMMC;	   	// 设置时钟
+                                               | RCC_PERIPHCLK_SPI1 | RCC_PERIPHCLK_SDMMC | RCC_PERIPHCLK_ADC;	   	// 设置时钟
     PeriphClkInitStruct.PLL2.PLL2M = PLL2M_VALUE;
     PeriphClkInitStruct.PLL2.PLL2N = PLL2N_VALUE;
     PeriphClkInitStruct.PLL2.PLL2P = PLL2P_VALUE;
@@ -127,6 +127,7 @@ HAL_StatusTypeDef Stm32_Clock_Init()
     PeriphClkInitStruct.Spi123ClockSelection = RCC_SPI1CLKSOURCE_CLKP;
     PeriphClkInitStruct.Spi45ClockSelection = RCC_SPI45CLKSOURCE_D2PCLK1;
     PeriphClkInitStruct.SdmmcClockSelection = RCC_SDMMCCLKSOURCE_PLL2;
+    PeriphClkInitStruct.AdcClockSelection = RCC_ADCCLKSOURCE_PLL2; //100MHZ
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
         return HAL_ERROR;

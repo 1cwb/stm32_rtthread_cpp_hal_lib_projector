@@ -36,3 +36,4 @@
 #define DEV_BUTTON_MID      "BTMID"
 #define DEV_BUTTON_SET      "BTSET"
 #define DEV_BUTTON_RST      "BTRST"
+#define DEV_ADC3            "adc3"
