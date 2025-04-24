@@ -183,7 +183,7 @@ mcnHub* mcnHub::getObject(const char* objname)
     mSchedule::getInstance()->enterCritical();
     for(auto& it : _mcnHubList)
     {
-        if(strcmp(it->getObjName(), objname))
+        if(strcmp(it->getObjName(), objname) == 0)
         {
             return it;
         }
