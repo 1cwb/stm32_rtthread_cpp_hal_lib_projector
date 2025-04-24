@@ -284,7 +284,7 @@ void usartRecvEnter(void* p)
                     memset(adcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
                     for(uint32_t i = 0; i < ifdata.len/ifdata.dataPerSize; i+= ifdata.dataOfobjCount)
                     {
-                        for(int j = 0; j < ifdata.dataOfobjCount; j++)
+                        for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
                         {
                             if(ifdata.dataPerSize == 2)
                             {
@@ -304,7 +304,7 @@ void usartRecvEnter(void* p)
                     }
                     printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
                     uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount);
-                    for(int j = 0; j < ifdata.dataOfobjCount; j++)
+                    for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
                     {
                         adcData[j] /= div;
                         //printf("%d ",((uint16_t*)ifdata.data)[i+j]);

@@ -6,7 +6,7 @@ class adcx : public mDev::mAdc
 {
 public:
     adcx() = delete;
-    adcx(const char* name):mDev::mAdc(name), _buseRxDma(false),_dmaBuffsize(0), _dmaDataPerSize(0){};
+    adcx(const char* name):mDev::mAdc(name), _buseRxDma(false),_dmaBuffsize(0),_itcoverCount(0){};
     mResult init(const mDev::initCallbackExt& cb, ADC_HandleTypeDef* adcHandle, ADC_ChannelConfTypeDef* sConfig, DMA_HandleTypeDef* dmaHandle = nullptr)
     {
         _initcb = cb;
@@ -86,26 +86,21 @@ public:
     uint32_t getDmaBuffsize() const {
         return _dmaBuffsize;
     }
-    uint32_t getDmaDataPerSize()
+    uint32_t getDataPerSize()
     {
-        return _dmaDataPerSize;
+        return sizeof(uint16_t);
+    }
+    uint32_t getItcoverCount() const
+    {
+        return _itcoverCount;
+    }
+    void setItcoverCount(uint32_t count)
+    {
+        _itcoverCount = count;
     }
     inline uint32_t calDmaBuffsize(uint32_t totalBuffsize = RX_BUFF_LEN)
     {
-        if(DMA_MDATAALIGN_HALFWORD == _dmaHandle.Init.MemDataAlignment)
-        {
-            totalBuffsize = totalBuffsize/2;
-            _dmaDataPerSize = 2;
-        }
-        else if(DMA_MDATAALIGN_WORD == _dmaHandle.Init.MemDataAlignment)
-        {
-            totalBuffsize = totalBuffsize/4;
-            _dmaDataPerSize = 4;
-        }
-        else 
-        {
-            _dmaDataPerSize = 1;
-        }
+        totalBuffsize = totalBuffsize/2;
         totalBuffsize = totalBuffsize/getChannelNum()*getChannelNum();
 
         printf("totalBuffsize = %lu\r\n", totalBuffsize);
@@ -118,5 +113,5 @@ public:
 private:
     bool _buseRxDma;
     uint32_t _dmaBuffsize;
-    uint32_t _dmaDataPerSize;
+    uint32_t _itcoverCount;
 };
