@@ -86,7 +86,7 @@ mResult adcx::start(mDev::recvMode mode, uint32_t* value, uint32_t len)
     else if (_recvMode == mDev::recvMode::RECV_MODE_DMA)
     {
         _dmaBuffsize = calDmaBuffsize(len);
-        if(HAL_ADC_Start_DMA(&_adcHandle,(uint32_t*)value,len)!= HAL_OK)
+        if(HAL_ADC_Start_DMA(&_adcHandle,(uint32_t*)value,_dmaBuffsize)!= HAL_OK)
         {
             printf("%s()%d: HAL_ADC_Start_DMA() fail\r\n", __func__, __LINE__);
             return M_RESULT_ERROR;

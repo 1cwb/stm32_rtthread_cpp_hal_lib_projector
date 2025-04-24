@@ -282,6 +282,7 @@ void usartRecvEnter(void* p)
                     uint16_t TS_CAL2;
                     float mpu_temp = 0.0;
                     memset(adcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
+                    //printf("ifdata.len = %lu, ifdata.dataPerSize = %lu, ifdata.dataOfobjCount = %lu\r\n",ifdata.len, ifdata.dataPerSize,ifdata.dataOfobjCount);
                     for(uint32_t i = 0; i < ifdata.len/ifdata.dataPerSize; i+= ifdata.dataOfobjCount)
                     {
                         for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
@@ -298,24 +299,22 @@ void usartRecvEnter(void* p)
                             {
                                 adcData[j] += ((uint8_t*)ifdata.data)[i+j];
                             }
-                            printf("%d ",((uint16_t*)ifdata.data)[i+j]);
+                            //printf("%d ",((uint16_t*)ifdata.data)[i+j]);
                         }
-                        printf("\r\n");
+                        //printf("\r\n");
                     }
-                    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
+                    //printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
                     uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount);
                     for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
                     {
                         adcData[j] /= div;
-                        //printf("%d ",((uint16_t*)ifdata.data)[i+j]);
                     }
-                    //printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
-                    mpu_temp = adcData[2];//((uint16_t*)ifdata.data)[7];//adc3->getRxBuff()[2];	//读取ADC转换数据（16位数据）
+                    mpu_temp = adcData[0];
                     TS_CAL1 = *(__IO uint16_t *)(0x1FF1E820);
                     TS_CAL2 = *(__IO uint16_t *)(0x1FF1E840);
                     mpu_temp = ((110.0f - 30.0f) / (TS_CAL2 - TS_CAL1)) * (mpu_temp - TS_CAL1) + 30.0f;
                     pi6->toggle();
-                    //printf("d0 = %f, d1 = %f temp: %f, d3 = %f, d4 = %f\r\n",adcData[0]*3.3f/65536.0f*4.0f, adcData[1]*3.3f/65536.0f, mpu_temp, adcData[3]*3.3f/65536.0f, adcData[4]*3.3f/65536.0f);
+                    printf("temp = %f, d3 = %f, d4 = %f\r\n",mpu_temp, adcData[1]*3.3f/65536.0f, adcData[2]*3.3f/65536.0f);
 
                 }
                     break;
