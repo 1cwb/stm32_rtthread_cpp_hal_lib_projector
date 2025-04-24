@@ -230,7 +230,7 @@ int adcInit()
     sConfig.Rank = ADC_REGULAR_RANK_5;
     adc3->addChannel(&sConfig);
 
-    adc3->start(mDev::recvMode::RECV_MODE_DMA, (uint32_t*)adc3->getRxBuff(), adc3->calDmaBuffsize(adc3->RX_BUFF_LEN));
+    adc3->start(mDev::recvMode::RECV_MODE_DMA, (uint32_t*)adc3->getRxBuff(), adc3->RX_BUFF_LEN);
 
     return 0;
 }
@@ -323,7 +323,7 @@ int adcInit()
     sConfig.Rank = ADC_REGULAR_RANK_5;
     adc3->addChannel(&sConfig);
 
-    adc3->start(mDev::recvMode::RECV_MODE_IT, (uint32_t*)adc3->getRxBuff(), adc3->calDmaBuffsize(adc3->RX_BUFF_LEN));
+    adc3->start(mDev::recvMode::RECV_MODE_IT, (uint32_t*)adc3->getRxBuff(), adc3->RX_BUFF_LEN);
 
     return 0;
 }
