@@ -4,13 +4,13 @@
 
 int ledInit()
 {
-    #if 0
-    gpiox* pe9 = new gpiox("pe9");
-    pe9->init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_9, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
-    gpiox* pe11 = new gpiox("pe11");
-    pe11->init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_11, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
-    pe9->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-    pe11->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+    #if 1
+    gpiox* pi4 = new gpiox("pi4");
+    pi4->init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOI, GPIO_PIN_4, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
+    gpiox* pi6 = new gpiox("pi6");
+    pi6->init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOI, GPIO_PIN_6, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN);
+    pi4->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+    pi6->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
     #endif
 
     ledx* led0 = new ledx(DEV_LED0);

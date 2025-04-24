@@ -66,6 +66,7 @@ extern "C" void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
         mDev::MSDMMCdata data = {
           .type = mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ABORT,
           .data = nullptr,
+          .dataPerSize = 1,
           .len = 0,
         };
         sdx->runInterruptCb(&data);

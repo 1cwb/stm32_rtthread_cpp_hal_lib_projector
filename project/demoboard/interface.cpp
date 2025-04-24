@@ -8,7 +8,7 @@
 #include "sys.h"
 #include "mipc.hpp"
 #include "madcdrv.hpp"
-
+#include "mgpiodrv.hpp"
 enum INTERFACE_ID
 {
     INTERFACE_ID_VCOM = 0,
@@ -26,6 +26,8 @@ struct interfaceData
 {
     INTERFACE_ID id;
     uint8_t data[mDev::mUsart::RX_BUFF_LEN];
+    uint32_t dataPerSize;
+    uint32_t dataOfobjCount;
     uint32_t len;
     void* p;
 };
@@ -35,7 +37,7 @@ mMessagequeue uartRecvQueue;
 void usartRecvEnter(void* p);
 int uartRecvQueueInit(void)
 {
-    uartRecvQueue.init("uartRecvQueue", sizeof(interfaceData), 20*(sizeof(mMessagequeue::mqMessage_t)+sizeof(interfaceData)), mIpcFlag::IPC_FLAG_FIFO);
+    uartRecvQueue.init("uartRecvQueue", sizeof(interfaceData), 40*(sizeof(mMessagequeue::mqMessage_t)+sizeof(interfaceData)), mIpcFlag::IPC_FLAG_FIFO);
     printf("uart queue maxsize = %d, used size = %d\r\n", uartRecvQueue.getMaxSize(), uartRecvQueue.getUsedSize());
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM);
     mDev::mUsart* usartDev1 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART1);
@@ -202,9 +204,11 @@ int uartRecvQueueInit(void)
                 {
                     ifdata.id = INTERFACE_ID_ADC3;
                     ifdata.len = data->len;
+                    ifdata.dataPerSize = data->dataPerSize;
+                    ifdata.dataOfobjCount = data->dataOfobjCount;
                     ifdata.p = dev;
                     memcpy(ifdata.data, data->data, data->len);
-                    memset(data->data, 0, data->len);
+                    //memset(data->data, 0, data->len);
                     uartRecvQueue.send(&ifdata, sizeof(interfaceData));
                 }
                 else
@@ -225,6 +229,9 @@ int uartRecvQueueInit(void)
 void usartRecvEnter(void* p)
 {
     interfaceData ifdata;
+    mDev::mGpio* pi4 = (mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pi4");
+    mDev::mGpio* pi6 = (mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pi6");
+    uint32_t* adcData = nullptr;
     while(true)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
@@ -240,6 +247,10 @@ void usartRecvEnter(void* p)
                     break;
                 case INTERFACE_ID_U1:
                     printf("tony recv %s\r\n",ifdata.data);
+                    if(strncmp((const char*)ifdata.data,"reboot",6) == 0)
+                    {
+                        SoftReset();
+                    }
                     break;
                 case INTERFACE_ID_U2:
                     
@@ -261,25 +272,51 @@ void usartRecvEnter(void* p)
                     break;
                 case INTERFACE_ID_ADC3:
                 {
-                    float AdcValues[5];
+                    if(!adcData)
+                    {
+                        adcData = new uint32_t[ifdata.dataOfobjCount];
+                    }
+                    pi4->toggle();
+                    pi6->toggle();
                     uint16_t TS_CAL1;
                     uint16_t TS_CAL2;
-                    uint16_t* ADCxValues = (uint16_t*)ifdata.data;
-                    /*
-                       使用此函数要特别注意，第1个参数地址要32字节对齐，第2个参数要是32字节的整数倍
-                    */
-                    AdcValues[0] = ADCxValues[0] * 3.3 / 65536;
-                    AdcValues[1] = ADCxValues[1] * 3.3 / 65536; 
-                    //AdcValues[2] = ADCxValues[2] * 3.3 / 65536;     
-                 
-                    /* 根据参考手册给的公式计算温度值 */
+                    float mpu_temp = 0.0;
+                    memset(adcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
+                    for(uint32_t i = 0; i < ifdata.len/ifdata.dataPerSize; i+= ifdata.dataOfobjCount)
+                    {
+                        for(int j = 0; j < ifdata.dataOfobjCount; j++)
+                        {
+                            if(ifdata.dataPerSize == 2)
+                            {
+                                adcData[j] += ((uint16_t*)ifdata.data)[i+j];
+                            }
+                            else if(ifdata.dataPerSize == 4)
+                            {
+                                adcData[j] += ((uint32_t*)ifdata.data)[i+j];
+                            }
+                            else
+                            {
+                                adcData[j] += ((uint8_t*)ifdata.data)[i+j];
+                            }
+                            printf("%d ",((uint16_t*)ifdata.data)[i+j]);
+                        }
+                        printf("\r\n");
+                    }
+                    printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
+                    uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount);
+                    for(int j = 0; j < ifdata.dataOfobjCount; j++)
+                    {
+                        adcData[j] /= div;
+                        //printf("%d ",((uint16_t*)ifdata.data)[i+j]);
+                    }
+                    //printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
+                    mpu_temp = adcData[2];//((uint16_t*)ifdata.data)[7];//adc3->getRxBuff()[2];	//读取ADC转换数据（16位数据）
                     TS_CAL1 = *(__IO uint16_t *)(0x1FF1E820);
                     TS_CAL2 = *(__IO uint16_t *)(0x1FF1E840);
-                    
-                    //AdcValues[2] = (110.0 - 30.0) * (ADCxValues[2] - TS_CAL1)/ (TS_CAL2 - TS_CAL1) + 30;  
-                    AdcValues[2] = ((110.0f - 30.0f) / (TS_CAL2 - TS_CAL1)) * (ADCxValues[2] - TS_CAL1) + 30.0f;
-                    printf("Vbat/4 = %5.3fV, VrefInt = %5.3fV, TempSensor = %5.3f℃\r\n", 
-                            AdcValues[0],  AdcValues[1], AdcValues[2]);
+                    mpu_temp = ((110.0f - 30.0f) / (TS_CAL2 - TS_CAL1)) * (mpu_temp - TS_CAL1) + 30.0f;
+                    pi6->toggle();
+                    //printf("d0 = %f, d1 = %f temp: %f, d3 = %f, d4 = %f\r\n",adcData[0]*3.3f/65536.0f*4.0f, adcData[1]*3.3f/65536.0f, mpu_temp, adcData[3]*3.3f/65536.0f, adcData[4]*3.3f/65536.0f);
+
                 }
                     break;
                 default:

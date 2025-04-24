@@ -24,6 +24,8 @@ struct devCbData
 {
     TYPE type;
     T data;
+    uint32_t dataPerSize;
+    uint32_t dataOfobjCount;
     uint32_t len;
 };
     using initCallbackExt = std::function<void(bool binit)>;

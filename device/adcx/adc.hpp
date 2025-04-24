@@ -6,7 +6,7 @@ class adcx : public mDev::mAdc
 {
 public:
     adcx() = delete;
-    adcx(const char* name):mDev::mAdc(name), _buseRxDma(false){_rxBuff =(new alignas(32) uint8_t[RX_BUFF_LEN]);};
+    adcx(const char* name):mDev::mAdc(name), _buseRxDma(false),_dmaBuffsize(0), _dmaDataPerSize(0){};
     mResult init(const mDev::initCallbackExt& cb, ADC_HandleTypeDef* adcHandle, ADC_ChannelConfTypeDef* sConfig, DMA_HandleTypeDef* dmaHandle = nullptr)
     {
         _initcb = cb;
@@ -49,6 +49,10 @@ public:
         }
         return M_RESULT_EOK;
     }
+    virtual uint8_t getChannelNum()
+    {
+        return _adcHandle.Init.NbrOfConversion;
+    }
     mResult dmaInit()
     {
         if(_buseRxDma)
@@ -74,19 +78,45 @@ public:
     }
     ADC_HandleTypeDef* adcHandle() {return &_adcHandle;}
     DMA_HandleTypeDef* dmaHandle() {return &_dmaHandle;}
-    virtual ~adcx(){if(_rxBuff) {delete[] _rxBuff;}};
+    virtual ~adcx(){};
     virtual mResult start(mDev::recvMode mode, uint32_t* value, uint32_t len)override;
     virtual mResult stop()override;
     virtual mResult read(uint32_t* value)override;
-    uint16_t* getRxBuff() {return reinterpret_cast<uint16_t*>(_rxBuff);}
     bool buseRxDma() const {return _buseRxDma;}
+    uint32_t getDmaBuffsize() const {
+        return _dmaBuffsize;
+    }
+    uint32_t getDmaDataPerSize()
+    {
+        return _dmaDataPerSize;
+    }
+    inline uint32_t calDmaBuffsize(uint32_t totalBuffsize = RX_BUFF_LEN)
+    {
+        if(DMA_MDATAALIGN_HALFWORD == _dmaHandle.Init.MemDataAlignment)
+        {
+            totalBuffsize = totalBuffsize/2;
+            _dmaDataPerSize = 2;
+        }
+        else if(DMA_MDATAALIGN_WORD == _dmaHandle.Init.MemDataAlignment)
+        {
+            totalBuffsize = totalBuffsize/4;
+            _dmaDataPerSize = 4;
+        }
+        else 
+        {
+            _dmaDataPerSize = 1;
+        }
+        totalBuffsize = totalBuffsize/getChannelNum()*getChannelNum();
+
+        printf("totalBuffsize = %lu\r\n", totalBuffsize);
+        return totalBuffsize;
+    }
     ADC_HandleTypeDef   _adcHandle;
 	ADC_ChannelConfTypeDef   _sConfig;
     DMA_HandleTypeDef   _dmaHandle;
 
-public:
-    constexpr static int RX_BUFF_LEN = 64;
 private:
     bool _buseRxDma;
-    uint8_t* _rxBuff;
+    uint32_t _dmaBuffsize;
+    uint32_t _dmaDataPerSize;
 };

@@ -100,6 +100,7 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
       printf("%s() %s recv data\r\n",__FUNCTION__,usartx->getDeviceName());
         mDev::mUsart::usartData rxdata = {
           .data = usartx->getRxBuff(),
+          .dataPerSize = 1,
           .len = usart::RX_BUFF_LEN,
         };
         usartx->runInterruptCb(&rxdata);
@@ -113,6 +114,7 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
     {
         mDev::mUsart::usartData rxdata = {
           .data = usartx->getRxBuff(),
+          .dataPerSize = 1,
           .len = Size,
         };
         if(usartx->buseRxDma())

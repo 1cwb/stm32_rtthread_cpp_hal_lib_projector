@@ -40,35 +40,49 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
         if(padc->buseRxDma())
         {
             SCB_InvalidateDCache_by_Addr((uint32_t*)padc->getRxBuff(), padc->RX_BUFF_LEN);
+            mDev::mAdc::usartData data = {
+                .type = mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_COMPLETE,
+                .data = padc->getRxBuff(),
+                .dataPerSize = padc->getDmaDataPerSize(),
+                .dataOfobjCount = padc->getChannelNum(),
+                .len = padc->getDmaDataPerSize()*padc->getDmaBuffsize(),
+            };
+            padc->setTransferComplete(true);
+            padc->runInterruptCb(&data);
         }
         else
         {
             padc->read((uint32_t*)padc->getRxBuff());
+            mDev::mAdc::usartData data = {
+                .type = mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_COMPLETE,
+                .data = padc->getRxBuff(),
+                .dataPerSize = 2,
+                .len = 2,
+            };
+            padc->setTransferComplete(true);
+            padc->runInterruptCb(&data);
         }
-        padc->setTransferComplete(true);
- /*
-        mDev::mAdc::usartData data = {
-            .type = mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_COMPLETE,
-            .data = padc->getRxBuff(),
-            .len = hadc->Init.NbrOfConversion,
-        };
-        padc->runInterruptCb(&data);
-        */
     }
 }
-
 
 extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
     adcx* padc = containerof(hadc, adcx, _adcHandle);
     if(hadc == padc->adcHandle())
     {
-        /*mDev::mAdc::usartData data = {
-            .type = mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_HALF_COMPLETE,
-            .data = padc->getRxBuff(),
-            .len = hadc->Init.NbrOfConversion,
-        };
-        padc->runInterruptCb(&data);*/
+        if(padc->buseRxDma())
+        {
+            SCB_InvalidateDCache_by_Addr((uint32_t*)padc->getRxBuff(), padc->RX_BUFF_LEN);
+            mDev::mAdc::usartData data = {
+                .type = mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_HALF_COMPLETE,
+                .data = padc->getRxBuff(),
+                .dataPerSize = padc->getDmaDataPerSize(),
+                .dataOfobjCount = padc->getChannelNum(),
+                .len = padc->getDmaDataPerSize()*padc->getDmaBuffsize()/2,
+            };
+            padc->setTransferComplete(true);
+            padc->runInterruptCb(&data);
+        }
     }
 }
 extern "C" void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc)
@@ -76,12 +90,13 @@ extern "C" void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc)
     adcx* padc = containerof(hadc, adcx, _adcHandle);
     if(hadc == padc->adcHandle())
     {
-        /*mDev::mAdc::usartData data = {
+        mDev::mAdc::usartData data = {
             .type = mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_LEVEL_OUT_OF_WINDOW,
-            .data = padc->getRxBuff(),
-            .len = hadc->Init.NbrOfConversion,
+            .data = (uint8_t*)padc->getRxBuff(),
+            .dataPerSize = padc->getDmaDataPerSize(),
+            .len = padc->getDmaDataPerSize()*padc->getDmaBuffsize(),
         };
-        padc->runInterruptCb(&data);*/
+        padc->runInterruptCb(&data);
     }
 }
 extern "C" void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
@@ -89,12 +104,13 @@ extern "C" void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
     adcx* padc = containerof(hadc, adcx, _adcHandle);
     if(hadc == padc->adcHandle())
     {
-        /*mDev::mAdc::usartData data = {
+        mDev::mAdc::usartData data = {
             .type = mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_ERROR,
-            .data = padc->getRxBuff(),
-            .len = hadc->Init.NbrOfConversion,
+            .data = (uint8_t*)padc->getRxBuff(),
+            .dataPerSize = padc->getDmaDataPerSize(),
+            .len = padc->getDmaDataPerSize()*padc->getDmaBuffsize(),
         };
-        padc->runInterruptCb(&data);*/
+        padc->runInterruptCb(&data);
     }
 }
 
@@ -103,7 +119,7 @@ int adcInit()
     DMA_HandleTypeDef   DMA_Handle = {0};
     ADC_HandleTypeDef   AdcHandle = {0};
 	ADC_ChannelConfTypeDef   sConfig = {0};
-#if 1
+
     DMA_Handle.Instance                 = DMA1_Stream3;            /* 使用的DMA1 Stream1 */
 	DMA_Handle.Init.Request             = DMA_REQUEST_ADC3;  	   /* 请求类型采用DMA_REQUEST_ADC3 */  
 	DMA_Handle.Init.Direction           = DMA_PERIPH_TO_MEMORY;    /* 传输方向是从存储器到外设 */  
@@ -119,13 +135,13 @@ int adcInit()
 	DMA_Handle.Init.PeriphBurst         = DMA_PBURST_SINGLE;       /* 禁止FIFO此位不起作用，用于外设突发 */
 
     AdcHandle.Instance = ADC3;
-    AdcHandle.Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV2;          /* 采用PLL异步时钟，2分频，即64MHz/2 = 32MHz */
+    AdcHandle.Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV10;          /* 采用PLL异步时钟，10分频，即100MHz/10 = 10MHz */
     AdcHandle.Init.Resolution            = ADC_RESOLUTION_16B;        /* 16位分辨率 */
     AdcHandle.Init.ScanConvMode          = ADC_SCAN_ENABLE;           /* 使能扫描*/
-    AdcHandle.Init.EOCSelection          = ADC_EOC_SINGLE_CONV;          /* 整个EOC序列转换结束标志 */
+    AdcHandle.Init.EOCSelection          = ADC_EOC_SEQ_CONV;          /* 整个EOC序列转换结束标志 */
     AdcHandle.Init.LowPowerAutoWait      = DISABLE;                   /* 禁止低功耗自动延迟特性 */
     AdcHandle.Init.ContinuousConvMode    = ENABLE;                    /* 使能连续转换 */
-    AdcHandle.Init.NbrOfConversion       = 3;                         /* 使用了3个转换通道 */
+    AdcHandle.Init.NbrOfConversion       = 5;                         /* 使用了5个转换通道 */
     AdcHandle.Init.DiscontinuousConvMode = DISABLE;                   /* 禁止不连续模式 */
     AdcHandle.Init.NbrOfDiscConversion   = 1;                         /* 禁止不连续模式后，此参数忽略，此位是用来配置不连续子组中通道数 */
     AdcHandle.Init.ExternalTrigConv      = ADC_SOFTWARE_START;        /* 采用软件触发 */
@@ -148,6 +164,14 @@ int adcInit()
     mResult ret = adc3->init([&](bool binit){
         if(binit)
         {
+            __HAL_RCC_GPIOC_CLK_ENABLE();
+            /**ADC3 GPIO Configuration
+            PC2_C     ------> ADC3_INP0
+            PC3_C     ------> ADC3_INP1
+            */
+            HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC2, SYSCFG_SWITCH_PC2_OPEN);
+            HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC3, SYSCFG_SWITCH_PC3_OPEN);
+
             __HAL_RCC_DMA1_CLK_ENABLE();
             __HAL_RCC_ADC3_CLK_ENABLE();
             adc3->dmaInit();
@@ -179,7 +203,6 @@ int adcInit()
 	sConfig.Offset = 0;                                 /* 无偏移的情况下，此参数忽略 */
 	sConfig.OffsetRightShift       = DISABLE;           /* 禁止右移 */
 	sConfig.OffsetSignedSaturation = DISABLE;           /* 禁止有符号饱和 */
-	
     adc3->addChannel(&sConfig);
 
 	/* 配置ADC通道，序列4，采样温度 */
@@ -191,75 +214,18 @@ int adcInit()
 	sConfig.Offset = 0;                                 /* 无偏移的情况下，此参数忽略 */
 	sConfig.OffsetRightShift       = DISABLE;           /* 禁止右移 */
 	sConfig.OffsetSignedSaturation = DISABLE;           /* 禁止有符号饱和 */
-
     adc3->addChannel(&sConfig);
-    adc3->start(mDev::recvMode::RECV_MODE_DMA, (uint32_t*)adc3->getRxBuff(), 3);
-    uint16_t TS_CAL1;
-	uint16_t TS_CAL2;
-    float mpu_temp = 0.0;
-    while (1)
-    {
-        //SCB_InvalidateDCache_by_Addr((uint32_t *)adc3->getRxBuff(),  adc3->RX_BUFF_LEN);
-        if(adc3->btransferComplete())
-        {
-            adc3->setTransferComplete(false);
-            mpu_temp = adc3->getRxBuff()[2];	//读取ADC转换数据（16位数据）
-            TS_CAL1 = *(__IO uint16_t *)(0x1FF1E820);
-            TS_CAL2 = *(__IO uint16_t *)(0x1FF1E840);
-            mpu_temp = ((110.0f - 30.0f) / (TS_CAL2 - TS_CAL1)) * (mpu_temp - TS_CAL1) + 30.0f;
-            printf("temp: %f\r\n", mpu_temp);
-            //adc3->start(mDev::recvMode::RECV_MODE_DMA, (uint32_t*)adc3->getRxBuff(), adc3->RX_BUFF_LEN/2);
-        }
-        //HAL_Delay(10);
-    }
-    
-#endif
-#if 0
-    AdcHandle.Instance = ADC3;
-    AdcHandle.Init.ClockPrescaler        = ADC_CLOCK_ASYNC_DIV4;          /* 采用PLL异步时钟，4分频，即100MHz/4 = 25MHz */
-    AdcHandle.Init.Resolution            = ADC_RESOLUTION_16B;        /* 16位分辨率 */
-    AdcHandle.Init.ScanConvMode          = ADC_SCAN_DISABLE;           /* 使能扫描*/
-    AdcHandle.Init.EOCSelection          = ADC_EOC_SINGLE_CONV;          /* 整个EOC序列转换结束标志 */
-    AdcHandle.Init.LowPowerAutoWait      = DISABLE;                   /* 禁止低功耗自动延迟特性 */
-    AdcHandle.Init.ContinuousConvMode    = DISABLE;                    /* 使能连续转换 */
-    AdcHandle.Init.NbrOfConversion       = 1;                         /* 使用了3个转换通道 */
-    AdcHandle.Init.DiscontinuousConvMode = DISABLE;                   /* 禁止不连续模式 */
-    AdcHandle.Init.NbrOfDiscConversion   = 0;                         /* 禁止不连续模式后，此参数忽略，此位是用来配置不连续子组中通道数 */
-    AdcHandle.Init.ExternalTrigConv      = ADC_SOFTWARE_START;        /* 采用软件触发 */
-    AdcHandle.Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;    /* 采用软件触发的话，此位忽略 */
-    AdcHandle.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR; /* DMA循环模式接收ADC转换的数据 */
-    AdcHandle.Init.Overrun               = ADC_OVR_DATA_OVERWRITTEN;     	   /* ADC转换溢出的话，覆盖ADC的数据寄存器 */
-    AdcHandle.Init.OversamplingMode      = DISABLE;                            /* 禁止过采样 */
 
-	/* 配置ADC通道，序列4，采样温度 */
-	sConfig.Channel      = ADC_CHANNEL_TEMPSENSOR;      /* 配置使用的ADC通道 */
-	sConfig.Rank         = ADC_REGULAR_RANK_1;          /* 采样序列里的第1个 */
-	sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;  /* 采样周期 */
-	sConfig.SingleDiff   = ADC_SINGLE_ENDED;            /* 单端输入 */
-	sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* 无偏移 */ 
-	sConfig.Offset = 0;                                 /* 无偏移的情况下，此参数忽略 */
-	sConfig.OffsetRightShift       = DISABLE;           /* 禁止右移 */
-	sConfig.OffsetSignedSaturation = DISABLE;           /* 禁止有符号饱和 */
+    sConfig.Channel = ADC_CHANNEL_0;
+    sConfig.Rank = ADC_REGULAR_RANK_4;
+    adc3->addChannel(&sConfig);
 
-    adc3 = new adcx(DEV_ADC3);
-    mResult ret = adc3->init([&](bool binit){
-        if(binit)
-        {
-            __HAL_RCC_ADC3_CLK_ENABLE();
-            HAL_NVIC_SetPriority(ADC3_IRQn, 0, 0);
-            HAL_NVIC_EnableIRQ(ADC3_IRQn);
-        }
-        else
-        {
-            //adc3->dmaDeInit();
-        }
-    }, &AdcHandle, &sConfig, nullptr);
-    if(ret != M_RESULT_EOK)
-    {
-        printf("error: adc3 init fail\r\n");
-        return -1;
-    }
-#endif
+    sConfig.Channel = ADC_CHANNEL_1;
+    sConfig.Rank = ADC_REGULAR_RANK_5;
+    adc3->addChannel(&sConfig);
+
+    adc3->start(mDev::recvMode::RECV_MODE_DMA, (uint32_t*)adc3->getRxBuff(), adc3->calDmaBuffsize(adc3->RX_BUFF_LEN));
+
     return 0;
 }
 INIT_EXPORT(adcInit, "0.4");

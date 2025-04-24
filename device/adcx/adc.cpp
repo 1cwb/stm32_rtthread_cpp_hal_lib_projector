@@ -2,7 +2,6 @@
 mResult adcx::start(mDev::recvMode mode, uint32_t* value, uint32_t len)
 {
     _recvMode = mode;
-    printf("%s()%d: %d\r\n", __func__, __LINE__, mode);
     if (_recvMode == mDev::recvMode::RECV_MODE_NOMAL)
     {
         if(HAL_ADC_Start(&_adcHandle) != HAL_OK)
@@ -18,14 +17,18 @@ mResult adcx::start(mDev::recvMode mode, uint32_t* value, uint32_t len)
             printf("%s()%d: HAL_ADC_Start_IT() fail\r\n", __func__, __LINE__);
             return M_RESULT_ERROR;
         }
-        printf("%s()%d: HAL_ADC_Start_IT() end\r\n", __func__, __LINE__);
     }
     else if (_recvMode == mDev::recvMode::RECV_MODE_DMA)
     {
+        _dmaBuffsize = len;
         if(HAL_ADC_Start_DMA(&_adcHandle,(uint32_t*)value,len)!= HAL_OK)
         {
             printf("%s()%d: HAL_ADC_Start_DMA() fail\r\n", __func__, __LINE__);
             return M_RESULT_ERROR;
+        }
+        if(buseRxDma())
+        {
+            __HAL_DMA_DISABLE_IT(&_dmaHandle, DMA_IT_HT);
         }
     }
     return M_RESULT_EOK;
