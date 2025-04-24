@@ -229,8 +229,6 @@ int uartRecvQueueInit(void)
 void usartRecvEnter(void* p)
 {
     interfaceData ifdata;
-    mDev::mGpio* pi4 = (mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pi4");
-    mDev::mGpio* pi6 = (mDev::mGpio*)mDev::mPlatform::getInstance()->getDevice("pi6");
     uint32_t* adcData = nullptr;
     while(true)
     {
@@ -276,8 +274,6 @@ void usartRecvEnter(void* p)
                     {
                         adcData = new uint32_t[ifdata.dataOfobjCount];
                     }
-                    pi4->toggle();
-                    pi6->toggle();
                     uint16_t TS_CAL1;
                     uint16_t TS_CAL2;
                     float mpu_temp = 0.0;
@@ -313,8 +309,7 @@ void usartRecvEnter(void* p)
                     TS_CAL1 = *(__IO uint16_t *)(0x1FF1E820);
                     TS_CAL2 = *(__IO uint16_t *)(0x1FF1E840);
                     mpu_temp = ((110.0f - 30.0f) / (TS_CAL2 - TS_CAL1)) * (mpu_temp - TS_CAL1) + 30.0f;
-                    pi6->toggle();
-                    printf("temp = %f, d3 = %f, d4 = %f\r\n",mpu_temp, adcData[1]*3.3f/65536.0f, adcData[2]*3.3f/65536.0f);
+                    //printf("temp = %f, d3 = %f, d4 = %f\r\n",mpu_temp, adcData[1]*3.3f/65536.0f, adcData[2]*3.3f/65536.0f);
 
                 }
                     break;
