@@ -230,6 +230,8 @@ void usartRecvEnter(void* p)
 {
     interfaceData ifdata;
     uint32_t* adcData = nullptr;
+    uint8_t adcDataCount = 0;
+    const uint8_t avragetime = 10;
     while(true)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
@@ -273,11 +275,8 @@ void usartRecvEnter(void* p)
                     if(!adcData)
                     {
                         adcData = new uint32_t[ifdata.dataOfobjCount];
+                        memset(adcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
                     }
-                    uint16_t TS_CAL1;
-                    uint16_t TS_CAL2;
-                    float mpu_temp = 0.0;
-                    memset(adcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
                     //printf("ifdata.len = %lu, ifdata.dataPerSize = %lu, ifdata.dataOfobjCount = %lu\r\n",ifdata.len, ifdata.dataPerSize,ifdata.dataOfobjCount);
                     for(uint32_t i = 0; i < ifdata.len/ifdata.dataPerSize; i+= ifdata.dataOfobjCount)
                     {
@@ -299,17 +298,33 @@ void usartRecvEnter(void* p)
                         }
                         //printf("\r\n");
                     }
-                    //printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
-                    uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount);
-                    for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
+                    adcDataCount++;
+                    if(adcDataCount >= avragetime)
                     {
-                        adcData[j] /= div;
+                        uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount)*avragetime;
+                        for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
+                        {
+                            adcData[j] /= div;
+                        }
+                        
+                        #if 0
+                        for (uint32_t i = 0; i < ifdata.dataOfobjCount; i++)
+                        {
+                            printf("%d ",adcData[i]);
+                        }
+                        printf("\r\n");
+
+                        float mpu_temp = adcData[0];
+                        uint16_t TS_CAL1 = *(__IO uint16_t *)(0x1FF1E820);
+                        uint16_t TS_CAL2 = *(__IO uint16_t *)(0x1FF1E840);
+                        mpu_temp = ((110.0f - 30.0f) / (TS_CAL2 - TS_CAL1)) * (mpu_temp - TS_CAL1) + 30.0f;
+                        printf("temp = %f, d3 = %f, d4 = %f\r\n",mpu_temp, adcData[1]*3.3f/65536.0f, adcData[2]*3.3f/65536.0f);
+                        #endif
+                        memset(adcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
+                        adcDataCount = 0;
                     }
-                    mpu_temp = adcData[0];
-                    TS_CAL1 = *(__IO uint16_t *)(0x1FF1E820);
-                    TS_CAL2 = *(__IO uint16_t *)(0x1FF1E840);
-                    mpu_temp = ((110.0f - 30.0f) / (TS_CAL2 - TS_CAL1)) * (mpu_temp - TS_CAL1) + 30.0f;
-                    //printf("temp = %f, d3 = %f, d4 = %f\r\n",mpu_temp, adcData[1]*3.3f/65536.0f, adcData[2]*3.3f/65536.0f);
+                    //printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
+
 
                 }
                     break;

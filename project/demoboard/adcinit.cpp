@@ -225,8 +225,8 @@ int adcInit()
     AdcHandle.Init.ScanConvMode          = ADC_SCAN_ENABLE;           /* 使能扫描*/
     AdcHandle.Init.EOCSelection          = ADC_EOC_SINGLE_CONV;          /* 整个EOC序列转换结束标志 */
     AdcHandle.Init.LowPowerAutoWait      = DISABLE;                   /* 禁止低功耗自动延迟特性 */
-    AdcHandle.Init.ContinuousConvMode    = DISABLE;                    /* 不使能连续转换 转换完成一次所有通道后就停止，再次转换需要手动开始*/
-    AdcHandle.Init.NbrOfConversion       = 5;                         /* 使用了5个转换通道 */
+    AdcHandle.Init.ContinuousConvMode    = ENABLE;                    /* 不使能连续转换 转换完成一次所有通道后就停止，再次转换需要手动开始*/
+    AdcHandle.Init.NbrOfConversion       = 3;                         /* 使用了5个转换通道 */
     AdcHandle.Init.DiscontinuousConvMode = DISABLE;                   /* 禁止不连续模式 */
     AdcHandle.Init.NbrOfDiscConversion   = 1;                         /* 禁止不连续模式后，此参数忽略，此位是用来配置不连续子组中通道数 */
     AdcHandle.Init.ExternalTrigConv      = ADC_SOFTWARE_START;        /* 采用软件触发 */
@@ -235,8 +235,8 @@ int adcInit()
     AdcHandle.Init.Overrun               = ADC_OVR_DATA_OVERWRITTEN;     	   /* ADC转换溢出的话，覆盖ADC的数据寄存器 */
     AdcHandle.Init.OversamplingMode      = DISABLE;                            /* 禁止过采样 */
 
-    /* 配置ADC通道，序列2，采样Vbat/4 */
-	sConfig.Channel      = ADC_CHANNEL_VBAT;            /* 配置使用的ADC通道 */
+	/* 配置ADC通道，序列4，采样温度 */
+	sConfig.Channel      = ADC_CHANNEL_TEMPSENSOR;      /* 配置使用的ADC通道 */
 	sConfig.Rank         = ADC_REGULAR_RANK_1;          /* 采样序列里的第1个 */
 	sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;  /* 采样周期 */
 	sConfig.SingleDiff   = ADC_SINGLE_ENDED;            /* 单端输入 */
@@ -271,34 +271,13 @@ int adcInit()
         printf("error: adc3 init fail\r\n");
         return -1;
     }
-    /* 配置ADC通道，序列3，采样VrefInt */
-	sConfig.Channel      = ADC_CHANNEL_VREFINT;         /* 配置使用的ADC通道 */
-	sConfig.Rank         = ADC_REGULAR_RANK_2;          /* 采样序列里的第1个 */
-	sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;  /* 采样周期 */
-	sConfig.SingleDiff   = ADC_SINGLE_ENDED;            /* 单端输入 */
-	sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* 无偏移 */ 
-	sConfig.Offset = 0;                                 /* 无偏移的情况下，此参数忽略 */
-	sConfig.OffsetRightShift       = DISABLE;           /* 禁止右移 */
-	sConfig.OffsetSignedSaturation = DISABLE;           /* 禁止有符号饱和 */
-    adc3->addChannel(&sConfig);
-
-	/* 配置ADC通道，序列4，采样温度 */
-	sConfig.Channel      = ADC_CHANNEL_TEMPSENSOR;      /* 配置使用的ADC通道 */
-	sConfig.Rank         = ADC_REGULAR_RANK_3;          /* 采样序列里的第1个 */
-	sConfig.SamplingTime = ADC_SAMPLETIME_810CYCLES_5;  /* 采样周期 */
-	sConfig.SingleDiff   = ADC_SINGLE_ENDED;            /* 单端输入 */
-	sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* 无偏移 */ 
-	sConfig.Offset = 0;                                 /* 无偏移的情况下，此参数忽略 */
-	sConfig.OffsetRightShift       = DISABLE;           /* 禁止右移 */
-	sConfig.OffsetSignedSaturation = DISABLE;           /* 禁止有符号饱和 */
-    adc3->addChannel(&sConfig);
 
     sConfig.Channel = ADC_CHANNEL_0;
-    sConfig.Rank = ADC_REGULAR_RANK_4;
+    sConfig.Rank = ADC_REGULAR_RANK_2;
     adc3->addChannel(&sConfig);
 
     sConfig.Channel = ADC_CHANNEL_1;
-    sConfig.Rank = ADC_REGULAR_RANK_5;
+    sConfig.Rank = ADC_REGULAR_RANK_3;
     adc3->addChannel(&sConfig);
 
     adc3->start(mDev::recvMode::RECV_MODE_IT, (uint32_t*)adc3->getRxBuff(), adc3->RX_BUFF_LEN);
