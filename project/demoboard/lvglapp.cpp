@@ -3,6 +3,7 @@
 #include "mtimer.hpp"
 #include "lv_port_disp_template.h"
 #include "mthread.hpp"
+#include "datapublish.hpp"
 
 int lvglInit()
 {
@@ -66,7 +67,7 @@ int lvglAppTask(void)
 
         lv_obj_set_size(bar1, 240, 20);
         lv_obj_center(bar1);
-        lv_bar_set_range(bar1, -50, 50); // 设置进度条范围为-50到+50
+        lv_bar_set_range(bar1, 0, 65535); // 设置进度条范围为-50到+50
         lv_bar_set_mode(bar1, LV_BAR_MODE_SYMMETRICAL);
         lv_bar_set_value(bar1, 0, LV_ANIM_OFF);
 
@@ -81,19 +82,30 @@ int lvglAppTask(void)
 
         lv_obj_set_size(bar2, 20, 280);
         lv_obj_center(bar2);
-        lv_bar_set_range(bar2, -50, 50); // 设置进度条范围为-50到+50
+        lv_bar_set_range(bar2, 0, 65535); // 设置进度条范围为-50到+50
         lv_bar_set_mode(bar2, LV_BAR_MODE_SYMMETRICAL);
         lv_bar_set_value(bar2, 0, LV_ANIM_OFF);
         int i = 0;
+        uint32_t buff[4];
         while(true)
         {
-            lv_bar_set_value(bar1, i++, LV_ANIM_OFF);
-            lv_bar_set_value(bar2, i++, LV_ANIM_OFF);
+            if(mcnJoyStickData && mcnJoyStickNode)
+            {
+                if(mcnJoyStickData->poll(mcnJoyStickNode))
+                {
+                    mcnJoyStickData->copy(mcnJoyStickNode, buff);
+                    lv_bar_set_value(bar1, buff[1], LV_ANIM_OFF);
+                    lv_bar_set_value(bar2, buff[2], LV_ANIM_OFF);
+                }
+            }
+
+            //lv_bar_set_value(bar1, i++, LV_ANIM_OFF);
+            //lv_bar_set_value(bar2, i++, LV_ANIM_OFF);
             if(i > 50)
             {
                 i = -50;
             }
-            mthread::threadMdelay(20);
+            mthread::threadMdelay(5);
         }
     },nullptr);
     lvglthreadapp->startup();

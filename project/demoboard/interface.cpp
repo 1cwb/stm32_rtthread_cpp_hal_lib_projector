@@ -9,6 +9,8 @@
 #include "mipc.hpp"
 #include "madcdrv.hpp"
 #include "mgpiodrv.hpp"
+#include "datapublish.hpp"
+
 enum INTERFACE_ID
 {
     INTERFACE_ID_VCOM = 0,
@@ -306,7 +308,10 @@ void usartRecvEnter(void* p)
                         {
                             adcData[j] /= div;
                         }
-                        
+                        if(mcnJoyStickData)
+                        {
+                            mcnJoyStickData->publish(adcData, false);
+                        }
                         #if 0
                         for (uint32_t i = 0; i < ifdata.dataOfobjCount; i++)
                         {
