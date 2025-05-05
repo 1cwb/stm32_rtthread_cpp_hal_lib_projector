@@ -6,7 +6,7 @@ mcnNode* mcnJoyStickNode = nullptr;
 
 int joyStickDataInit()
 {
-    mcnJoyStickData = new mcnHub("joyStickData",sizeof(uint32_t)*3);
+    mcnJoyStickData = new mcnHub("joyStickData",sizeof(uint32_t)*5);
     if(!mcnJoyStickData)
     {
         return -1;

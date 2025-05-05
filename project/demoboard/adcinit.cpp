@@ -1,5 +1,6 @@
 #include "adc.hpp"
 #include "project.hpp"
+#include "gpio.hpp"
 
 adcx* adc1 = nullptr;
 adcx* adc2 = nullptr;
@@ -147,7 +148,7 @@ int adcInit()
     AdcHandle.Init.EOCSelection          = ADC_EOC_SEQ_CONV;          /* 整个EOC序列转换结束标志 */
     AdcHandle.Init.LowPowerAutoWait      = DISABLE;                   /* 禁止低功耗自动延迟特性 */
     AdcHandle.Init.ContinuousConvMode    = ENABLE;                    /* 使能连续转换 */
-    AdcHandle.Init.NbrOfConversion       = 3;                         /* 使用了3个转换通道 */
+    AdcHandle.Init.NbrOfConversion       = 5;                         /* 使用了3个转换通道 */
     AdcHandle.Init.DiscontinuousConvMode = DISABLE;                   /* 禁止不连续模式 */
     AdcHandle.Init.NbrOfDiscConversion   = 1;                         /* 禁止不连续模式后，此参数忽略，此位是用来配置不连续子组中通道数 */
     AdcHandle.Init.ExternalTrigConv      = ADC_SOFTWARE_START;        /* 采用软件触发 */
@@ -177,6 +178,11 @@ int adcInit()
             */
             HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC2, SYSCFG_SWITCH_PC2_OPEN);
             HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC3, SYSCFG_SWITCH_PC3_OPEN);
+            /** ADC3 CH11:C1 CH12:C2 */
+            gpiox adc3ch11("adc3ch11");
+            adc3ch11.init([&](bool binit){if(binit){__HAL_RCC_GPIOC_CLK_ENABLE();}},GPIOC,GPIO_PIN_1,GPIO_MODE_ANALOG,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH,0);
+            gpiox adc3ch12("adc3ch12");
+            adc3ch12.init([&](bool binit){if(binit){__HAL_RCC_GPIOC_CLK_ENABLE();}},GPIOC,GPIO_PIN_2,GPIO_MODE_ANALOG,GPIO_NOPULL,GPIO_SPEED_FREQ_HIGH,0);
 
             __HAL_RCC_DMA1_CLK_ENABLE();
             __HAL_RCC_ADC3_CLK_ENABLE();
@@ -206,6 +212,14 @@ int adcInit()
 
     sConfig.Channel = ADC_CHANNEL_1;
     sConfig.Rank = ADC_REGULAR_RANK_3;
+    adc3->addChannel(&sConfig);
+
+    sConfig.Channel = ADC_CHANNEL_11;
+    sConfig.Rank = ADC_REGULAR_RANK_4;
+    adc3->addChannel(&sConfig);
+
+    sConfig.Channel = ADC_CHANNEL_12;
+    sConfig.Rank = ADC_REGULAR_RANK_5;
     adc3->addChannel(&sConfig);
 
     adc3->start(mDev::recvMode::RECV_MODE_DMA, (uint32_t*)adc3->getRxBuff(), adc3->RX_BUFF_LEN);

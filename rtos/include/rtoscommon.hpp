@@ -1,8 +1,8 @@
 #pragma once
 #include <stdio.h>
 #include <stdint.h>
-#include <cstring>
-#include <limits>
+#include <string.h>
+//#include <limits>
 #include "mbase.hpp"
 
 #define NAME_MAX 8

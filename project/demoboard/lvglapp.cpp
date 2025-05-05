@@ -86,7 +86,7 @@ int lvglAppTask(void)
         lv_bar_set_mode(bar2, LV_BAR_MODE_SYMMETRICAL);
         lv_bar_set_value(bar2, 0, LV_ANIM_OFF);
         int i = 0;
-        uint32_t buff[4];
+        uint32_t buff[5];
         while(true)
         {
             if(mcnJoyStickData && mcnJoyStickNode)
@@ -94,8 +94,8 @@ int lvglAppTask(void)
                 if(mcnJoyStickData->poll(mcnJoyStickNode))
                 {
                     mcnJoyStickData->copy(mcnJoyStickNode, buff);
-                    lv_bar_set_value(bar1, buff[1], LV_ANIM_OFF);
-                    lv_bar_set_value(bar2, buff[2], LV_ANIM_OFF);
+                    lv_bar_set_value(bar1, buff[3], LV_ANIM_OFF);
+                    lv_bar_set_value(bar2, buff[4], LV_ANIM_OFF);
                 }
             }
 

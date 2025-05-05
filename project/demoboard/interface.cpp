@@ -233,7 +233,7 @@ void usartRecvEnter(void* p)
     interfaceData ifdata;
     uint32_t* adcData = nullptr;
     uint8_t adcDataCount = 0;
-    const uint8_t avragetime = 10;
+    const uint8_t avragetime = 5;
     while(true)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
