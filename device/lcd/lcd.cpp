@@ -98,7 +98,7 @@ void Lcd169::init(mDev::mSpi* spix, mDev::mGpio* dc, mDev::mGpio* rst, mDev::mGp
 	writeCommand(0x29);       // 打开显示   	
 	
  	// 以下进行一些驱动的默认设置
-    setDirection(mDev::DIRECTION_V);  //	设置显示方向
+    setDirection(mDev::DIRECTION_H_FLIP);  //	设置显示方向
 	setBackColor(LCD_BLUE);           // 设置背景色
  	setColor(LCD_WHITE);              // 设置画笔色  
 	setFont(FONT_TYPE_24);

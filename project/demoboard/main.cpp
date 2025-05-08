@@ -200,7 +200,7 @@ int main(void)
         ALOGI("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
         ALOGI("thread stack Info:\r\n");
         systemInfo::getInstance()->showAllThreadStackSizeInfo();
-        systemInfo::getInstance()->getCpuUsage();
+        ALOGI("CPU USAGE: %f\r\n",systemInfo::getInstance()->getCpuUsage());
         #endif
     }, nullptr);
 

@@ -232,8 +232,10 @@ void usartRecvEnter(void* p)
 {
     interfaceData ifdata;
     uint32_t* adcData = nullptr;
+    uint32_t* backupAdcData = nullptr;
     uint8_t adcDataCount = 0;
     const uint8_t avragetime = 5;
+    bool bNeedUpdate = false;
     while(true)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
@@ -279,6 +281,11 @@ void usartRecvEnter(void* p)
                         adcData = new uint32_t[ifdata.dataOfobjCount];
                         memset(adcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
                     }
+                    if(!backupAdcData)
+                    {
+                        backupAdcData = new uint32_t[ifdata.dataOfobjCount];
+                        memset(backupAdcData, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
+                    }
                     //printf("ifdata.len = %lu, ifdata.dataPerSize = %lu, ifdata.dataOfobjCount = %lu\r\n",ifdata.len, ifdata.dataPerSize,ifdata.dataOfobjCount);
                     for(uint32_t i = 0; i < ifdata.len/ifdata.dataPerSize; i+= ifdata.dataOfobjCount)
                     {
@@ -307,10 +314,36 @@ void usartRecvEnter(void* p)
                         for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
                         {
                             adcData[j] /= div;
+                            if(!bNeedUpdate)
+                            {
+                                if(backupAdcData[j] < 40)
+                                {
+                                    if(adcData[j] >  (backupAdcData[j] + 40))
+                                    {
+                                        bNeedUpdate = true;
+                                    }
+                                }
+                                else if(backupAdcData[j] > 65536 - 40)
+                                {
+                                    if(adcData[j] <  (backupAdcData[j] - 40))
+                                    {
+                                        bNeedUpdate = true;
+                                    }
+                                }
+                                else if(adcData[j] > (backupAdcData[j] + 40) || adcData[j] < (backupAdcData[j] - 40))
+                                {
+                                    bNeedUpdate = true;
+                                }
+                            }
+                            //printf("adcData = %lu, backupAdcData = %lu ",adcData[j], backupAdcData[j]);
+                            backupAdcData[j] = adcData[j];
                         }
-                        if(mcnJoyStickData)
+                        //printf("\r\n");
+                        //printf("bupdate = %d\r\n",bNeedUpdate);
+                        if(mcnJoyStickData && bNeedUpdate)
                         {
                             mcnJoyStickData->publish(adcData, false);
+                            bNeedUpdate = false;
                         }
                         #if 0
                         for (uint32_t i = 0; i < ifdata.dataOfobjCount; i++)

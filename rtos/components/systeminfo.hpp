@@ -19,8 +19,7 @@ public:
     mResult init();
     float getCpuUsage(void)
     {
-        printf("CPU Usage = %d.%d \r\n",cpuUsageMajor,cpuUsageMinor);
-        return 0.0f;
+        return (cpuUsageMajor * 100 + cpuUsageMinor) / 100.0f;
     }
     void showAllThreadStackSizeInfo();
 private:
