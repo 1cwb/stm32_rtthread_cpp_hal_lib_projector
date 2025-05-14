@@ -207,7 +207,7 @@ void usartRecvEnter(void* p)
             switch(ifdata.id)
             {
                 case UART_ID_VCOM:
-                for(int i = 0; i < ifdata.len; i++)
+                for(uint32_t i = 0; i < ifdata.len; i++)
                 {
                   printf("%x", ifdata.data[i]);
                 }

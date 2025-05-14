@@ -10,6 +10,7 @@
 #include "madcdrv.hpp"
 #include "mgpiodrv.hpp"
 #include "datapublish.hpp"
+#include "crsf.hpp"
 
 enum INTERFACE_ID
 {
@@ -236,6 +237,8 @@ void usartRecvEnter(void* p)
     uint8_t adcDataCount = 0;
     const uint8_t avragetime = 5;
     bool bNeedUpdate = false;
+    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2);
+    crsf::getInstance()->registerUartSend(usartDev2, &mDev::mUsart::sendData);
     while(true)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
@@ -342,6 +345,7 @@ void usartRecvEnter(void* p)
                         //printf("bupdate = %d\r\n",bNeedUpdate);
                         if(mcnJoyStickData && bNeedUpdate)
                         {
+                            crsf::getInstance()->bind();
                             mcnJoyStickData->publish(adcData, false);
                             bNeedUpdate = false;
                         }

@@ -160,14 +160,12 @@ void Debug_printf(const char *format, ...)
 
 int initUsart()
 {
-  #if 0
     UART_HandleTypeDef huartX;
     DMA_HandleTypeDef hdma_usartx_tx;
     DMA_HandleTypeDef hdma_usartx_rx;
-#endif
     uart1 = new usart(DEV_USART1);
-#if 0
     uart2 = new usart(DEV_USART2);
+#if 0
     uart3 = new usart(DEV_USART3);
     uart4 = new usart(DEV_USART4);
     uart5 = new usart(DEV_USART5);
@@ -182,7 +180,7 @@ int initUsart()
     uart1->setTransferMode(mDev::transferMode::TRANSFER_MODE_NOMAL);
     uart1->setRecvMode(mDev::recvMode::RECV_MODE_IT_RECV_IDLE);
     uart1->recvData(uart1->getRxBuff(),usart::RX_BUFF_LEN);
-#if 0
+
     huartX.Instance = USART2;
     huartX.Init.BaudRate = DEBUG_UART_BOUNDRATE;
     huartX.Init.WordLength = UART_WORDLENGTH_8B;
@@ -250,6 +248,7 @@ int initUsart()
     uart2->setRecvMode(mDev::recvMode::RECV_MODE_DMA_RECV_IDLE);
     uart2->recvData(uart2->getRxBuff(),usart::RX_BUFF_LEN);
 
+#if 0
     huartX.Instance = USART3;
     uart3->init([](bool enable){
         /* Peripheral clock enable */

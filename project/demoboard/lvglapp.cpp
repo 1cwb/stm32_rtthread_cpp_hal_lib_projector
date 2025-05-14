@@ -86,7 +86,7 @@ int lvglAppTask(void)
         int16_t x1 = 0;  // 假设摇杆值范围0-65535
         int16_t y1 = 0;
 
-        workItem* lvglwork = new workItem("lvglwork", 2000, 1000, [&](void* param){
+        workItem* lvglwork = new workItem("lvglwork", 0, 1000, [&](void* param){
             lv_label_set_text_fmt(cpu_label, "CPU: %.1f%%", systemInfo::getInstance()->getCpuUsage());
         }, nullptr);
         workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(lvglwork);

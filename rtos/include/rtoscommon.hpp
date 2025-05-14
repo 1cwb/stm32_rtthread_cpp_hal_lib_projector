@@ -4,8 +4,9 @@
 #include <string.h>
 //#include <limits>
 #include "mbase.hpp"
-
+#ifndef NAME_MAX
 #define NAME_MAX 8
+#endif
 #define THREAD_PRIORITY_MAX 8
 
 #define TIMER_SKIP_LIST_LEVEL          1
