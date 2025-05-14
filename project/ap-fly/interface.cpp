@@ -6,25 +6,31 @@
 #include "project.hpp"
 #include "mthread.hpp"
 #include "sys.h"
-
 #include "mipc.hpp"
+#include "madcdrv.hpp"
+#include "mgpiodrv.hpp"
+#include "datapublish.hpp"
+#include "crsf.hpp"
 
-enum UART_ID
+enum INTERFACE_ID
 {
-    UART_ID_VCOM = 0,
-    UART_ID_U1,
-    UART_ID_U2,
-    UART_ID_U3,
-    UART_ID_U4,
-    UART_ID_U5,
-    UART_ID_U6,
-    UART_ID_U8,
+    INTERFACE_ID_VCOM = 0,
+    INTERFACE_ID_U1,
+    INTERFACE_ID_U2,
+    INTERFACE_ID_U3,
+    INTERFACE_ID_U4,
+    INTERFACE_ID_U5,
+    INTERFACE_ID_U6,
+    INTERFACE_ID_U8,
+    INTERFACE_ID_ADC3,
 };
 
 struct interfaceData
 {
-    UART_ID id;
+    INTERFACE_ID id;
     uint8_t data[mDev::mUsart::RX_BUFF_LEN];
+    uint32_t dataPerSize;
+    uint32_t dataOfobjCount;
     uint32_t len;
     void* p;
 };
@@ -34,7 +40,7 @@ mMessagequeue uartRecvQueue;
 void usartRecvEnter(void* p);
 int uartRecvQueueInit(void)
 {
-    uartRecvQueue.init("uartRecvQueue", sizeof(interfaceData), 20*(sizeof(mMessagequeue::mqMessage_t)+sizeof(interfaceData)), mIpcFlag::IPC_FLAG_FIFO);
+    uartRecvQueue.init("uartRecvQueue", sizeof(interfaceData), 40*(sizeof(mMessagequeue::mqMessage_t)+sizeof(interfaceData)), mIpcFlag::IPC_FLAG_FIFO);
     printf("uart queue maxsize = %d, used size = %d\r\n", uartRecvQueue.getMaxSize(), uartRecvQueue.getUsedSize());
     mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM);
     mDev::mUsart* usartDev1 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART1);
@@ -44,6 +50,7 @@ int uartRecvQueueInit(void)
     mDev::mUsart* usartDev5 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5);
     mDev::mUsart* usartDev6 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART6);
     mDev::mUsart* usartDev8 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART8);
+    mDev::mAdc* adc3Dev = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC3);
 
     if(usbDev)
     {
@@ -53,7 +60,7 @@ int uartRecvQueueInit(void)
                 mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_VCOM;
+                ifdata.id = INTERFACE_ID_VCOM;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memset(ifdata.data, 0, sizeof(ifdata.data));
@@ -68,10 +75,10 @@ int uartRecvQueueInit(void)
             //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(p)
             {
-                mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+                mDev::mUsart::usartData* data = (mDev::mUsart::usartData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_U1;
+                ifdata.id = INTERFACE_ID_U1;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memset(ifdata.data, 0, sizeof(ifdata.data));
@@ -86,10 +93,10 @@ int uartRecvQueueInit(void)
             //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(p)
             {
-                mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+                mDev::mUsart::usartData* data = (mDev::mUsart::usartData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_U2;
+                ifdata.id = INTERFACE_ID_U2;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memcpy(ifdata.data, data->data, data->len);
@@ -104,10 +111,10 @@ int uartRecvQueueInit(void)
             //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(p)
             {
-                mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+                mDev::mUsart::usartData* data = (mDev::mUsart::usartData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_U3;
+                ifdata.id = INTERFACE_ID_U3;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memcpy(ifdata.data, data->data, data->len);
@@ -122,10 +129,10 @@ int uartRecvQueueInit(void)
             //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(p)
             {
-                mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+                mDev::mUsart::usartData* data = (mDev::mUsart::usartData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_U4;
+                ifdata.id = INTERFACE_ID_U4;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memcpy(ifdata.data, data->data, data->len);
@@ -140,10 +147,10 @@ int uartRecvQueueInit(void)
             //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(p)
             {
-                mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+                mDev::mUsart::usartData* data = (mDev::mUsart::usartData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_U5;
+                ifdata.id = INTERFACE_ID_U5;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memcpy(ifdata.data, data->data, data->len);
@@ -158,10 +165,10 @@ int uartRecvQueueInit(void)
             //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(p)
             {
-                mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+                mDev::mUsart::usartData* data = (mDev::mUsart::usartData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_U6;
+                ifdata.id = INTERFACE_ID_U6;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memcpy(ifdata.data, data->data, data->len);
@@ -176,15 +183,41 @@ int uartRecvQueueInit(void)
             //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
             if(p)
             {
-                mDev::mUsbHidDevice::usbData* data = (mDev::mUsbHidDevice::usbData*)p;
+                mDev::mUsart::usartData* data = (mDev::mUsart::usartData*)p;
 
                 interfaceData ifdata;
-                ifdata.id = UART_ID_U8;
+                ifdata.id = INTERFACE_ID_U8;
                 ifdata.len = data->len;
                 ifdata.p = dev;
                 memcpy(ifdata.data, data->data, data->len);
                 memset(data->data, 0, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
+            }
+        });
+    }
+    if(adc3Dev)
+    {
+        adc3Dev->registerInterruptCb([](mDev::mDevice* dev, void* p){
+            //mDev::mUsart::usartData* pdata = reinterpret_cast<mDev::mUsart::usartData*>(data);
+            if(p)
+            {
+                mDev::mAdc::usartData* data = (mDev::mAdc::usartData*)p;
+                interfaceData ifdata;
+                if(data->type == mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_COMPLETE)
+                {
+                    ifdata.id = INTERFACE_ID_ADC3;
+                    ifdata.len = data->len;
+                    ifdata.dataPerSize = data->dataPerSize;
+                    ifdata.dataOfobjCount = data->dataOfobjCount;
+                    ifdata.p = dev;
+                    memcpy(ifdata.data, data->data, data->len);
+                    //memset(data->data, 0, data->len);
+                    uartRecvQueue.send(&ifdata, sizeof(interfaceData));
+                }
+                else
+                {
+                    //printf("adc3 event type = %u\r\n",data->type);
+                }
             }
         });
     }
@@ -199,40 +232,47 @@ int uartRecvQueueInit(void)
 void usartRecvEnter(void* p)
 {
     interfaceData ifdata;
-    char buff[64] = {0};
+    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2);
+    crsf::getInstance()->registerUartSend(usartDev2, &mDev::mUsart::sendData);
     while(true)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
         {
             switch(ifdata.id)
             {
-                case UART_ID_VCOM:
+                case INTERFACE_ID_VCOM:
                 for(uint32_t i = 0; i < ifdata.len; i++)
                 {
                   printf("%x", ifdata.data[i]);
                 }
                 printf("\r\n");
                     break;
-                case UART_ID_U1:
+                case INTERFACE_ID_U1:
                     printf("tony recv %s\r\n",ifdata.data);
+                    if(strncmp((const char*)ifdata.data,"reboot",6) == 0)
+                    {
+                        SoftReset();
+                    }
                     break;
-                case UART_ID_U2:
+                case INTERFACE_ID_U2:
                     
                     break;
-                case UART_ID_U3:
+                case INTERFACE_ID_U3:
                     
                     break;
-                case UART_ID_U4:
+                case INTERFACE_ID_U4:
                     
                     break;
-                case UART_ID_U5:
+                case INTERFACE_ID_U5:
                     
                     break;
-                case UART_ID_U6:
+                case INTERFACE_ID_U6:
                     
                     break;
-                case UART_ID_U8:
+                case INTERFACE_ID_U8:
                     
+                    break;
+                case INTERFACE_ID_ADC3:
                     break;
                 default:
                     break;
