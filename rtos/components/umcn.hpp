@@ -9,7 +9,6 @@
 
 #define MCN_PUB_EVENT            (1 << 0)
 #define MCN_MAX_LINK_NUM         30
-#define MCN_FREQ_EST_WINDOW_LEN  5
 
 class mcnNode;
 class mcnHub
@@ -23,9 +22,7 @@ public:
     _linkTail(nullptr),
     _linkNum(0),
     _bpublished(false),
-    _bsuspend(false),
-    _freq(0.0F),
-    _windowIndex(0)
+    _bsuspend(false)
     {
         
     }
@@ -49,13 +46,11 @@ public:
     bool bSuspend() const {return _bsuspend;}
     void suspend() {_bsuspend = true;}
     void resume() {_bsuspend = false;}
-    float getFreq() const {return _freq;}
-    uint16_t getWindowIndex() const {return _windowIndex;}
     mcnNode* subscribe(const char* nodeName);
     mResult unSubscribe(mcnNode* node);
     mResult unSubscribe(const char* nodeName);
     mcnNode* getNode(const char* nodeName);
-    mResult publish(const void* data, bool bsync = true);
+    mResult publish(const void* data, bool bsync = false);
     bool poll(mcnNode* node);
     bool wait(int32_t timeout);
     mResult copy(mcnNode* node, void* buffer);
@@ -73,13 +68,8 @@ private:
     uint32_t _linkNum;
     bool _bpublished;
     bool _bsuspend;
-    float _freq;
-    uint16_t _freqEstWindow[MCN_FREQ_EST_WINDOW_LEN] = {0};
-    uint16_t _windowIndex;
     mEvent _event;
     static std::list<mcnHub*, mMemAllocator<mcnHub*>> _mcnHubList;
-    static mTimer _freqTimer;
-    static mAtomic<bool> _btimerInit;
 };
 
 class mcnNode

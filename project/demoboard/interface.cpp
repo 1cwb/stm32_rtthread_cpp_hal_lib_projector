@@ -11,6 +11,7 @@
 #include "mgpiodrv.hpp"
 #include "datapublish.hpp"
 #include "crsf.hpp"
+#include "mklog.hpp"
 
 enum INTERFACE_ID
 {
@@ -260,7 +261,22 @@ void usartRecvEnter(void* p)
                     }
                     break;
                 case INTERFACE_ID_U2:
-                    
+                    if(crsf::getInstance()->rxDataParse(ifdata.data, ifdata.len) == M_RESULT_EOK)
+                    {
+                        if(crsf::getInstance()->unpackRcChannels() == M_RESULT_EOK)
+                        {
+                            float ahrsData[3] = {0.0f};
+                            ahrsData[0] = crsf::getInstance()->getRxChannelData()[0] / 5.6861f;
+                            ahrsData[1] = (crsf::getInstance()->getRxChannelData()[1] / 5.6861f) - 180.0f;
+                            ahrsData[2] = (crsf::getInstance()->getRxChannelData()[2] / 11.3722f) - 90.0f;
+                            ahrsHub->publish(ahrsData);
+                            /*ALOGI("CRSF[%d,%d,%d] -> Back[%.1f,%.1f,%.1f]\r\n",
+                                  crsf::getInstance()->getRxChannelData()[0],
+                                  crsf::getInstance()->getRxChannelData()[1],
+                                  crsf::getInstance()->getRxChannelData()[2],
+                                  verify_yaw, verify_roll, verify_pitch);*/
+                        }
+                    }
                     break;
                 case INTERFACE_ID_U3:
                     
@@ -345,7 +361,23 @@ void usartRecvEnter(void* p)
                         //printf("bupdate = %d\r\n",bNeedUpdate);
                         if(mcnJoyStickData && bNeedUpdate)
                         {
-                            crsf::getInstance()->bind();
+                            //crsf::getInstance()->bind();
+                            const uint16_t max_resolution_value = (1 << crsf::getInstance()->getResolutionBits()) - 1;
+    
+                            // 将ADC值0-65535映射到0-2047范围
+                            crsf::getInstance()->getTxChannelData()[0] = (adcData[1] * max_resolution_value) / 65535;
+                            crsf::getInstance()->getTxChannelData()[1] = (adcData[2] * max_resolution_value) / 65535;
+                            crsf::getInstance()->getTxChannelData()[2] = (adcData[3] * max_resolution_value) / 65535;
+                            crsf::getInstance()->getTxChannelData()[3] = (adcData[4] * max_resolution_value) / 65535;
+
+                            crsf::getInstance()->packRcChannels(CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED,0,4);
+                            /*for(uint32_t i = 0; i < crsf::getInstance()->getPacketLength(); i++)
+                            {
+                                printf("%2x ",crsf::getInstance()->getFrame()->bytes[i]);
+                            }
+                            printf("\r\n");*/
+                            crsf::getInstance()->writeTelemetryData(crsf::getInstance()->getFrame(),crsf::getInstance()->getPacketLength());
+                            crsf::getInstance()->sendTelemetryData();
                             mcnJoyStickData->publish(adcData, false);
                             bNeedUpdate = false;
                         }

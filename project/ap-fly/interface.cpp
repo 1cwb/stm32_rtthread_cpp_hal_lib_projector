@@ -243,7 +243,7 @@ void usartRecvEnter(void* p)
                 case INTERFACE_ID_VCOM:
                 for(uint32_t i = 0; i < ifdata.len; i++)
                 {
-                  printf("%x", ifdata.data[i]);
+                  printf("%x ", ifdata.data[i]);
                 }
                 printf("\r\n");
                     break;
@@ -255,7 +255,22 @@ void usartRecvEnter(void* p)
                     }
                     break;
                 case INTERFACE_ID_U2:
-                    
+                    /*for(uint32_t i = 0; i < ifdata.len; i++)
+                    {
+                      printf("%2x ", ifdata.data[i]);
+                    }
+                    printf("\r\n");*/
+                    if(crsf::getInstance()->rxDataParse(ifdata.data, ifdata.len) == M_RESULT_EOK)
+                    {
+                        if(crsf::getInstance()->unpackRcChannels() == M_RESULT_EOK)
+                        {
+                            for (size_t i = 0; i < 4; i++)
+                            {
+                                //printf("%d ", crsf::getInstance()->getRxChannelData()[i]);
+                            }
+                            //printf("\r\n");
+                        }
+                    }
                     break;
                 case INTERFACE_ID_U3:
                     

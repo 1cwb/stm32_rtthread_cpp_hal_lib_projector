@@ -1,8 +1,6 @@
 #include "umcn.hpp"
 #include <cstring>
 std::list<mcnHub*, mMemAllocator<mcnHub*>> mcnHub::_mcnHubList;
-mTimer mcnHub::_freqTimer;
-mAtomic<bool> mcnHub::_btimerInit(false);
 
 mResult mcnHub::init()
 {
@@ -24,45 +22,13 @@ mResult mcnHub::init()
     mSchedule::getInstance()->enterCritical();
     _pdata = pdata;
     _mcnHubList.emplace_back(this);
-    memset(_freqEstWindow, 0, sizeof(_freqEstWindow));
-    _windowIndex = 0;
     mSchedule::getInstance()->exitCritical();
-    
-    if(!_btimerInit.load())
-    {
-        _freqTimer.init("UMCNIPC",1000,TIMER_FLAG_PERIODIC,[this](){
-            for(auto it = this->_mcnHubList.begin(); it != this->_mcnHubList.end(); ++it)
-            {
-                if(*it)
-                {
-                    uint32_t cnt = 0;
-                    for(int i = 0; i < MCN_FREQ_EST_WINDOW_LEN; i++)
-                    {
-                        cnt += (*it)->_freqEstWindow[i];
-                        (*it)->_freq = (float)cnt / MCN_FREQ_EST_WINDOW_LEN;
-                    }
-                    (*it)->_windowIndex = ((*it)->_windowIndex+1) % MCN_FREQ_EST_WINDOW_LEN;
-                    (*it)->_freqEstWindow[(*it)->_windowIndex] = 0;
-                }
-            }
-        });
-        if(_freqTimer.start() != M_RESULT_EOK)
-        {
-            return M_RESULT_ERROR;
-        }
-        _btimerInit.store(true);
-    }
+
     return M_RESULT_EOK;
 }
 mResult mcnHub::deInit()
 {
     mcnNode* nextNode = nullptr;
-    if(_btimerInit.load()&&_mcnHubList.empty())
-    {
-        _freqTimer.stop();
-        _freqTimer.timerDetach();
-        _btimerInit.store(false);
-    }
     _event.detach();
     mSchedule::getInstance()->enterCritical();
     nextNode = _linkHead;
@@ -201,7 +167,6 @@ mResult mcnHub::publish(const void* data, bool bsync)
     {
         return M_RESULT_EINVAL;
     }
-    _freqEstWindow[_windowIndex] ++;
     mSchedule::getInstance()->enterCritical();
     memcpy(_pdata, data, _objSize);
     mcnNode* node = _linkHead;

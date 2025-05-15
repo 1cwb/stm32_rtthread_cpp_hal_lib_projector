@@ -20,7 +20,6 @@
 #include "mi2cdrv.hpp"
 #include "mimudrv.hpp"
 #include "mgpiodrv.hpp"
-#include "MadgwickAHRS.hpp"
 #include "mmagnetmetordrv.hpp"
 #include "sys.h"
 #ifdef BIT
@@ -162,9 +161,9 @@ public:
     virtual float getGyroYrad()override{return gyrRad[1];};
     virtual float getGyroZrad()override{return gyrRad[2];};
 
-    virtual float getYaw()override {return filter.getYaw();}
-    virtual float getPitch()override {return filter.getPitch();}
-    virtual float getRoll()override {return filter.getRoll();}
+//    virtual float getYaw()override {return filter.getYaw();}
+//    virtual float getPitch()override {return filter.getPitch();}
+//    virtual float getRoll()override {return filter.getRoll();}
     virtual bool updateData()override
     {
         gyroReadRad();
@@ -179,7 +178,7 @@ public:
         else
         #endif
         {
-          filter.updateIMU(getGyroXrad(),getGyroYrad(),getGyroZrad(),getAccelXms2(),getAccelYms2(),getAccelZms2());
+          //filter.updateIMU(getGyroXrad(),getGyroYrad(),getGyroZrad(),getAccelXms2(),getAccelYms2(),getAccelZms2());
         }
 
         //printf("Acc:%8f %8f %8f Gyro:%8f %8f %8f temp %8f\r\n",getAccelXms2(),getAccelYms2(),getAccelZms2(),getGyroXrad(),getGyroYrad(),getGyroZrad(),getTemp());
@@ -216,6 +215,5 @@ private:
     mDev::mGpio* _accelCsPin;
     mDev::mGpio* _gyroCsPin;
     mDev::mSpi *_spi;
-    MadgMahony filter;
 };
 

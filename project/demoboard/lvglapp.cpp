@@ -30,10 +30,26 @@ int lvglAppTask(void)
         // 新增：CPU使用率标签
         lv_obj_t * cpu_label = lv_label_create(lv_scr_act());
         lv_obj_align(cpu_label, LV_ALIGN_TOP_LEFT, 10, 10);
-        lv_obj_set_style_text_color(cpu_label, lv_color_white(), 0);
+        lv_obj_set_style_text_color(cpu_label, lv_color_hex(0xFF0000), 0);
         lv_obj_set_style_text_font(cpu_label, &lv_font_montserrat_14, 0);
         lv_obj_move_foreground(cpu_label);  // 新增：置顶显示
 
+        // 新增：IMU数据显示
+        lv_obj_t * imu_label_yaw = lv_label_create(lv_scr_act());
+        lv_obj_align(imu_label_yaw, LV_ALIGN_TOP_LEFT, 10, 30);
+        lv_obj_set_style_text_color(imu_label_yaw, lv_color_make(0, 255, 0), 0);
+        lv_obj_set_style_text_font(imu_label_yaw, &lv_font_montserrat_14, 0);
+        // 新增：IMU数据显示
+        lv_obj_t * imu_label_roll = lv_label_create(lv_scr_act());
+        lv_obj_align(imu_label_roll, LV_ALIGN_TOP_LEFT, 10, 50);
+        lv_obj_set_style_text_color(imu_label_roll, lv_color_make(0, 255, 0), 0);
+        lv_obj_set_style_text_font(imu_label_roll, &lv_font_montserrat_14, 0);
+        // 新增：IMU数据显示
+        lv_obj_t * imu_label_pitch = lv_label_create(lv_scr_act());
+        lv_obj_align(imu_label_pitch, LV_ALIGN_TOP_LEFT, 10, 70);
+        lv_obj_set_style_text_color(imu_label_pitch, lv_color_make(0, 255, 0), 0);
+        lv_obj_set_style_text_font(imu_label_pitch, &lv_font_montserrat_14, 0);
+        
         // 新增：创建容器用于水平排列两个方框
         lv_obj_t * container = lv_obj_create(lv_scr_act());
         lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), 0);
@@ -110,6 +126,14 @@ int lvglAppTask(void)
                     lv_obj_set_pos(ball1, x, y);
                     lv_obj_set_pos(ball2, x1, y1);
                 }
+            }
+            if(ahrsHub->poll(ahrsSendBackToRemoteNode))
+            {
+                float ahrsData[3];
+                ahrsHub->copy(ahrsSendBackToRemoteNode, ahrsData);
+                lv_label_set_text_fmt(imu_label_yaw, "YAW:%03.1f", ahrsData[0]);
+                lv_label_set_text_fmt(imu_label_roll, "ROLL:%03.1f", ahrsData[1]);
+                lv_label_set_text_fmt(imu_label_pitch, "PITCH:%03.1f", ahrsData[2]);
             }
             mthread::threadMdelay(5);
         }

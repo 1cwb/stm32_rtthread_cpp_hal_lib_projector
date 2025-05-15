@@ -27,6 +27,9 @@
 #include "project.hpp"
 #include "ff.h"
 #include "fatfsff.hpp"
+#include "datapublish.hpp"
+#include "crsf.hpp"
+
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
 #define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
@@ -132,28 +135,14 @@ static void CreateNewFile(void)
 
 int main(void)
 {
-    mEvent mevent;
-    mevent.init("mEvnet1", IPC_FLAG_FIFO);
-
-    mcnHub hub("test", 4);
-    hub.init();
-    hub.subscribe("testNode");
-    mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU1);
-    mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU2);
-    mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice(DEV_MAG1);
-    mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mPlatform::getInstance()->getDevice(DEV_BARO1);
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED0);
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED1);
     mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
-    mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
+    mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
 
     uint8_t usbBuff[64];
-    if(systickx)
-    {
-        //KLOGI("systick is find \r\n");
-        
-    }
+
     if(timer2)
     {
         timer2->registerInterruptCb([&](mDev::mDevice* dev, void* p){
@@ -162,11 +151,10 @@ int main(void)
         timer2->start(mDev::CHANNEL_1);
         //KLOGI("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
     }
-    mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
+
     if(timer1)
     {
         timer1->registerInterruptCb([&](mDev::mDevice* dev, void* p){
-            mevent.send(0X01);
         });
         timer1->start();
         //KLOGI("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
@@ -177,77 +165,51 @@ int main(void)
         if(led2)
         led2->toggle();
     }, nullptr);
-    workItem* i2cWorkItem = new workItem("i2cWorkItem", 2000, 20, [&](void* param){
-        if(mag1)
-        mag1->updateData();
-        if(mb1)
-        mb1->updateData();
-        //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_SET);
-        //ALOGI("YAW:%d ROLL:%10f PITCH:%10f P%10f\r\n",/*imu1->getYaw()*/mag1->getMageX(),imu1->getRoll(),imu1->getPitch(),mb1->getPressure());
-        if(imu2)
-        ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
-       //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, GPIO_PIN_RESET);
-        //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",imu2->getYaw(),imu2->getRoll(),imu2->getPitch(),mb1->getPressure());
+    workItem* i2cWorkItem = new workItem("i2cWorkItem", 1000, 20, [&](void* param){
+        float ahrsData[4] = {0.0};
+        if(ahrsHub->poll(ahrsSendBackToRemoteNode))
+        {
+            ahrsHub->copy(ahrsSendBackToRemoteNode, ahrsData);
 
+            crsf::getInstance()->getTxChannelData()[0] = static_cast<uint16_t>(
+                fmaxf(fminf(ahrsData[0], 360.0f), 0.0f) * 5.6861f); // YAW [0°,360°] -> [0,2047] (2047/360≈5.6861)
+                
+            crsf::getInstance()->getTxChannelData()[1] = static_cast<uint16_t>(
+                (fmaxf(fminf(ahrsData[1], 180.0f), -180.0f) + 180.0f) * 5.6861f); // ROLL [-180°,180°]->[0,2047]
+                
+            crsf::getInstance()->getTxChannelData()[2] = static_cast<uint16_t>(
+                (fmaxf(fminf(ahrsData[2], 90.0f), -90.0f) + 90.0f) * 11.3722f); // PITCH [-90°,90°]->[0,2047]
+            
+            crsf::getInstance()->packRcChannels(CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED,0,3);
+            crsf::getInstance()->writeTelemetryData(crsf::getInstance()->getFrame(),crsf::getInstance()->getPacketLength());
+            crsf::getInstance()->sendTelemetryData();
+
+            //ALOGI("YAW:%d ROLL:%d PITCH:%d \r\n",crsf::getInstance()->getTxChannelData()[0], crsf::getInstance()->getTxChannelData()[1], crsf::getInstance()->getTxChannelData()[2]);
+            //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3]);
+        }
     }, nullptr);
     workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
         #if 0
         ALOGI("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
         ALOGI("thread stack Info:\r\n");
         systemInfo::getInstance()->showAllThreadStackSizeInfo();
-        systemInfo::getInstance()->getCpuUsage();
+        ALOGI("CPU USAGE: %f\r\n",systemInfo::getInstance()->getCpuUsage());
         #endif
     }, nullptr);
 
-    workItem* IMUItem = new workItem("imu", 2000, 5, [&](void* param){
-        if(imu1 && imu2)
-        {
-            //HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_SET);
-            imu1->updateData();
-            imu2->updateData();
-            //HAL_GPIO_WritePin(GPIOD,GPIO_PIN_8,GPIO_PIN_RESET);
-            //ANO_DT_Send_Status((imu1->getRoll()+imu2->getRoll()/2.0f), (imu1->getPitch()+imu2->getPitch())/2.0f, (imu1->getYaw()+imu2->getYaw())/2.0f, 0, 0, 1);
-            //ANO_DT_Send_Status(imu2->getRoll(), imu2->getPitch(), imu2->getYaw(), 0, 0, 1);
-            //HAL_UART_Transmit_DMA(&UART1_Handler,DMABUFF,13); 
-        }
-    }, nullptr);
+
 
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(i2cWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
-    workQueueManager::getInstance()->find(WORKQUEUE_HP_WORK)->scheduleWork(IMUItem);
-    mthread* IMUCALTHREAD = mthread::create("IMUTHREAD",1024,0,20,[&](void* p){
-        uint32_t test = 0;
-        while(1)
-        {
-            mevent.recv(0x20,EVENT_FLAG_OR|EVENT_FLAG_CLEAR, WAITING_FOREVER, &test);
-            if(test == 0x20)//USB RECV
-            {
-                printf("%s\r\n",usbBuff);
-            }
-        }
-    },nullptr);
-    if(IMUCALTHREAD)
-    {
-        IMUCALTHREAD->startup();
-    }
 
-#if 0
-    mTimer* tim1 = mTimer::create("tim1", 3000, TIMER_FLAG_PERIODIC, [&](){
-        //tim1->setTimerAndStart(3000);
-    });
-    tim1->start();
-#endif
     //uint32_t j;
     CreateNewFile();
     while(1)
     {
         if(led0)
         led0->toggle();
-        /*if(hub.wait(WAITING_FOREVER))
-        {
-            hub.copy(hub.getNode("testNode"),&j);
-        }*/
+
         mthread::threadDelay(1000);
     }
     return 0;

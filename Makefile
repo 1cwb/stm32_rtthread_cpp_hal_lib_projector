@@ -11,7 +11,7 @@ export BOARD_TYPE :=
 export AP_FLY_BOARD := 1
 export RC_FLY_BOARD := 2
 export DEMO_BOARD := 3
-BOARD_TYPE := $(AP_FLY_BOARD)
+BOARD_TYPE := $(DEMO_BOARD)
 ########################################MEM_MAP################################################
 APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
