@@ -1299,13 +1299,9 @@ public:
   virtual int16_t getGyroX()override{return DFRobot_ICM42688::getGyroX();};
   virtual int16_t getGyroY()override{return DFRobot_ICM42688::getGyroY();};
   virtual int16_t getGyroZ()override{return DFRobot_ICM42688::getGyroZ();};
-  //virtual float getYaw()override {return _mahony.getAngleZ();}
-  //virtual float getPitch()override {return _mahony.getAngleY();}
-  //virtual float getRoll()override {return _mahony.getAngleX();}
   virtual bool updateData()override
   {
       DFRobot_ICM42688::getFIFOData();
-      //_mahony.MahonyUpdate(getGyroX()/57.3f,getGyroY()/57.3f,getGyroZ()/57.3f,getAccelX(),getAccelY(),getAccelZ());
       return true;
   }
 protected:
@@ -1336,7 +1332,6 @@ protected:
   void interruptMode();
 private:
   mDev::mSpi* mspi = nullptr;
-  //Mahony _mahony;
   mDev::mGpio* _cs = nullptr;
 };
 #endif

@@ -167,18 +167,19 @@ int main(void)
     }, nullptr);
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 1000, 20, [&](void* param){
         float ahrsData[4] = {0.0};
+        const uint16_t max_resolution_value = (1 << crsf::getInstance()->getResolutionBits()) - 1;
         if(ahrsHub->poll(ahrsSendBackToRemoteNode))
         {
             ahrsHub->copy(ahrsSendBackToRemoteNode, ahrsData);
 
             crsf::getInstance()->getTxChannelData()[0] = static_cast<uint16_t>(
-                fmaxf(fminf(ahrsData[0], 360.0f), 0.0f) * 5.6861f); // YAW [0°,360°] -> [0,2047] (2047/360≈5.6861)
+                fmaxf(fminf(ahrsData[0], 360.0f), 0.0f) * ((float)max_resolution_value / 360.0f)); // YAW [0°,360°] -> [0,2047] (2047/360≈5.6861)
                 
             crsf::getInstance()->getTxChannelData()[1] = static_cast<uint16_t>(
-                (fmaxf(fminf(ahrsData[1], 180.0f), -180.0f) + 180.0f) * 5.6861f); // ROLL [-180°,180°]->[0,2047]
+                (fmaxf(fminf(ahrsData[1], 180.0f), -180.0f) + 180.0f) * ((float)max_resolution_value / 360.0f)); // ROLL [-180°,180°]->[0,2047]
                 
             crsf::getInstance()->getTxChannelData()[2] = static_cast<uint16_t>(
-                (fmaxf(fminf(ahrsData[2], 90.0f), -90.0f) + 90.0f) * 11.3722f); // PITCH [-90°,90°]->[0,2047]
+                (fmaxf(fminf(ahrsData[2], 90.0f), -90.0f) + 90.0f) * ((float)max_resolution_value / 180.0f)); // PITCH [-90°,90°]->[0,2047]
             
             crsf::getInstance()->packRcChannels(CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED,0,3);
             crsf::getInstance()->writeTelemetryData(crsf::getInstance()->getFrame(),crsf::getInstance()->getPacketLength());

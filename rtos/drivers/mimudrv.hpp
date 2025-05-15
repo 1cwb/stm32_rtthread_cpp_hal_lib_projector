@@ -22,9 +22,6 @@ public:
     virtual float getGyroYrad(){return 0.0f;};
     virtual float getGyroZrad(){return 0.0f;};
     virtual bool updateData(){return true;}
-    //virtual float getYaw() {return 0.0f;}
-    //virtual float getPitch() {return 0.0f;}
-    //virtual float getRoll() {return 0.0f;}
 private:
 
 };

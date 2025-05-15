@@ -160,28 +160,10 @@ public:
     virtual float getGyroXrad()override{return gyrRad[0];};
     virtual float getGyroYrad()override{return gyrRad[1];};
     virtual float getGyroZrad()override{return gyrRad[2];};
-
-//    virtual float getYaw()override {return filter.getYaw();}
-//    virtual float getPitch()override {return filter.getPitch();}
-//    virtual float getRoll()override {return filter.getRoll();}
     virtual bool updateData()override
     {
         gyroReadRad();
         accelReadMs2();
-        #if 0
-        if(mag1)
-        {
-          //mag1->updateData();
-        //_mahony.MahonyUpdate(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ());
-          filter.update(getGyroX(),getGyroY(),getGyroZ(),getAccelX(),getAccelY(),getAccelZ(),mag1->getMageX(),mag1->getMageY(),mag1->getMageZ());
-        }
-        else
-        #endif
-        {
-          //filter.updateIMU(getGyroXrad(),getGyroYrad(),getGyroZrad(),getAccelXms2(),getAccelYms2(),getAccelZms2());
-        }
-
-        //printf("Acc:%8f %8f %8f Gyro:%8f %8f %8f temp %8f\r\n",getAccelXms2(),getAccelYms2(),getAccelZms2(),getGyroXrad(),getGyroYrad(),getGyroZrad(),getTemp());
         return true;
     }
     mResult init(uint32_t gyroRange = 2000, uint32_t gyroRate = 1000, uint32_t sampleRate = 1600, uint32_t dlpfFreqHz = 145, uint32_t Grange = 12);

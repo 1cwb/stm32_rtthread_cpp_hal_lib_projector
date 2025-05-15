@@ -266,9 +266,10 @@ void usartRecvEnter(void* p)
                         if(crsf::getInstance()->unpackRcChannels() == M_RESULT_EOK)
                         {
                             float ahrsData[3] = {0.0f};
-                            ahrsData[0] = crsf::getInstance()->getRxChannelData()[0] / 5.6861f;
-                            ahrsData[1] = (crsf::getInstance()->getRxChannelData()[1] / 5.6861f) - 180.0f;
-                            ahrsData[2] = (crsf::getInstance()->getRxChannelData()[2] / 11.3722f) - 90.0f;
+                            const uint16_t max_resolution_value = (1 << crsf::getInstance()->getResolutionBits()) - 1;
+                            ahrsData[0] = crsf::getInstance()->getRxChannelData()[0] / ((float)max_resolution_value / 360.0f);
+                            ahrsData[1] = (crsf::getInstance()->getRxChannelData()[1] / ((float)max_resolution_value / 360.0f)) - 180.0f;
+                            ahrsData[2] = (crsf::getInstance()->getRxChannelData()[2] / ((float)max_resolution_value / 180.0f)) - 90.0f;
                             ahrsHub->publish(ahrsData);
                             /*ALOGI("CRSF[%d,%d,%d] -> Back[%.1f,%.1f,%.1f]\r\n",
                                   crsf::getInstance()->getRxChannelData()[0],
