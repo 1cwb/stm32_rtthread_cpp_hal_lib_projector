@@ -29,6 +29,7 @@
 #include "fatfsff.hpp"
 #include "datapublish.hpp"
 #include "crsf.hpp"
+#include "madcdrv.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -140,7 +141,7 @@ int main(void)
     mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
-
+    mDev::mAdc* adc1 = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC1);
     uint8_t usbBuff[64];
 
     if(timer2)
@@ -164,6 +165,10 @@ int main(void)
         led1->toggle();
         if(led2)
         led2->toggle();
+        if(adc1)
+        {
+            adc1->start(mDev::recvMode::RECV_MODE_IT, (uint32_t*)adc1->getRxBuff(), adc1->RX_BUFF_LEN);
+        }
     }, nullptr);
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 1000, 20, [&](void* param){
         float ahrsData[4] = {0.0};

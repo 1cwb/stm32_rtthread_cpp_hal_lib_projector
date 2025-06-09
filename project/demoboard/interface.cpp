@@ -23,6 +23,8 @@ enum INTERFACE_ID
     INTERFACE_ID_U5,
     INTERFACE_ID_U6,
     INTERFACE_ID_U8,
+    INTERFACE_ID_ADC1,
+    INTERFACE_ID_ADC2,
     INTERFACE_ID_ADC3,
 };
 
@@ -51,6 +53,7 @@ int uartRecvQueueInit(void)
     mDev::mUsart* usartDev5 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5);
     mDev::mUsart* usartDev6 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART6);
     mDev::mUsart* usartDev8 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART8);
+    mDev::mAdc* adc1Dev = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC1);
     mDev::mAdc* adc3Dev = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC3);
 
     if(usbDev)
@@ -222,6 +225,30 @@ int uartRecvQueueInit(void)
             }
         });
     }
+    if(adc1Dev)
+    {
+        adc1Dev->registerInterruptCb([](mDev::mDevice* dev, void* p){
+            if(p)
+            {
+                mDev::mAdc::usartData* data = (mDev::mAdc::usartData*)p;
+                interfaceData ifdata;
+                if(data->type == mDev::ADC_EVENT_TYPE::ADC_EVNET_TYPE_CONV_COMPLETE)
+                {
+                    ifdata.id = INTERFACE_ID_ADC1;
+                    ifdata.len = data->len;
+                    ifdata.dataPerSize = data->dataPerSize;
+                    ifdata.dataOfobjCount = data->dataOfobjCount;
+                    ifdata.p = dev;
+                    memcpy(ifdata.data, data->data, data->len);
+                    uartRecvQueue.send(&ifdata, sizeof(interfaceData));
+                }
+                else
+                {
+                    //printf("adc3 event type = %u\r\n",data->type);
+                }
+            }
+        });
+    }
     mthread* hubthread = mthread::create("hubth",1024,2,20,usartRecvEnter,nullptr);
     if(hubthread)
     {
@@ -237,6 +264,11 @@ void usartRecvEnter(void* p)
     uint32_t* backupAdcData = nullptr;
     uint8_t adcDataCount = 0;
     const uint8_t avragetime = 5;
+
+    uint32_t* adc1Data = nullptr;
+    uint8_t adc1DataCount = 0;
+    const uint8_t avragetime1 = 1;
+
     bool bNeedUpdate = false;
     mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2);
     crsf::getInstance()->registerUartSend(usartDev2, &mDev::mUsart::sendData);
@@ -293,6 +325,88 @@ void usartRecvEnter(void* p)
                     break;
                 case INTERFACE_ID_U8:
                     
+                    break;
+                case INTERFACE_ID_ADC1:
+                {
+                    if(!adc1Data)
+                    {
+                        adc1Data = new uint32_t[ifdata.dataOfobjCount];
+                        memset(adc1Data, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
+                    }
+                    //printf("ifdata.len = %lu, ifdata.dataPerSize = %lu, ifdata.dataOfobjCount = %lu\r\n",ifdata.len, ifdata.dataPerSize,ifdata.dataOfobjCount);
+                    for(uint32_t i = 0; i < ifdata.len/ifdata.dataPerSize; i+= ifdata.dataOfobjCount)
+                    {
+                        for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
+                        {
+                            if(ifdata.dataPerSize == 2)
+                            {
+                                adc1Data[j] += ((uint16_t*)ifdata.data)[i+j];
+                            }
+                            else if(ifdata.dataPerSize == 4)
+                            {
+                                adc1Data[j] += ((uint32_t*)ifdata.data)[i+j];
+                            }
+                            else
+                            {
+                                adc1Data[j] += ((uint8_t*)ifdata.data)[i+j];
+                            }
+                            //printf("%d ",((uint16_t*)ifdata.data)[i+j]);
+                        }
+                        //printf("\r\n");
+                    }
+                    adc1DataCount++;
+                    if(adc1DataCount >= avragetime1)
+                    {
+                        uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount)*avragetime1;
+                        for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
+                        {
+                           // printf("befor  div = %d %d \r\n",((uint16_t*)adc1Data)[j],div);
+                            adc1Data[j] /= div;
+                           // printf("after %d \r\n",((uint16_t*)adc1Data)[j]);
+                        }
+                        //printf("\r\n");
+                        //printf("bupdate = %d\r\n",bNeedUpdate);
+                        #if 0
+                        if(mcnJoyStickData && bNeedUpdate)
+                        {
+                            //crsf::getInstance()->bind();
+                            const uint16_t max_resolution_value = (1 << crsf::getInstance()->getResolutionBits()) - 1;
+    
+                            // 将ADC值0-65535映射到0-2047范围
+                            crsf::getInstance()->getTxChannelData()[0] = (adcData[1] * max_resolution_value) / 65535;
+                            crsf::getInstance()->getTxChannelData()[1] = (adcData[2] * max_resolution_value) / 65535;
+                            crsf::getInstance()->getTxChannelData()[2] = (adcData[3] * max_resolution_value) / 65535;
+                            crsf::getInstance()->getTxChannelData()[3] = (adcData[4] * max_resolution_value) / 65535;
+
+                            crsf::getInstance()->packRcChannels(CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED,0,4);
+                            /*for(uint32_t i = 0; i < crsf::getInstance()->getPacketLength(); i++)
+                            {
+                                printf("%2x ",crsf::getInstance()->getFrame()->bytes[i]);
+                            }
+                            printf("\r\n");*/
+                            crsf::getInstance()->writeTelemetryData(crsf::getInstance()->getFrame(),crsf::getInstance()->getPacketLength());
+                            crsf::getInstance()->sendTelemetryData();
+                            mcnJoyStickData->publish(adcData, false);
+                            bNeedUpdate = false;
+                        }
+                        #endif
+                        #if 1
+                        for (uint32_t i = 0; i < ifdata.dataOfobjCount; i++)
+                        {
+                            printf("%d ",adc1Data[i]);
+                        }
+                        printf("\r\n");
+
+
+                        printf(" v = %f\r\n", adc1Data[0]*3.3f/65536.0f);
+                        #endif
+                        memset(adc1Data, 0, ifdata.dataOfobjCount*sizeof(uint32_t));
+                        adc1DataCount = 0;
+                    }
+                    //printf("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\r\n");
+
+
+                }
                     break;
                 case INTERFACE_ID_ADC3:
                 {

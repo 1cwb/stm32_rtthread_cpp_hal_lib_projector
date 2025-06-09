@@ -31,6 +31,7 @@
 #include "lv_demo_benchmark.h"
 #include "mdisplaydrv.hpp"
 #include "mbuttondrv.hpp"
+#include "madcdrv.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -140,12 +141,16 @@ int main(void)
     mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED0);
     mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED1);
     mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
-
+    mDev::mAdc* adc1 = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC1);
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
         led1->toggle();
         if(led2)
         led2->toggle();
+        if(adc1)
+        {
+            adc1->start(mDev::recvMode::RECV_MODE_IT, (uint32_t*)adc1->getRxBuff(), adc1->RX_BUFF_LEN);
+        }
     }, nullptr);
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 2000, 20, [&](void* param){
 
