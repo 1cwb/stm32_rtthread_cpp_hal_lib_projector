@@ -297,11 +297,13 @@ void usartRecvEnter(void* p)
                     {
                         if(crsf::getInstance()->unpackRcChannels() == M_RESULT_EOK)
                         {
-                            float ahrsData[3] = {0.0f};
+                            float ahrsData[4] = {0.0f};
                             const uint16_t max_resolution_value = (1 << crsf::getInstance()->getResolutionBits()) - 1;
                             ahrsData[0] = crsf::getInstance()->getRxChannelData()[0] / ((float)max_resolution_value / 360.0f);
                             ahrsData[1] = (crsf::getInstance()->getRxChannelData()[1] / ((float)max_resolution_value / 360.0f)) - 180.0f;
                             ahrsData[2] = (crsf::getInstance()->getRxChannelData()[2] / ((float)max_resolution_value / 180.0f)) - 90.0f;
+                            ahrsData[3] = (crsf::getInstance()->getRxChannelData()[3] / 100.0f);
+
                             ahrsHub->publish(ahrsData);
                             /*ALOGI("CRSF[%d,%d,%d] -> Back[%.1f,%.1f,%.1f]\r\n",
                                   crsf::getInstance()->getRxChannelData()[0],
@@ -350,9 +352,7 @@ void usartRecvEnter(void* p)
                             {
                                 adc1Data[j] += ((uint8_t*)ifdata.data)[i+j];
                             }
-                            //printf("%d ",((uint16_t*)ifdata.data)[i+j]);
                         }
-                        //printf("\r\n");
                     }
                     adc1DataCount++;
                     if(adc1DataCount >= avragetime1)
@@ -360,13 +360,9 @@ void usartRecvEnter(void* p)
                         uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount)*avragetime1;
                         for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
                         {
-                           // printf("befor  div = %d %d \r\n",((uint16_t*)adc1Data)[j],div);
                             adc1Data[j] /= div;
-                           // printf("after %d \r\n",((uint16_t*)adc1Data)[j]);
                         }
-                        //printf("\r\n");
-                        //printf("bupdate = %d\r\n",bNeedUpdate);
-                        #if 0
+                        #if 1
                         if(mcnJoyStickData && bNeedUpdate)
                         {
                             //crsf::getInstance()->bind();
@@ -379,18 +375,13 @@ void usartRecvEnter(void* p)
                             crsf::getInstance()->getTxChannelData()[3] = (adcData[4] * max_resolution_value) / 65535;
 
                             crsf::getInstance()->packRcChannels(CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED,0,4);
-                            /*for(uint32_t i = 0; i < crsf::getInstance()->getPacketLength(); i++)
-                            {
-                                printf("%2x ",crsf::getInstance()->getFrame()->bytes[i]);
-                            }
-                            printf("\r\n");*/
                             crsf::getInstance()->writeTelemetryData(crsf::getInstance()->getFrame(),crsf::getInstance()->getPacketLength());
                             crsf::getInstance()->sendTelemetryData();
                             mcnJoyStickData->publish(adcData, false);
                             bNeedUpdate = false;
                         }
                         #endif
-                        #if 1
+                        #if 0
                         for (uint32_t i = 0; i < ifdata.dataOfobjCount; i++)
                         {
                             printf("%d ",adc1Data[i]);

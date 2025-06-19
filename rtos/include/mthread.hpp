@@ -16,6 +16,8 @@ public:
     {
         thData_.extiThread = threadExti;
         thData_.yieldThread = threadYield;
+        thData_.totalRunTick = 0;
+        thData_.currentRunTick = 0;
     }
     ~mthread()
     {
@@ -184,6 +186,12 @@ public:
     int32_t getFreeStackSize() {return (reinterpret_cast<uint8_t*>(thData_.sp) - reinterpret_cast<uint8_t*>(thData_.stackAddr));}
     void setUsrData(void* usrdata) {thData_.userData = usrdata;}
     void* getUsrData() const {return thData_.userData;}
+    uint32_t getTotalRunTick()
+    {
+        uint32_t tick = thData_.totalRunTick;
+        thData_.totalRunTick = 0;
+        return tick;
+    }
     static void registerInitHookCallback(const mThreadHookCallbackFunc& initHookCb) {initHookCb_ = initHookCb;}
     static void registerDeInitHookCallback(const mThreadHookCallbackFunc& deInitHookCb) {deInitHookCb_ = deInitHookCb;}
 private:

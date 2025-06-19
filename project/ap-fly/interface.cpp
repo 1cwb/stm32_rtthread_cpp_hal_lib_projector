@@ -351,12 +351,18 @@ void usartRecvEnter(void* p)
                         uint32_t div = ifdata.len/(ifdata.dataPerSize*ifdata.dataOfobjCount)*avragetime1;
                         for(uint32_t j = 0; j < ifdata.dataOfobjCount; j++)
                         {
-                            //printf("befor  div = %d %d \r\n",((uint16_t*)adc1Data)[j],div);
                             adc1Data[j] /= div;
-                            //printf("after %d \r\n",((uint16_t*)adc1Data)[j]);
                         }
-                        //printf("\r\n");
-                        //printf("bupdate = %d\r\n",bNeedUpdate);
+
+                        if(powerHub)
+                        {
+                            float measured_voltage = (adc1Data[0] * 3.3f) / 65535.0f;
+                            // 电阻误差补偿（假设已知实际电阻偏差）
+                            const float R1_actual = 198000.0f; // 实测R1值
+                            const float R2_actual = 22400.0f;  // 实测R2值
+                            float true_voltage = measured_voltage * (R1_actual + R2_actual) / R2_actual;
+                            powerHub->publish(&true_voltage,false);
+                        }
                         #if 0
                         if(mcnJoyStickData && bNeedUpdate)
                         {

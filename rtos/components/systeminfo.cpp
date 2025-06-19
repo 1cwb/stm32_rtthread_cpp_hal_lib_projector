@@ -77,10 +77,11 @@ void systemInfo::showAllThreadStackSizeInfo()
         if(object)
         {
             pthread = reinterpret_cast<mthread*>(object);
-            printf("thread %s totalStackSize = %ld, usedStackSize = %ld, freeStackSize = %ld\r\n",   pthread->getThTimer_t()->name,
+            printf("thread %s totalStackSize = %ld, usedStackSize = %ld, freeStackSize = %ld, usedTick = %lu\r\n",   pthread->getThTimer_t()->name,
                                                                                 pthread->getTotalStackSize(),
                                                                                 pthread->getTotalStackSize() - pthread->getFreeStackSize(),
-                                                                                pthread->getFreeStackSize());
+                                                                                pthread->getFreeStackSize(),
+                                                                            pthread->getTotalRunTick());
         }
     }
 }

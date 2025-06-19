@@ -18,7 +18,7 @@ int joyStickDataInit()
     {
         return -1;
     }
-    ahrsHub = new mcnHub("ahrsHub",sizeof(float)*3);
+    ahrsHub = new mcnHub("ahrsHub",sizeof(float)*4);
     if(!ahrsHub)
     {
         return -1;

@@ -50,6 +50,12 @@ int lvglAppTask(void)
         lv_obj_set_style_text_color(imu_label_pitch, lv_color_make(0, 255, 0), 0);
         lv_obj_set_style_text_font(imu_label_pitch, &lv_font_montserrat_14, 0);
         
+        // 新增电压显示标签
+        lv_obj_t * voltage_label = lv_label_create(lv_scr_act());
+        lv_obj_align(voltage_label, LV_ALIGN_TOP_LEFT, 10, 90);  // 位于CPU标签下方20像素
+        lv_obj_set_style_text_color(voltage_label, lv_color_hex(0xFFA500), 0);  // 橙色显示
+        lv_obj_set_style_text_font(voltage_label, &lv_font_montserrat_14, 0);
+
         // 新增：创建容器用于水平排列两个方框
         lv_obj_t * container = lv_obj_create(lv_scr_act());
         lv_obj_set_style_bg_color(lv_scr_act(), lv_color_black(), 0);
@@ -129,18 +135,19 @@ int lvglAppTask(void)
             }
             if(ahrsHub->poll(ahrsSendBackToRemoteNode))
             {
-                float ahrsData[3];
+                float ahrsData[4];
                 ahrsHub->copy(ahrsSendBackToRemoteNode, ahrsData);
                 lv_label_set_text_fmt(imu_label_yaw, "YAW:%03.1f", ahrsData[0]);
                 lv_label_set_text_fmt(imu_label_roll, "ROLL:%03.1f", ahrsData[1]);
                 lv_label_set_text_fmt(imu_label_pitch, "PITCH:%03.1f", ahrsData[2]);
+                lv_label_set_text_fmt(voltage_label, "Volt: %.2fV", ahrsData[3]);
             }
-            mthread::threadMdelay(5);
+            mthread::threadMdelay(10);
         }
     },nullptr);
     lvglthreadapp->startup();
 
-    mthread* lvglthread = mthread::create("lvglth", 2048, 5, 20, [&](void* p){
+    mthread* lvglthread = mthread::create("lvglha", 2048, 5, 20, [&](void* p){
         while(true)
         {
             lv_timer_handler();

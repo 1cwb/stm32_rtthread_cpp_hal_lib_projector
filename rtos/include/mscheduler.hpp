@@ -3,6 +3,7 @@
 #include "mirq.hpp"
 #include "mkservice.hpp"
 #include "mhw.hpp"
+#include "mclock.hpp"
 #include <functional>
 
 class mSchedule
@@ -76,6 +77,11 @@ public:
 private:
     mSchedule():schedulerLockNest_(0),currentThread_(nullptr),currentPriority_(THREAD_PRIORITY_MAX-1),bScheduleStart_(false)
     {
+        mClock* clk = mClock::getInstance();
+        registerScheduleHookCallback([clk](thread_t* from, thread_t* to){
+            from->totalRunTick +=  (clk->tickGet() - (from->currentRunTick));
+            to->currentRunTick = clk->tickGet();
+        });
     }
     ~mSchedule()
     {

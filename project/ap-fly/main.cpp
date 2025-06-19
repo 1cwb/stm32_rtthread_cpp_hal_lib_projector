@@ -170,8 +170,9 @@ int main(void)
             adc1->start(mDev::recvMode::RECV_MODE_IT, (uint32_t*)adc1->getRxBuff(), adc1->RX_BUFF_LEN);
         }
     }, nullptr);
-    workItem* i2cWorkItem = new workItem("i2cWorkItem", 1000, 20, [&](void* param){
+    workItem* dataSendbackItem = new workItem("dataSendbackItem", 1000, 20, [&](void* param){
         float ahrsData[4] = {0.0};
+        float powerV = 0.0f;
         const uint16_t max_resolution_value = (1 << crsf::getInstance()->getResolutionBits()) - 1;
         if(ahrsHub->poll(ahrsSendBackToRemoteNode))
         {
@@ -179,14 +180,19 @@ int main(void)
 
             crsf::getInstance()->getTxChannelData()[0] = static_cast<uint16_t>(
                 fmaxf(fminf(ahrsData[0], 360.0f), 0.0f) * ((float)max_resolution_value / 360.0f)); // YAW [0°,360°] -> [0,2047] (2047/360≈5.6861)
-                
+
             crsf::getInstance()->getTxChannelData()[1] = static_cast<uint16_t>(
                 (fmaxf(fminf(ahrsData[1], 180.0f), -180.0f) + 180.0f) * ((float)max_resolution_value / 360.0f)); // ROLL [-180°,180°]->[0,2047]
                 
             crsf::getInstance()->getTxChannelData()[2] = static_cast<uint16_t>(
                 (fmaxf(fminf(ahrsData[2], 90.0f), -90.0f) + 90.0f) * ((float)max_resolution_value / 180.0f)); // PITCH [-90°,90°]->[0,2047]
+            if(powerHub->poll(powerSendbackNode))
+            {
+                powerHub->copy(ahrsSendBackToRemoteNode, &powerV);
+                crsf::getInstance()->getTxChannelData()[3] = static_cast<uint16_t>(powerV * 100.0f);
+            }
             
-            crsf::getInstance()->packRcChannels(CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED,0,3);
+            crsf::getInstance()->packRcChannels(CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED,0,4);
             crsf::getInstance()->writeTelemetryData(crsf::getInstance()->getFrame(),crsf::getInstance()->getPacketLength());
             crsf::getInstance()->sendTelemetryData();
 
@@ -194,7 +200,7 @@ int main(void)
             //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3]);
         }
     }, nullptr);
-    workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
+    workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 1000, [](void* param){
         #if 0
         ALOGI("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
         ALOGI("thread stack Info:\r\n");
@@ -206,7 +212,7 @@ int main(void)
 
 
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
-    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(i2cWorkItem);
+    workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(dataSendbackItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
 
     //uint32_t j;

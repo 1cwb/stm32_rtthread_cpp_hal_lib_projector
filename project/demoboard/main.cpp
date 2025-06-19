@@ -155,7 +155,7 @@ int main(void)
     workItem* i2cWorkItem = new workItem("i2cWorkItem", 2000, 20, [&](void* param){
 
     }, nullptr);
-    workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
+    workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 1000, [](void* param){
         #if 1
         ALOGI("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
         ALOGI("thread stack Info:\r\n");
