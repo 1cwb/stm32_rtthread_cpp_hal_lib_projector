@@ -66,7 +66,7 @@ int sensorCalTask(void)
 
     mthread* sensorCal = mthread::create("sensorcal", 2048, 1, 20, [&](void* p){
         MadgMahony imu1AHRS;
-        //mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
+        mDev::mSystick* timer1 = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
         mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU1);
         mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU2);
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice(DEV_MAG1);
@@ -76,7 +76,7 @@ int sensorCalTask(void)
         //mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
         //mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
         //mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
-        workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
+        workItem* senscal = new workItem("imucal", 0, 10, [&](void* param){
             float accelGyroBias1[6] = {0};
             float accelGyroBias2[6] = {0};
             float magBias[3] = {0.0};
@@ -139,7 +139,7 @@ int sensorCalTask(void)
             {
                 ahrsHub->copy(ahrsNode, ahrsData);
                 //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3]);
-                ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[3], 0, 0);
+                //ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[3], 0, 0);
             }
             mthread::threadMdelay(10);
         }

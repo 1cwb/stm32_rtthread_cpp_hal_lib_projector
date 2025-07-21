@@ -21,6 +21,7 @@
 #include "umcn.hpp"
 #include "msystickdrv.hpp"
 #include "systeminfo.hpp"
+#include "musbdevicedrv.hpp"
 #include "mklog.hpp"
 #include "musartdrv.hpp"
 #include "project.hpp"
@@ -29,7 +30,6 @@
 #include "datapublish.hpp"
 #include "crsf.hpp"
 #include "madcdrv.hpp"
-
 
 /*
 *********************************************************************************************************

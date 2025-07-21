@@ -11,7 +11,7 @@ export BOARD_TYPE :=
 export AP_FLY_BOARD := 1
 export RC_FLY_BOARD := 2
 export DEMO_BOARD := 3
-BOARD_TYPE := $(AP_FLY_BOARD)
+BOARD_TYPE := $(RC_FLY_BOARD)
 ########################################MEM_MAP################################################
 APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
@@ -88,7 +88,7 @@ EXTRA_LINK_FLAGS	:= -g -gdwarf-2 -lc -lm -lstdc++ -lnosys -T$(LINK_FILES) \
 
 #################################################################################################
 ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
-DEFINE    +=-DSTM32H430xx \
+DEFINE    +=-DSTM32H743xx \
 			-DHSE_VALUE=8000000 \
 			-DCSI_VALUE=4000000 \
 			-DHSI_VALUE=64000000 \
@@ -96,7 +96,12 @@ DEFINE    +=-DSTM32H430xx \
 			-DPLLN_VALUE=240 \
 			-DPLLP_VALUE=2 \
 			-DPLLQ_VALUE=4 \
-			-DPLLR_VALUE=2
+			-DPLLR_VALUE=2 \
+			-DPLL2M_VALUE=1 \
+			-DPLL2N_VALUE=25 \
+			-DPLL2P_VALUE=2 \
+			-DPLL2Q_VALUE=1 \
+			-DPLL2R_VALUE=1
 else ifeq ($(BOARD_TYPE), $(DEMO_BOARD))
 DEFINE    +=-DSTM32H743xx \
 			-DHSE_VALUE=25000000 \

@@ -1274,7 +1274,7 @@ private:
 class DFRobot_ICM42688_SPI:public DFRobot_ICM42688, public mDev::mImu
 {
 public:
-  DFRobot_ICM42688_SPI(const char* name, mDev::mGpio* cs);
+  DFRobot_ICM42688_SPI(const char* name, mDev::mSpi* spix, mDev::mGpio* cs);
   virtual ~DFRobot_ICM42688_SPI() = default;
   /**
    * @fn begin

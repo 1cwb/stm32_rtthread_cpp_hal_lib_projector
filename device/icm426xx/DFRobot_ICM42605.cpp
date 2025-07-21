@@ -734,9 +734,8 @@ bool DFRobot_ICM42605::setUIFilter(uint8_t who,uint8_t filterOrder ,uint8_t UIFi
   return ret;
 }
 
-DFRobot_ICM42605_SPI::DFRobot_ICM42605_SPI(const char* name, mDev::mGpio* cs):mImu(name),_cs(cs)
+DFRobot_ICM42605_SPI::DFRobot_ICM42605_SPI(const char* name, mDev::mSpi* spix, mDev::mGpio* cs):mImu(name),mspi(spix),_cs(cs)
 {
-  mspi = reinterpret_cast<mDev::mSpi*> (mDev::mPlatform::getInstance()->getDevice("spi4"));
   if(!mspi)
   {
     printf("Error: spi4 not init yet\r\n");

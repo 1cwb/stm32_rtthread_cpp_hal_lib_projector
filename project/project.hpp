@@ -24,6 +24,8 @@
 #define DEV_SPI4            "spi4"
 #define DEV_SPI5            "spi5"
 #define DEV_I2C1            "i2c1"
+#define DEV_I2C2            "i2c2"
+#define DEV_I2C3            "i2c3"
 #define DEV_I2C4            "i2c4"
 #define DEV_QSPI            "qspi"
 #define DEV_W25QXX          "w25xx"

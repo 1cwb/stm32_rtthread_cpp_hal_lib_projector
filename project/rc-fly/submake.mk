@@ -1,4 +1,4 @@
-ifdef RC_FLY_BOARD
+ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
 CURRENT_DIR := $(CURDIR)/project/rc-fly
 SUBDIRS := $(shell find $(CURRENT_DIR) -maxdepth 3 -type d)
 
