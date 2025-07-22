@@ -61,7 +61,7 @@ int mcnInit()
     {
         return -1;
     }
-    ahrsHub = new mcnHub("ahrsHub",sizeof(float)*4);
+    ahrsHub = new mcnHub("ahrsHub",sizeof(float)*7);
     if(!ahrsHub)
     {
         return -1;

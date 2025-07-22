@@ -16,7 +16,7 @@ int imuSensorInit()
     imu1cs->init([](bool b){if(b){__HAL_RCC_GPIOC_CLK_ENABLE();}},GPIOC,GPIO_PIN_15,GPIO_MODE_OUTPUT_PP,GPIO_PULLUP);
     imu1cs->setLevel(mDev::mGpio::LEVEL_HIGH);
     DFRobot_ICM42688_SPI* imu1 = new DFRobot_ICM42688_SPI(DEV_IMU1,spi1,imu1cs);
-
+    UNUSED(imu1);
 
     mDev::mSpi* spi4 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice(DEV_SPI4);
     if(!spi4)
@@ -27,6 +27,7 @@ int imuSensorInit()
     imu2cs->init([](bool b){if(b){__HAL_RCC_GPIOC_CLK_ENABLE();}},GPIOC,GPIO_PIN_13,GPIO_MODE_OUTPUT_PP,GPIO_PULLUP);
     imu2cs->setLevel(mDev::mGpio::LEVEL_HIGH);
     DFRobot_ICM42605_SPI* imu2 = new DFRobot_ICM42605_SPI(DEV_IMU2,spi4,imu2cs);
+    UNUSED(imu2);
     return 0; 
 }
 INIT_EXPORT(imuSensorInit, "1");

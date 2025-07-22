@@ -20,7 +20,12 @@
 #define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
 #define BYTE3(dwTemp)       ( *( (char *)(&dwTemp) + 3) )
 uint8_t data_to_send[64] D2_MEM_ALIGN(4);
-//uint8_t data_to_send[50];
+float mapAngleFloat(float angle) {
+    if (angle > 180.0f) {
+        angle -= 360.0f;
+    }
+    return angle;
+}
 void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed)
 {
 	volatile uint8_t _cnt=0;
@@ -38,7 +43,7 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 	_temp = (int)(angle_pit*100);
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
-	_temp = (int)(angle_yaw*100);
+	_temp = (int)(mapAngleFloat(angle_yaw)*100);
 	data_to_send[_cnt++]=BYTE1(_temp);
 	data_to_send[_cnt++]=BYTE0(_temp);
 	
@@ -66,7 +71,8 @@ int sensorCalTask(void)
 
     mthread* sensorCal = mthread::create("sensorcal", 2048, 1, 20, [&](void* p){
         MadgMahony imu1AHRS;
-        mDev::mSystick* timer1 = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
+        MadgMahony imu2AHRS;
+        //mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
         mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU1);
         mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU2);
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice(DEV_MAG1);
@@ -76,12 +82,12 @@ int sensorCalTask(void)
         //mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
         //mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
         //mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
-        workItem* senscal = new workItem("imucal", 0, 10, [&](void* param){
+        workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
             float accelGyroBias1[6] = {0};
             float accelGyroBias2[6] = {0};
             float magBias[3] = {0.0};
             float pressure = 0.0;
-            float ahrsData[4] = {0.0};
+            float ahrsData[7] = {0.0};
             if(imu1)
             {
                 imu1->updateData();
@@ -91,6 +97,9 @@ int sensorCalTask(void)
                 accelGyroBias1[3] = imu1->getAccelXms2();
                 accelGyroBias1[4] = imu1->getAccelYms2();
                 accelGyroBias1[5] = imu1->getAccelZms2();
+                imu1->rotation(accelGyroBias1, mDev::sensorAlign::CW0_DEG_FLIP);
+                imu1->rotation(&accelGyroBias1[3], mDev::sensorAlign::CW0_DEG_FLIP);
+                //printf("imu1: %f, %f, %f\r\n", accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2]);
                 imu1Hub->publish(accelGyroBias1);
             }
             if(imu2)
@@ -102,14 +111,17 @@ int sensorCalTask(void)
                 accelGyroBias2[3] = imu2->getAccelXms2();
                 accelGyroBias2[4] = imu2->getAccelYms2();
                 accelGyroBias2[5] = imu2->getAccelZms2();
+                imu2->rotation(accelGyroBias2, mDev::sensorAlign::CW0_DEG_FLIP);
+                imu2->rotation(&accelGyroBias2[3], mDev::sensorAlign::CW0_DEG_FLIP);
                 imu2Hub->publish(accelGyroBias2);
             }
             if(mag1)
             {
                 mag1->updateData();
-                magBias[0] = mag1->getMageX();
+                magBias[0] = -mag1->getMageX();
                 magBias[1] = mag1->getMageY();
-                magBias[2] = mag1->getMageZ();
+                magBias[2] = -mag1->getMageZ();
+                //imu1->rotation(magBias, mDev::sensorAlign::CW0_DEG_FLIP);
                 mag1Hub->publish(magBias);
             }
             if(mb1)
@@ -118,28 +130,67 @@ int sensorCalTask(void)
                 pressure = mb1->getPressure();
                 mb1Hub->publish(&pressure);
             }
-            imu1AHRS.update((accelGyroBias1[0]+accelGyroBias2[0])/2.0f,
-            (accelGyroBias1[1]+accelGyroBias2[1])/2.0f,
-            (accelGyroBias1[2]+accelGyroBias2[2])/2.0f,
-            (accelGyroBias1[3]+accelGyroBias2[3])/2.0f,
-            (accelGyroBias1[4]+accelGyroBias2[4])/2.0f,
-            (accelGyroBias1[5]+accelGyroBias2[5])/2.0f,magBias[0],magBias[1],magBias[2]);
+            if(imu1 && mag1)
+            {
+                imu1AHRS.update(accelGyroBias1[0],
+                                accelGyroBias1[1],
+                                accelGyroBias1[2],
+                                accelGyroBias1[3],
+                                accelGyroBias1[4],
+                                accelGyroBias1[5],magBias[0],magBias[1],magBias[2]);
+            }
+            else if(imu1)
+            {
+                imu1AHRS.updateIMU( accelGyroBias1[0],
+                                    accelGyroBias1[1],
+                                    accelGyroBias1[2],
+                                    accelGyroBias1[3],
+                                    accelGyroBias1[4],
+                                    accelGyroBias1[5]);
+            }
+            if(imu2 && mag1)
+            {
+                imu2AHRS.update(accelGyroBias2[0],
+                accelGyroBias2[1],
+                accelGyroBias2[2],
+                accelGyroBias2[3],
+                accelGyroBias2[4],
+                accelGyroBias2[5],magBias[0],magBias[1],magBias[2]);
+            }
+            else if(imu2)
+            {
+                imu2AHRS.updateIMU(accelGyroBias2[0],
+                                    accelGyroBias2[1],
+                                    accelGyroBias2[2],
+                                    accelGyroBias2[3],
+                                    accelGyroBias2[4],
+                                    accelGyroBias2[5]);
+            }
             ahrsData[0] = imu1AHRS.getYaw();
             ahrsData[1] = imu1AHRS.getRoll();
             ahrsData[2] = imu1AHRS.getPitch();
-            ahrsData[3] = pressure;
+            ahrsData[3] = imu2AHRS.getYaw();
+            ahrsData[4] = imu2AHRS.getRoll();
+            ahrsData[5] = imu2AHRS.getPitch();
+            ahrsData[6] = pressure;
             ahrsHub->publish(&ahrsData);
         }, nullptr);
         workQueueManager::getInstance()->find(WORKQUEUE_HP_WORK)->scheduleWork(senscal);
 
         while(true)
         {
-            float ahrsData[4] = {0.0};
             if(ahrsHub->poll(ahrsNode))
             {
+                float ahrsData[7] = {0.0};
                 ahrsHub->copy(ahrsNode, ahrsData);
                 //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3]);
-                //ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[3], 0, 0);
+                ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[3], 0, 0);
+            }
+            if(mag1Hub->poll(mag1Node))
+            {
+                float mag1Data[3] = {0.0};
+                mag1Hub->copy(mag1Node, mag1Data);
+                //ALOGI("MAG1:%10f %10f %10f\r\n", mag1Data[0], mag1Data[1], mag1Data[2]);
             }
             mthread::threadMdelay(10);
         }
