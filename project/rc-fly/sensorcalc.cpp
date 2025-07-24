@@ -14,6 +14,7 @@
 #include "project.hpp"
 #include "MadgwickAHRS.hpp"
 #include "musbdevicedrv.hpp"
+#include "bfmahony.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -70,8 +71,10 @@ int sensorCalTask(void)
 {
 
     mthread* sensorCal = mthread::create("sensorcal", 2048, 1, 20, [&](void* p){
-        MadgMahony imu1AHRS;
+        //MadgMahony imu1AHRS;
         MadgMahony imu2AHRS;
+        bfim::BetaflightImu bfimu1;
+
         //mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
         mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU1);
         mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU2);
@@ -82,7 +85,7 @@ int sensorCalTask(void)
         //mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
         //mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
         //mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
-        workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
+        workItem* senscal = new workItem("imucal", 200, 5, [&](void* param){
             float accelGyroBias1[6] = {0};
             float accelGyroBias2[6] = {0};
             float magBias[3] = {0.0};
@@ -97,6 +100,7 @@ int sensorCalTask(void)
                 accelGyroBias1[3] = imu1->getAccelXms2();
                 accelGyroBias1[4] = imu1->getAccelYms2();
                 accelGyroBias1[5] = imu1->getAccelZms2();
+
                 imu1->rotation(accelGyroBias1, mDev::sensorAlign::CW0_DEG_FLIP);
                 imu1->rotation(&accelGyroBias1[3], mDev::sensorAlign::CW0_DEG_FLIP);
                 //printf("imu1: %f, %f, %f\r\n", accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2]);
@@ -132,21 +136,34 @@ int sensorCalTask(void)
             }
             if(imu1 && mag1)
             {
+                #if 0
                 imu1AHRS.update(accelGyroBias1[0],
                                 accelGyroBias1[1],
                                 accelGyroBias1[2],
                                 accelGyroBias1[3],
                                 accelGyroBias1[4],
                                 accelGyroBias1[5],magBias[0],magBias[1],magBias[2]);
+                #endif
+                bfimu1.update(0.01,accelGyroBias1[0],
+                accelGyroBias1[1],
+                accelGyroBias1[2],
+                true,
+                accelGyroBias1[3],
+                accelGyroBias1[4],
+                accelGyroBias1[5],
+                false,
+                magBias[0],magBias[1],magBias[2]);
             }
             else if(imu1)
             {
+                #if 0
                 imu1AHRS.updateIMU( accelGyroBias1[0],
                                     accelGyroBias1[1],
                                     accelGyroBias1[2],
                                     accelGyroBias1[3],
                                     accelGyroBias1[4],
                                     accelGyroBias1[5]);
+                #endif
             }
             if(imu2 && mag1)
             {
@@ -166,9 +183,13 @@ int sensorCalTask(void)
                                     accelGyroBias2[4],
                                     accelGyroBias2[5]);
             }
-            ahrsData[0] = imu1AHRS.getYaw();
-            ahrsData[1] = imu1AHRS.getRoll();
-            ahrsData[2] = imu1AHRS.getPitch();
+            //ahrsData[0] = imu1AHRS.getYaw();
+            //ahrsData[1] = imu1AHRS.getRoll();
+            //ahrsData[2] = imu1AHRS.getPitch();
+            auto [roll, pitch, yaw] = bfimu1.getEulerDeg();
+            ahrsData[0] = yaw;
+            ahrsData[1] = roll;
+            ahrsData[2] = pitch;
             ahrsData[3] = imu2AHRS.getYaw();
             ahrsData[4] = imu2AHRS.getRoll();
             ahrsData[5] = imu2AHRS.getPitch();
@@ -183,8 +204,9 @@ int sensorCalTask(void)
             {
                 float ahrsData[7] = {0.0};
                 ahrsHub->copy(ahrsNode, ahrsData);
-                //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3]);
-                ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[3], 0, 0);
+                ALOGI("YAW:%10f ROLL:%10f PITCH:%10f\r\n",ahrsData[0]*0.1f, ahrsData[1]*0.1f, ahrsData[2]*0.1f);
+                //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[3]*0.1f, ahrsData[4]*0.1f, ahrsData[5]*0.1f);
+                //ANO_DT_Send_Status(ahrsData[1]*0.1f, ahrsData[2]*0.1f, ahrsData[0]*0.1f, ahrsData[3], 0, 0);
             }
             if(mag1Hub->poll(mag1Node))
             {
