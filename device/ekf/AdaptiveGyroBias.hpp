@@ -7,7 +7,7 @@ class AdaptiveGyroBias {
 public:
     // still_thr : rad/s
     // tc        : 零偏学习时间常数，秒
-    explicit AdaptiveGyroBias(float still_thr = 0.005f, float tc = 20.0f)
+    explicit AdaptiveGyroBias(float still_thr = 0.015f, float tc = 30.0f)
         : still_thr_(still_thr), alpha_(1.0f / (tc * 100.0f)) {}
 
     // 每次收到传感器后调用
