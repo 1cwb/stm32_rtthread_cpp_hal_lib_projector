@@ -49,7 +49,8 @@ public:
     struct Config {
         float dcm_kp;
         float dcm_ki;
-        Config() : dcm_kp(20.5f), dcm_ki(0.5f) {}
+        float max_tilt_deg;   // 新增：磁力计启用最大倾角
+        Config(float kp = 2.5f, float ki = 0.5f) : dcm_kp(kp), dcm_ki(ki), max_tilt_deg(35.0f) {}
     };
 
     /**
@@ -78,6 +79,9 @@ public:
         ax *= recip;
         ay *= recip;
         az *= recip;
+
+        // 倾斜角过大时强制关闭磁力计修正
+        if (useMag && !shouldUseMag()) useMag = false;
 
         mahonyAHRSupdate(dt,
                          gx, gy, gz,
@@ -110,6 +114,14 @@ private:
 
     /* 3x3 方向余弦矩阵（行优先） */
     std::array<std::array<float, 3>, 3> rMat{};
+
+    /* ---------- 新增：根据当前姿态决定是否用磁力计 ---------- */
+    bool shouldUseMag() const {
+        const float roll  = std::atan2(rMat[2][1], rMat[2][2]);
+        const float pitch = std::asin(-rMat[2][0]);
+        const float limit = cfg.max_tilt_deg * DEG2RAD;
+        return std::fabs(roll) < limit && std::fabs(pitch) < limit;
+    }
 
     /* ---------- Mahony 算法主体 ---------- */
     void mahonyAHRSupdate(float dt,
