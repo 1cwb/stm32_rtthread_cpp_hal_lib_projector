@@ -15,14 +15,14 @@ inline static void quat_to_euler(const float q[4], float& roll, float& pitch, fl
     yaw   = atan2f( 2*(q[0]*q[3] + q[1]*q[2]), 1 - 2*(q[2]*q[2] + q[3]*q[3]) );
 }
 
-static void matSetEye7(float *A) {
+inline static void matSetEye7(float *A) {
     for (int i = 0; i < 7; ++i)
         for (int j = 0; j < 7; ++j)
             A[i*7+j] = (i == j) ? 1.0f : 0.0f;
 }
 
 /* C = A*B   (A,B,C 都是 7×7) */
-static void matMul7(const float *A, const float *B, float *C) {
+inline static void matMul7(const float *A, const float *B, float *C) {
     for (int i = 0; i < 7; ++i)
         for (int j = 0; j < 7; ++j) {
             C[i*7+j] = 0.0f;
@@ -32,17 +32,17 @@ static void matMul7(const float *A, const float *B, float *C) {
 }
 
 /* A = A + B */
-static void matAdd7(float *A, const float *B) {
+inline static void matAdd7(float *A, const float *B) {
     for (int i = 0; i < 49; ++i) A[i] += B[i];
 }
 
 /* A = A - B */
-static void matSub7(float *A, const float *B) {
+inline static void matSub7(float *A, const float *B) {
     for (int i = 0; i < 49; ++i) A[i] -= B[i];
 }
 
 /* 3×3 矩阵求逆（伴随矩阵法），返回是否成功 */
-static bool inv3(const float *A, float *inv) {
+inline static bool inv3(const float *A, float *inv) {
     float det = A[0]*(A[4]*A[8] - A[5]*A[7])
               - A[1]*(A[3]*A[8] - A[5]*A[6])
               + A[2]*(A[3]*A[7] - A[4]*A[6]);
@@ -131,7 +131,6 @@ void MiniEKF3::predict(float dt, const Vec3& w_raw) {
 
 void MiniEKF3::updateAcc(const Vec3& acc) {
     /* 4.1 期望重力方向 */
-    float g_ref[3] = {0,0,1};
     float q[4] = {state_.q[0], state_.q[1], state_.q[2], state_.q[3]};
     float h[3];
     h[0] = 2*(q[1]*q[3] - q[0]*q[2]);

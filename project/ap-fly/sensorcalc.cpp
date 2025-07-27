@@ -128,7 +128,7 @@ AdaptiveGyroBias bias_adapt;
         Vec3 mag(magBias[0],magBias[1],magBias[2]);               // µT
         float baro = 100;               // m
                 // 先校准
-            bias_adapt.update(ekf, gyro, acc, dt);   // 在线零偏修正
+        bias_adapt.update(ekf, gyro, acc, dt);   // 在线零偏修正
 
         ekf.update(dt, gyro, acc, mag, baro);
                 ahrsData[0] = ekf.getYaw()*57.3f;
