@@ -60,4 +60,15 @@ private:
     static constexpr float gyro_noise = 1e-3f;
     static constexpr float acc_noise  = 1e-1f;
     static constexpr float mag_noise  = 5e-2f;
+
+    /* 状态向量:  [q0 q1 q2 q3 bx by bz]^T  (7×1) */
+    float x_[7];
+
+    /* 7×7 协方差矩阵，按行优先展平：P[i][j] = P[i*7+j] */
+    float P_[49];
+
+    /* 噪声常数 */
+    static constexpr float SIGMA_Q   = 1e-3f;  // 陀螺噪声
+    static constexpr float SIGMA_BG  = 1e-6f;  // 零偏随机游走
+    static constexpr float SIGMA_ACC = 1e-1f;  // 加速度计
 };
