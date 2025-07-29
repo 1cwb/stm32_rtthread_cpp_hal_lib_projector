@@ -1,66 +1,115 @@
-//=============================================================================================
-// MadgMahonyAHRS.h
-//=============================================================================================
-//
-// Madgwick's implementation of Mayhony's AHRS algorithm.
-// See: http://www.x-io.co.uk/open-source-imu-and-ahrs-algorithms/
-//
-// Date			Author			Notes
-// 29/09/2011	SOH Madgwick    Initial release
-// 02/10/2011	SOH Madgwick	Optimised for reduced CPU load
-//
-//=============================================================================================
-#ifndef MadgMahonyAHRS_h
-#define MadgMahonyAHRS_h
-#include <math.h>
+/**
+ * MadgwickAHRS.h
+ * 
+ * Implementation of Madgwick's IMU and AHRS algorithms.
+ * See: http://www.x-io.co.uk/open-source-imu-and-ahrs-algorithms/
+ *
+ * Date: 28 July 2025
+ * Version: 1.0.0
+ */
 
-//--------------------------------------------------------------------------------------------
-// Variable declaration
+#ifndef MADGWICK_AHRS_H
+#define MADGWICK_AHRS_H
 
-class MadgMahony {
-private:
-	float twoKp;		// 2 * proportional gain (Kp)
-	float twoKi;		// 2 * integral gain (Ki)
-	float q0, q1, q2, q3;	// quaternion of sensor frame relative to auxiliary frame
-	float integralFBx, integralFBy, integralFBz;  // integral error terms scaled by Ki
-	float invSampleFreq;
-	float roll, pitch, yaw;
-	char anglesComputed;
-	static float invSqrt(float x);
-	void computeAngles();
+#include <cmath>
+#include <cstdint>
 
-//-------------------------------------------------------------------------------------------
-// Function declarations
-
+class MadgwickAHRS {
 public:
-	MadgMahony();
-	void begin(float sampleFrequency) { invSampleFreq = 1.0f / sampleFrequency; }
-	void update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
-	void updateIMU(float gx, float gy, float gz, float ax, float ay, float az);
-	float getRoll() {
-		if (!anglesComputed) computeAngles();
-		return roll * 57.29578f;
-	}
-	float getPitch() {
-		if (!anglesComputed) computeAngles();
-		return pitch * 57.29578f;
-	}
-	float getYaw() {
-		if (!anglesComputed) computeAngles();
-		return yaw * 57.29578f + 180.0f;
-	}
-	float getRollRadians() {
-		if (!anglesComputed) computeAngles();
-		return roll;
-	}
-	float getPitchRadians() {
-		if (!anglesComputed) computeAngles();
-		return pitch;
-	}
-	float getYawRadians() {
-		if (!anglesComputed) computeAngles();
-		return yaw;
-	}
+    /**
+     * @brief Constructor for MadgwickAHRS class
+     * @param sampleFrequency Sample frequency in Hz (default: 100Hz)
+     * @param beta Algorithm gain beta (default: 0.1)
+     */
+    explicit MadgwickAHRS(float sampleFrequency = 100.0f, float beta = 0.1f)
+        : q0(1.0f), q1(0.0f), q2(0.0f), q3(0.0f), 
+          sampleFreq(sampleFrequency), beta(beta) {}
+
+    /**
+     * @brief Update the filter with gyroscope, accelerometer and magnetometer data
+     * @param gx Gyroscope x-axis measurement in radians/s
+     * @param gy Gyroscope y-axis measurement in radians/s
+     * @param gz Gyroscope z-axis measurement in radians/s
+     * @param ax Accelerometer x-axis measurement in any units
+     * @param ay Accelerometer y-axis measurement in any units
+     * @param az Accelerometer z-axis measurement in any units
+     * @param mx Magnetometer x-axis measurement in any units
+     * @param my Magnetometer y-axis measurement in any units
+     * @param mz Magnetometer z-axis measurement in any units
+     */
+    void update(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz);
+
+    /**
+     * @brief Update the filter with gyroscope and accelerometer data (no magnetometer)
+     * @param gx Gyroscope x-axis measurement in radians/s
+     * @param gy Gyroscope y-axis measurement in radians/s
+     * @param gz Gyroscope z-axis measurement in radians/s
+     * @param ax Accelerometer x-axis measurement in any units
+     * @param ay Accelerometer y-axis measurement in any units
+     * @param az Accelerometer z-axis measurement in any units
+     */
+    void updateIMU(float gx, float gy, float gz, float ax, float ay, float az);
+
+    /**
+     * @brief Get the quaternion components
+     * @param q0 Quaternion scalar component
+     * @param q1 Quaternion x component
+     * @param q2 Quaternion y component
+     * @param q3 Quaternion z component
+     */
+    void getQuaternion(float& q0, float& q1, float& q2, float& q3) const {
+        q0 = this->q0;
+        q1 = this->q1;
+        q2 = this->q2;
+        q3 = this->q3;
+    }
+
+    /**
+     * @brief Get the Euler angles in radians
+     * @param roll Rotation around x-axis in radians
+     * @param pitch Rotation around y-axis in radians
+     * @param yaw Rotation around z-axis in radians
+     */
+    void getEulerAngles(float& roll, float& pitch, float& yaw) const;
+
+    /**
+     * @brief Set the sample frequency
+     * @param frequency Sample frequency in Hz
+     */
+    void setSampleFrequency(float frequency) {
+        sampleFreq = frequency;
+    }
+
+    /**
+     * @brief Set the algorithm gain beta
+     * @param beta Algorithm gain beta
+     */
+    void setBeta(float beta) {
+        this->beta = beta;
+    }
+
+    /**
+     * @brief Reset the filter to initial state
+     */
+    void reset() {
+        q0 = 1.0f;
+        q1 = 0.0f;
+        q2 = 0.0f;
+        q3 = 0.0f;
+    }
+
+private:
+	constexpr static float M_PI = 3.14159265358979323846;	/* pi */
+    float q0, q1, q2, q3; // Quaternion components
+    float sampleFreq;      // Sample frequency in Hz
+    float beta;            // Algorithm gain beta
+
+    /**
+     * @brief Fast inverse square root approximation
+     * @param x Input value
+     * @return 1/sqrt(x)
+     */
+    float invSqrt(float x) const;
 };
 
-#endif
+#endif // MADGWICK_AHRS_H
