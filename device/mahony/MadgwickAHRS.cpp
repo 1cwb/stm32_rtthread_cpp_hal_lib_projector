@@ -1,4 +1,4 @@
-#include "madgik.hpp"
+#include "MadgwickAHRS.hpp"
 /**
  * MadgwickAHRS.cpp
  * 
