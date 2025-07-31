@@ -12,11 +12,7 @@
 #include "workqueuemanager.hpp"
 #include "mklog.hpp"
 #include "project.hpp"
-#include "MadgwickAHRS.hpp"
 #include "musbdevicedrv.hpp"
-#include "bfmahony.hpp"
-#include "MiniEKF3.hpp"
-#include "AdaptiveGyroBias.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -78,9 +74,8 @@ int sensorCalTask(void)
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice(DEV_MAG1);
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mPlatform::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
-MiniEKF3 ekf;
-AdaptiveGyroBias bias_adapt;
-        workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
+        MadgwickAHRS ahrs1(1000.0f,0.6f);
+        workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
 
             float pressure = 0.0;
             float ahrsData[7] = {0.0};
@@ -119,21 +114,14 @@ AdaptiveGyroBias bias_adapt;
                 uint64_t now_us = systickx->systimeNowUs();
                 float dt = (now_us - last_us) / 1e6f;
                 last_us = now_us;
-
                 // 防止第一次 dt 为 0
                 if (dt <= 0.0f || dt > 0.05f) dt = 0.005f;
 
-        Vec3 gyro(accelGyroBias1[0] ,accelGyroBias1[1],accelGyroBias1[2]);   // rad/s
-        Vec3 acc(accelGyroBias1[3],accelGyroBias1[4] ,accelGyroBias1[5]);       // m/s²
-        Vec3 mag(magBias[0],magBias[1],magBias[2]);               // µT
-        float baro = 100;               // m
-                // 先校准
-        bias_adapt.update(ekf, gyro, acc, dt);   // 在线零偏修正
-
-        ekf.update(dt, gyro, acc, mag, baro);
-                ahrsData[0] = ekf.getYaw()*57.3f;
-                ahrsData[1] = ekf.getRoll()*57.3f;
-                ahrsData[2] = ekf.getPitch()*57.3f;
+                ahrs1.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
+                //printf("YAW:%.4f,ROL:%.4f,PIT:%.4f\r\n", yaw, roll, pitch);
+                ahrsData[0] = ahrs1.getYaw()*57.3f;
+                ahrsData[1] = ahrs1.getRoll()*57.3f;
+                ahrsData[2] = ahrs1.getPitch()*57.3f;
             }
             ahrsData[6] = pressure;
             ahrsHub->publish(&ahrsData);

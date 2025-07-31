@@ -17,7 +17,6 @@
 #include "stdint.h"
 #include "mspidrv.hpp"
 #include "mimudrv.hpp"
-#include "mahony.hpp"
 #include "mgpiodrv.hpp"
 //Open this macro and you can see the details of the program
 #define ENABLE_DBG

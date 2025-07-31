@@ -22,8 +22,9 @@ public:
      * @param beta Algorithm gain beta (default: 0.1)
      */
     explicit MadgwickAHRS(float sampleFrequency = 100.0f, float beta = 0.1f)
-        : q0(1.0f), q1(0.0f), q2(0.0f), q3(0.0f), 
-          sampleFreq(sampleFrequency), beta(beta) {}
+        :   pitch(0.0f), roll(0.0f), yaw(0.0f),
+			q0(1.0f), q1(0.0f), q2(0.0f), q3(0.0f), 
+          	sampleFreq(sampleFrequency), beta(beta) {}
 
     /**
      * @brief Update the filter with gyroscope, accelerometer and magnetometer data
@@ -65,14 +66,6 @@ public:
     }
 
     /**
-     * @brief Get the Euler angles in radians
-     * @param roll Rotation around x-axis in radians
-     * @param pitch Rotation around y-axis in radians
-     * @param yaw Rotation around z-axis in radians
-     */
-    void getEulerAngles(float& roll, float& pitch, float& yaw) const;
-
-    /**
      * @brief Set the sample frequency
      * @param frequency Sample frequency in Hz
      */
@@ -97,19 +90,46 @@ public:
         q2 = 0.0f;
         q3 = 0.0f;
     }
+	float getPitch(void) {
+		return this->pitch;
+	}
+	float getRoll(void) {
+		return this->roll;
+	}
+	float getYaw(void) {
+		return this->yaw;
+	}
 
 private:
-	constexpr static float M_PI = 3.14159265358979323846;	/* pi */
-    float q0, q1, q2, q3; // Quaternion components
-    float sampleFreq;      // Sample frequency in Hz
-    float beta;            // Algorithm gain beta
-
     /**
      * @brief Fast inverse square root approximation
      * @param x Input value
      * @return 1/sqrt(x)
      */
     float invSqrt(float x) const;
+
+    /**
+     * @brief Get the Euler angles in radians
+     * @param roll Rotation around x-axis in radians
+     * @param pitch Rotation around y-axis in radians
+     * @param yaw Rotation around z-axis in radians
+     */
+    void getEulerAngles();
+    void commonUpdate(float gx, float gy, float gz,
+                                float ax, float ay, float az,
+                                bool useMag,               // true 表示同时用磁力计计算
+                                float mx, float my, float mz);
+
+private:
+	constexpr static float M_PI = 3.14159265358979323846;	/* pi */
+
+private:
+    float pitch;
+	float roll;
+	float yaw;
+    float q0, q1, q2, q3; // Quaternion components
+    float sampleFreq;      // Sample frequency in Hz
+    float beta;            // Algorithm gain beta
 };
 
 #endif // MADGWICK_AHRS_H
