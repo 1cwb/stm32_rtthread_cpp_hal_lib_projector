@@ -70,21 +70,59 @@ CPU           		:= -mcpu=cortex-m7
 FPU        			:= -mfpu=fpv5-sp-d16
 FLOAT_ABT 			:= -mfloat-abi=hard
 ARM_INSTRUCTION 	:= -mthumb
-MCU_FLAGS       	:= $(CPU) $(ARM_INSTRUCTION) $(FPU) $(FLOAT_ABT)
+MCU_FLAGS       	:= $(CPU) $(ARM_INSTRUCTION) $(FPU) $(FLOAT_ABT) -ftree-vectorize
 
 ##################################################COMPILE_FLAGS#################################
-C_COMPILE_FLAGS 	:= -lc -lm -lnosys -std=c11 -Wall -fdata-sections -ffunction-sections -g0 -gdwarf-2 -Os
+##################################################COMPILE_FLAGS#################################
+# 优化后的 C 编译标志
+C_COMPILE_FLAGS 	:= -lc -lm -lnosys -std=c11 \
+                   -Wall \
+                   -ffunction-sections \
+                   -fdata-sections \
+                   -fno-common \
+                   -fmessage-length=0 \
+                   -Os \
+                   -flto \
+                   -fno-stack-protector \
+                   -fomit-frame-pointer
 
-CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys -fno-rtti -std=c++17 -fcheck-new -fno-exceptions -fno-builtin -Wall \
-					 	-Wl,--print-map -fdata-sections -ffunction-sections -g0 -gdwarf-2 -Os -Wl,-gc-section -faligned-new
+# 优化后的 C++ 编译标志
+CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys \
+                   -std=c++17 \
+                   -fno-rtti \
+                   -fno-exceptions \
+                   -fno-builtin \
+                   -fno-threadsafe-statics \
+                   -fno-use-cxa-atexit \
+                   -Wall \
+                   -ffunction-sections \
+                   -fdata-sections \
+                   -Os \
+                   -flto \
+                   -fomit-frame-pointer \
+                   -fvisibility=hidden
 
+# ASM 编译标志保持不变
 ASM_COMPILE_FLAGS 	:= -x assembler-with-cpp -Wa,-mimplicit-it=thumb
+
 #################################################################################################
-EXTRA_LINK_FLAGS	:= -g -gdwarf-2 -lc -lm -lstdc++ -lnosys -T$(LINK_FILES) \
-						-Wl,-u_printf_float,-Map=$(OUTPUTDIR)/$(TARGET).map,--cref,--no-warn-mismatch \
-						-specs=nano.specs -specs=nosys.specs \
-						-Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
-						-Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
+# 优化后的链接标志
+EXTRA_LINK_FLAGS	:= \
+                   -Wl,--gc-sections \
+                   -Wl,--strip-all \
+                   -Wl,-Map=$(OUTPUTDIR)/$(TARGET).map \
+                   -Wl,--cref \
+                   -Wl,--no-warn-mismatch \
+                   -lc \
+                   -lm \
+                   -lstdc++ \
+                   -lnosys \
+                   -T$(LINK_FILES) \
+                   -specs=nano.specs \
+                   -specs=nosys.specs \
+                   -flto \
+                   -Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
+                   -Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
 
 #################################################################################################
 ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
@@ -166,6 +204,17 @@ VPATH			 := $(SRCDIRS)
 
 .PHONY: clean
 
+define analyze_elf_sections_color
+    @echo "\n\033[1;34m--- Memory Usage Summary (Bytes/KB) ---\033[0m"
+    @$(SIZEINFO) $(1) | awk '\
+    NR==1 {printf "\033[1;33m%-15s %10s %8s\033[0m\n", "Section", "Bytes", "KB"} \
+    NR>1 {printf "\033[1;36m%-15s \033[1;33m%10d \033[1;35m%7.2fK\033[0m\n", $$1, $$2, $$2/1024}'
+    
+    @echo "\n\033[1;34m--- Largest Sections ---\033[0m"
+    @$(SIZEINFO) -A $(1) | sort -k2 -n -r | head -n 5 | awk '\
+    BEGIN {printf "\033[1;33m%-20s %10s %8s\033[0m\n", "Section", "Bytes", "KB"} \
+    {printf "\033[1;32m%-20s \033[1;35m%10d \033[1;31m%7.2fK\033[0m\n", $$1, $$2, $$2/1024}'
+endef
 
 #$(info "SFILES = $(SFILES) ")
 #$(info "CFILES = $(CFILES) ")
@@ -174,8 +223,8 @@ $(OUTPUTDIR)/$(TARGET).elf:$(OBJS)
 	$(CC) -o $(OUTPUTDIR)/$(TARGET).elf $^ $(LFLAGS)
 	$(OBJCOPY) -O binary -S $(OUTPUTDIR)/$(TARGET).elf $(OUTPUTDIR)/$(TARGET).bin
 	$(OBJDUMP) -D -m arm $(OUTPUTDIR)/$(TARGET).elf > $(OUTPUTDIR)/$(TARGET).dis
-	$(SIZEINFO) $@
 	cp $(OUTPUTDIR)/$(TARGET).bin /mnt/e/STM32/
+	$(call analyze_elf_sections_color,$@)  # 注意这里使用$@作为参数
 	sync
 
 $(SOBJS) : $(OUTPUTDIR)/%.o : %.s

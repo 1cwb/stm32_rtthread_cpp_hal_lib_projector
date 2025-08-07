@@ -4,20 +4,12 @@
 #include <list>
 #include <string>
 #include <mutex>
+#include <unordered_map>
 #include "minternal.hpp"
 
 namespace mDev
 {
 class mDevice;
-struct devBase
-{
-    const std::string _devname = nullptr;
-    mDev::mDevice* _mdev = nullptr;
-    devBase(const std::string& name, mDev::mDevice* dev):_devname(name), _mdev(dev)
-    {
-
-    }
-};
 
 class mDeviceManager
 {
@@ -29,55 +21,42 @@ public:
     }
     mResult registerDevice(const std::string& name, mDev::mDevice* dev)
     {
-        if(dev == nullptr)
+        if(dev == nullptr || name.empty())
         {
             return M_RESULT_ERROR;
         }
         std::lock_guard<IMutex> lock(*_mutex);
-        for(auto& it : _devList)
+        auto it =_mapDev.find(name);
+        if(it != _mapDev.end())
         {
-            if(it->_devname.compare(name) == 0)
-            {
-                return M_RESULT_EXIST;
-            }
+            return M_RESULT_EXIST;
         }
-
-        devBase* pdev = new devBase(name, dev);
-        if(!pdev)
-        {
-            return M_RESULT_ENOMEM;
-        }
-        _devList.emplace_back(pdev);
+        _mapDev[name] = dev;
         return M_RESULT_EOK;
     }
-    void unregisterDevice(const char* name)
+
+    void unregisterDevice(const std::string& name)
     {
-        if(name == nullptr)
+        if(name.empty())
         {
             return;
         }
         std::lock_guard<IMutex> lock(*_mutex);
-        for(auto it = _devList.begin(); it != _devList.end(); ++it)
+        auto it =_mapDev.find(name);
+        if(it != _mapDev.end())
         {
-            if((*it)->_devname.compare(name) == 0)
-            {
-                _devList.erase(it);
-                delete (*it);
-                break;
-            }
+            _mapDev.erase(it);
         }
     }
-    mDev::mDevice* getDevice(const char* name)
+    mDev::mDevice* getDevice(const std::string& name)
     {
         std::lock_guard<IMutex> lock(*_mutex);
-        for(auto it = _devList.begin(); it != _devList.end(); ++it)
+        auto it = _mapDev.find(name);
+        if(it != _mapDev.end())
         {
-            if((*it)->_devname.compare(name) == 0)
-            {
-                return (*it)->_mdev;
-            }
+            return (*it).second;
         }
-        printf("Warning:\r\nthe device %s is nullptr\r\n",name);
+        printf("Warning:\r\nthe device %s is nullptr\r\n",name.c_str());
         return nullptr;
     }
 private:
@@ -94,7 +73,7 @@ private:
     mDeviceManager& operator=(const mDeviceManager&) = delete;
     mDeviceManager& operator=(mDeviceManager&&) = delete;
 private:
-    std::list<devBase*> _devList;
+    std::unordered_map<std::string, mDevice*> _mapDev;
     std::unique_ptr<IMutex> _mutex; // 多态互斥锁
 };
 }
