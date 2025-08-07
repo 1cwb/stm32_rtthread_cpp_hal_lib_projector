@@ -1,6 +1,6 @@
 #include "qmc5883.hpp"
 #include "mi2cdrv.hpp"
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "project.hpp"
 
  static QMC5883LCompass* qmc5883l = nullptr;

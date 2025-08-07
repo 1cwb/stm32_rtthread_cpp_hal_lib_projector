@@ -7,7 +7,7 @@
 #include "atomic.hpp"
 #include "waitqueue.hpp"
 #include "DFRobot_ICM42688.h"
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "mgpiodrv.hpp"
 #include "mtimerdrv.hpp"
 #include "delay.h"

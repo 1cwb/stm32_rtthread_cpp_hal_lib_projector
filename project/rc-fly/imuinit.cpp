@@ -1,7 +1,7 @@
 #include "DFRobot_ICM42605.h"
 #include "DFRobot_ICM42688.h"
 #include "mspidrv.hpp"
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "gpio.hpp"
 #include "project.hpp"
 

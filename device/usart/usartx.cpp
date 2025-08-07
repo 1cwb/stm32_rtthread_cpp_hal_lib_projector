@@ -1,6 +1,6 @@
 #include "usartx.hpp"
 #include "mgpiodrv.hpp"
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "mklog.hpp"
 mResult usart::duplicateHal(const mDev::initCallbackExt& cb, UART_HandleTypeDef* uartHandle, DMA_HandleTypeDef* hdmaUsartxTx, DMA_HandleTypeDef* hdmaUsartxRx)
 {

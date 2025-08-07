@@ -20,7 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.hpp"
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "musbdevicedrv.hpp"
 /* USER CODE BEGIN INCLUDE */
 

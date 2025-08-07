@@ -1,6 +1,6 @@
 #include "spl06.hpp"
 #include "mi2cdrv.hpp"
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "project.hpp"
 
 static ArtronShop_SPL06_001* barometor = nullptr;

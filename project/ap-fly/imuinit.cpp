@@ -1,6 +1,6 @@
 #include "bmi088new.hpp"
 #include "mspidrv.hpp"
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "gpio.hpp"
 #include "project.hpp"
 

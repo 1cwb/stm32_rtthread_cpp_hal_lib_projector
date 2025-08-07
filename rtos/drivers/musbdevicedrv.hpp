@@ -1,5 +1,5 @@
 #pragma once
-#include "mplatform.hpp"
+#include "mdevicemanager.hpp"
 #include "mdevice.hpp"
 
 namespace mDev
