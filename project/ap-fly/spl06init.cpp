@@ -7,7 +7,7 @@ static ArtronShop_SPL06_001* barometor = nullptr;
 
 int spl06Init()
 {
-    mDev::mI2c* i2c1 = (mDev::mI2c*)mDev::mPlatform::getInstance()->getDevice(DEV_I2C1);
+    mDev::mI2c* i2c1 = (mDev::mI2c*)mDev::mDeviceManager::getInstance()->getDevice(DEV_I2C1);
     if(!i2c1)
     {
         return -1;

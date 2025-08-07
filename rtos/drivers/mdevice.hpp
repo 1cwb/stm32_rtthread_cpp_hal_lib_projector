@@ -35,11 +35,11 @@ class mDevice
 public:
     explicit mDevice(const char* name):_devname(name)
     {
-        mPlatform::getInstance()->registerDevice(_devname.c_str(),this);
+        mDeviceManager::getInstance()->registerDevice(_devname.c_str(),this);
     }
     virtual ~mDevice()
     {
-        mPlatform::getInstance()->unregisterDevice(_devname.c_str());
+        mDeviceManager::getInstance()->unregisterDevice(_devname.c_str());
     }
     mDevice(const mDevice&) = delete;
     mDevice(mDevice&&) = delete;

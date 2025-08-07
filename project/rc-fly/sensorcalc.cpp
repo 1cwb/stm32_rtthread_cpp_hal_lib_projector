@@ -64,7 +64,7 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 		sum += data_to_send[i];
 	data_to_send[_cnt++]=sum;
 
-    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM))->send(data_to_send,_cnt);
+    ((mDev::mUsbHidDevice*)mDev::mDeviceManager::getInstance()->getDevice(DEV_VCOM))->send(data_to_send,_cnt);
 }
 
 int sensorCalTask(void)
@@ -75,16 +75,16 @@ int sensorCalTask(void)
         MadgMahony imu2AHRS;
         bfim::BetaflightImu bfimu1;
 
-        //mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
-        mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU1);
-        mDev::mImu* imu2 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU2);
-        mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice(DEV_MAG1);
-        mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mPlatform::getInstance()->getDevice(DEV_BARO1);
-        //mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED0);
-        //mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED1);
-        //mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
-        //mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
-        //mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
+        //mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER1);
+        mDev::mImu* imu1 = (mDev::mImu*)mDev::mDeviceManager::getInstance()->getDevice(DEV_IMU1);
+        mDev::mImu* imu2 = (mDev::mImu*)mDev::mDeviceManager::getInstance()->getDevice(DEV_IMU2);
+        mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
+        mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
+        //mDev::mLed* led0 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED0);
+        //mDev::mLed* led1 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED1);
+        //mDev::mLed* led2 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED2);
+        //mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER2);
+        //mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
         workItem* senscal = new workItem("imucal", 200, 5, [&](void* param){
             float accelGyroBias1[6] = {0};
             float accelGyroBias2[6] = {0};

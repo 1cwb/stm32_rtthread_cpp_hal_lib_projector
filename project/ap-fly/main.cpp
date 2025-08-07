@@ -90,12 +90,12 @@ static void CreateNewFile(void)
 
 int main(void)
 {
-    mDev::mLed* led0 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED0);
-    mDev::mLed* led1 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED1);
-    mDev::mLed* led2 = (mDev::mLed*)mDev::mPlatform::getInstance()->getDevice(DEV_LED2);
-    mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER2);
-    mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mPlatform::getInstance()->getDevice(DEV_TIMER1);
-    mDev::mAdc* adc1 = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC1);
+    mDev::mLed* led0 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED0);
+    mDev::mLed* led1 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED1);
+    mDev::mLed* led2 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED2);
+    mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER2);
+    mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER1);
+    mDev::mAdc* adc1 = (mDev::mAdc*)mDev::mDeviceManager::getInstance()->getDevice(DEV_ADC1);
     uint8_t usbBuff[64];
 
     if(timer2)

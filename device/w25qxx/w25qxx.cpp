@@ -57,7 +57,7 @@
 mResult W25QXX::QSPIW25QxxInit(void)
 {
 	uint32_t	Device_ID;	                                  // 器件ID
-	_qspi = (mDev::mQspi*)(mDev::mPlatform::getInstance()->getDevice(DEV_QSPI));
+	_qspi = (mDev::mQspi*)(mDev::mDeviceManager::getInstance()->getDevice(DEV_QSPI));
 	if(!_qspi)
 	{
 		return M_RESULT_ERROR;

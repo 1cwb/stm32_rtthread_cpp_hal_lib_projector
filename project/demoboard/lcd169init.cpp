@@ -16,7 +16,7 @@ int lcdInit()
     bl->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
     dc->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
 
-    spi5 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice(DEV_SPI5);
+    spi5 = (mDev::mSpi*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SPI5);
     if(!spi5)
     {
         printf("Error: can not find spi5 drv\r\n");

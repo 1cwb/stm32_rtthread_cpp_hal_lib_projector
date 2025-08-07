@@ -62,7 +62,7 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 		sum += data_to_send[i];
 	data_to_send[_cnt++]=sum;
 
-    ((mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM))->send(data_to_send,_cnt);
+    ((mDev::mUsbHidDevice*)mDev::mDeviceManager::getInstance()->getDevice(DEV_VCOM))->send(data_to_send,_cnt);
 }
 
 int sensorCalTask(void)
@@ -70,10 +70,10 @@ int sensorCalTask(void)
 
     mthread* sensorCal = mthread::create("sensorcal", 2048, 1, 20, [&](void* p){
 
-        mDev::mImu* imu1 = (mDev::mImu*)mDev::mPlatform::getInstance()->getDevice(DEV_IMU1);
-        mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mPlatform::getInstance()->getDevice(DEV_MAG1);
-        mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mPlatform::getInstance()->getDevice(DEV_BARO1);
-        mDev::mSystick* systickx = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice(DEV_SYSTICK);
+        mDev::mImu* imu1 = (mDev::mImu*)mDev::mDeviceManager::getInstance()->getDevice(DEV_IMU1);
+        mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
+        mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
+        mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
         MadgwickAHRS ahrs1(1000.0f,0.6f);
         workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
 

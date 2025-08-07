@@ -6,7 +6,7 @@
 
 int bimxxInit()
 {
-    mDev::mSpi* spi1 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice(DEV_SPI1);
+    mDev::mSpi* spi1 = (mDev::mSpi*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SPI1);
     if(!spi1)
     {
         return -1;
@@ -23,7 +23,7 @@ int bimxxInit()
     bmi088* imu1 = new bmi088(DEV_IMU1,spi1,imu1acs,imu1gcs);
     imu1->init();
 
-    mDev::mSpi* spi4 = (mDev::mSpi*)mDev::mPlatform::getInstance()->getDevice(DEV_SPI4);
+    mDev::mSpi* spi4 = (mDev::mSpi*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SPI4);
     if(!spi4)
     {
         return -1;

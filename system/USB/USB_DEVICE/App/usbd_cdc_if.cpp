@@ -264,7 +264,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   static mDev::mUsbHidDevice* dev = nullptr;
   if(dev == nullptr)
   {
-    dev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice("vcom");
+    dev = (mDev::mUsbHidDevice*)mDev::mDeviceManager::getInstance()->getDevice("vcom");
   }
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);

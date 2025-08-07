@@ -44,16 +44,16 @@ int uartRecvQueueInit(void)
 {
     uartRecvQueue.init("uartRecvQueue", sizeof(interfaceData), 40*(sizeof(mMessagequeue::mqMessage_t)+sizeof(interfaceData)), mIpcFlag::IPC_FLAG_FIFO);
     printf("uart queue maxsize = %d, used size = %d\r\n", uartRecvQueue.getMaxSize(), uartRecvQueue.getUsedSize());
-    mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mPlatform::getInstance()->getDevice(DEV_VCOM);
-    mDev::mUsart* usartDev1 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART1);
-    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2);
-    mDev::mUsart* usartDev3 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART3);
-    mDev::mUsart* usartDev4 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART4);
-    mDev::mUsart* usartDev5 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART5);
-    mDev::mUsart* usartDev6 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART6);
-    mDev::mUsart* usartDev8 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART8);
-    mDev::mAdc* adc1Dev = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC1);
-    mDev::mAdc* adc3Dev = (mDev::mAdc*)mDev::mPlatform::getInstance()->getDevice(DEV_ADC3);
+    mDev::mUsbHidDevice* usbDev = (mDev::mUsbHidDevice*)mDev::mDeviceManager::getInstance()->getDevice(DEV_VCOM);
+    mDev::mUsart* usartDev1 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART1);
+    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART2);
+    mDev::mUsart* usartDev3 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART3);
+    mDev::mUsart* usartDev4 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART4);
+    mDev::mUsart* usartDev5 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART5);
+    mDev::mUsart* usartDev6 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART6);
+    mDev::mUsart* usartDev8 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART8);
+    mDev::mAdc* adc1Dev = (mDev::mAdc*)mDev::mDeviceManager::getInstance()->getDevice(DEV_ADC1);
+    mDev::mAdc* adc3Dev = (mDev::mAdc*)mDev::mDeviceManager::getInstance()->getDevice(DEV_ADC3);
     if(usbDev)
     {
         usbDev->registerInterruptCb([&](mDev::mDevice* dev, void* p){
@@ -262,7 +262,7 @@ void usartRecvEnter(void* p)
     uint8_t adc1DataCount = 0;
     const uint8_t avragetime1 = 1;
 
-    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mPlatform::getInstance()->getDevice(DEV_USART2);
+    mDev::mUsart* usartDev2 = (mDev::mUsart*)mDev::mDeviceManager::getInstance()->getDevice(DEV_USART2);
     crsf::getInstance()->registerUartSend(usartDev2, &mDev::mUsart::sendData);
     while(true)
     {

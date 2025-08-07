@@ -140,7 +140,7 @@ void lv_port_disp_init(void)
 static void disp_init(void)
 {
     /*You code here*/
-    pDisplay = (mDev::mDisplay*)(mDev::mPlatform::getInstance()->getDevice("lcd0"));
+    pDisplay = (mDev::mDisplay*)(mDev::mDeviceManager::getInstance()->getDevice("lcd0"));
     MY_DISP_HOR_RES = pDisplay->getWidth();
     MY_DISP_VER_RES = pDisplay->getHeight();
     pDisplay->registerInterruptCb([](mDev::mDevice* p, void* pdata){

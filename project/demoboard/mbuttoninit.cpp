@@ -44,7 +44,7 @@ int buttonInit()
     btm->addButton(bt4);
 
     mthread* buttonScanThread = mthread::create("button", 2048, 2, 10, [&](void* p){
-        mDev::mButtonManager* btm = (mDev::mButtonManager*)mDev::mPlatform::getInstance()->getDevice(DEV_BUTTON_MANAGER);
+        mDev::mButtonManager* btm = (mDev::mButtonManager*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BUTTON_MANAGER);
         while(true)
         {
             btm->process();

@@ -36,7 +36,7 @@ static DSTATUS SD_CheckStatus(BYTE lun)
   */
  DSTATUS SD_initialize(BYTE lun)
  {
-    sd0 = (mDev::mSDMMC*)mDev::mPlatform::getInstance()->getDevice("sd0");
+    sd0 = (mDev::mSDMMC*)mDev::mDeviceManager::getInstance()->getDevice("sd0");
     if(!sd0)
     {
       return STA_NOINIT;

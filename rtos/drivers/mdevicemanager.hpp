@@ -2,14 +2,15 @@
 #include "containers.hpp"
 #include "mipc.hpp"
 #include <list>
+#include <string>
 namespace mDev
 {
 class mDevice;
 struct devBase
 {
-    const char* _devname = nullptr;
+    const std::string _devname = nullptr;
     mDev::mDevice* _mdev = nullptr;
-    devBase(const char* name, mDev::mDevice* dev):_devname(name), _mdev(dev)
+    devBase(const std::string& name, mDev::mDevice* dev):_devname(name), _mdev(dev)
     {
 
     }
@@ -17,15 +18,15 @@ struct devBase
 
 using devList = std::list<devBase*, mMemAllocator<devBase*>>;
 
-class mPlatform
+class mDeviceManager
 {
 public:
-    static mPlatform* getInstance()
+    static mDeviceManager* getInstance()
     {
-        static mPlatform platform;
+        static mDeviceManager platform;
         return &platform;
     }
-    mResult registerDevice(const char* name, mDev::mDevice* dev)
+    mResult registerDevice(const std::string& name, mDev::mDevice* dev)
     {
         if(dev == nullptr)
         {
@@ -34,7 +35,7 @@ public:
         _mutex.mutexTake(WAITING_FOREVER);
         for(auto& it : _devList)
         {
-            if(strcmp(it->_devname, name) == 0)
+            if(it->_devname.compare(name) == 0)
             {
                 _mutex.mutexRelease();
                 return M_RESULT_EXIST;
@@ -60,7 +61,7 @@ public:
         _mutex.mutexTake(WAITING_FOREVER);
         for(auto it = _devList.begin(); it != _devList.end(); ++it)
         {
-            if(strcmp((*it)->_devname, name) == 0)
+            if((*it)->_devname.compare(name) == 0)
             {
                 _devList.erase(it);
                 delete (*it);
@@ -74,7 +75,7 @@ public:
         _mutex.mutexTake(WAITING_FOREVER);
         for(auto it = _devList.begin(); it != _devList.end(); ++it)
         {
-            if(strcmp((*it)->_devname, name) == 0)
+            if((*it)->_devname.compare(name) == 0)
             {
                 _mutex.mutexRelease();
                 return (*it)->_mdev;
@@ -85,18 +86,18 @@ public:
         return nullptr;
     }
 private:
-    mPlatform():_mutex("pmutex", IPC_FLAG_FIFO)
+    mDeviceManager():_mutex("pmutex", IPC_FLAG_FIFO)
     {
 
     }
-    ~mPlatform()
+    ~mDeviceManager()
     {
         _mutex.detach();
     }
-    mPlatform(const mPlatform&) = delete;
-    mPlatform(mPlatform&&) = delete;
-    mPlatform& operator=(const mPlatform&) = delete;
-    mPlatform& operator=(mPlatform&&) = delete;
+    mDeviceManager(const mDeviceManager&) = delete;
+    mDeviceManager(mDeviceManager&&) = delete;
+    mDeviceManager& operator=(const mDeviceManager&) = delete;
+    mDeviceManager& operator=(mDeviceManager&&) = delete;
 private:
     devList _devList;
     mMutex _mutex;

@@ -7,7 +7,7 @@ mResult systemInfo::init()
         printf("Error: idleThread not found\r\n");
         return M_RESULT_ENOSYS;
     }
-    systime = (mDev::mSystick*)mDev::mPlatform::getInstance()->getDevice("systick");
+    systime = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice("systick");
     if(!systime)
     {
         printf("Error: systime driver not found\r\n");

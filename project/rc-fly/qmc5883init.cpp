@@ -7,7 +7,7 @@
 
 int qmc5883lInit()
 {
-    mDev::mI2c* i2c2 = (mDev::mI2c*)mDev::mPlatform::getInstance()->getDevice(DEV_I2C2);
+    mDev::mI2c* i2c2 = (mDev::mI2c*)mDev::mDeviceManager::getInstance()->getDevice(DEV_I2C2);
     if(!i2c2)
     {
         return -1;
