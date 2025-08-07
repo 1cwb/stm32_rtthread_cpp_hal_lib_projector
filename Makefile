@@ -120,6 +120,8 @@ EXTRA_LINK_FLAGS	:= \
                    -T$(LINK_FILES) \
                    -specs=nano.specs \
                    -specs=nosys.specs \
+				   -u _printf_float \
+           			-u _scanf_float \
                    -flto \
                    -Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
                    -Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)

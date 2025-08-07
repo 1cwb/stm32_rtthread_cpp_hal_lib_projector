@@ -1,6 +1,8 @@
 #pragma once
+#include <memory>
+#include <mutex>
 #include "mdevice.hpp"
-#include "mipc.hpp"
+#include "minternal.hpp"
 
 namespace mDev
 {
@@ -13,38 +15,34 @@ class mI2c : public mDevice
 {
 public:
     mI2c() = delete;
-    explicit mI2c(const char* name, I2C_TYPE type = I2C_TYPE_MASTER) : mDevice(name), _type(type){_sem.init(getDeviceName(),1,IPC_FLAG_FIFO);}
-    virtual ~mI2c() {_sem.detach();};
+    explicit mI2c(const char* name, I2C_TYPE type = I2C_TYPE_MASTER) : mDevice(name), _type(type){_mut = std::move(std::make_unique<mDev::Mutex>());}
+    virtual ~mI2c() {};
     mResult write(uint16_t slaveAddr, const uint8_t* buff, size_t len)
     {
         mResult ret = M_RESULT_ERROR;
-        _sem.semTake(WAITING_FOREVER);
+        std::lock_guard<IMutex> locker(*_mut);
         _write(slaveAddr, buff, len);
-        _sem.semRelease();
         return ret;
     }
     mResult read(uint16_t slaveAddr, uint8_t* buff, size_t len)
     {
         mResult ret = M_RESULT_ERROR;
-        _sem.semTake(WAITING_FOREVER);
+        std::lock_guard<IMutex> locker(*_mut);
         _read(slaveAddr, buff, len);
-        _sem.semRelease();
         return ret;
     }
     mResult writeReg(uint16_t slaveAddr, uint8_t reg, const uint8_t* buff, size_t len)
     {
         mResult ret = M_RESULT_ERROR;
-        _sem.semTake(WAITING_FOREVER);
+        std::lock_guard<IMutex> locker(*_mut);
         _writeReg(slaveAddr, reg, buff, len);
-        _sem.semRelease();
         return ret;
     }
     mResult readReg(uint16_t slaveAddr, uint8_t reg, uint8_t* buff, size_t len)
     {
         mResult ret = M_RESULT_ERROR;
-        _sem.semTake(WAITING_FOREVER);
+        std::lock_guard<IMutex> locker(*_mut);
         _readReg(slaveAddr, reg, buff, len);
-        _sem.semRelease();
         return ret;
     }
     bool isMasterMode() const
@@ -65,6 +63,6 @@ protected:
     bool _benableISR;
     bool _benableDMA;
 private:
-    mSemaphore _sem;
+    std::unique_ptr<IMutex> _mut = nullptr;
 };
 }
