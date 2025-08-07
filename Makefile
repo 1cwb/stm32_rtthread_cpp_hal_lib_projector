@@ -125,7 +125,6 @@ EXTRA_LINK_FLAGS	:= \
                    -flto \
                    -Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
                    -Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
-
 #################################################################################################
 ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
 DEFINE    +=-DSTM32H743xx \
