@@ -8,7 +8,7 @@ class mUsart : public mDevice
 {
 public:
     using usartData = devCbData<uint8_t*>;
-    mUsart(const char* name) : mDev::mDevice(name),_transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL), _transferComplete(true) {_sem.init(getDeviceName(),1,IPC_FLAG_FIFO);}
+    mUsart(const char* name) : mDev::mDevice(name),_transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL), _transferComplete(true) {_sem.init(getDeviceName().c_str(),1,IPC_FLAG_FIFO);}
     virtual ~mUsart() {}
     mResult sendData(const uint8_t* data, uint32_t len)
     {

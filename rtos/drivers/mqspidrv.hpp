@@ -1,6 +1,7 @@
 #pragma once
 #include "mdevice.hpp"
 #include "mgpiodrv.hpp"
+#include "minternal.hpp"
 
 namespace mDev
 {
@@ -141,25 +142,63 @@ class mQspi : public mDevice
 {
 public:
     mQspi() = delete;
-    explicit mQspi(const char* name) : mDevice(name), _transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL){}
+    explicit mQspi(const char* name) : mDevice(name), _transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL)
+    {
+        _mut = std::move(std::make_unique<mDev::Mutex>());
+    }
     virtual ~mQspi(){}
-    virtual mResult sendCmd(QSPICommand* cmd) {return M_RESULT_ERROR;}
-    virtual mResult sendData(uint8_t *buf) {return M_RESULT_ERROR;}
-    virtual mResult receive(uint8_t *buf) {return M_RESULT_ERROR;}
-    virtual mResult autoPolling(QSPICommand* cmd, QSPIAutoPolling* poll, uint32_t timeout) {return M_RESULT_ERROR;}
     inline virtual void csEnable(mDev::mGpio* cspin){}
     inline virtual void csDisable(mDev::mGpio* cspin){}
-    virtual mResult memoryMapped(QSPICommand* cmd, QSPIMemoryMappedCfg* cfg){return M_RESULT_EOK;}
-    void setTransferMode(transferMode mode) {_transferMode = mode;}
-    void setRecvMode(recvMode mode) {_recvMode = mode;}
+
+    mResult sendCmd(QSPICommand* cmd)
+    {
+        std::lock_guard<IMutex> lock(*_mut);
+        return _sendCmd(cmd);
+    }
+    mResult sendData(uint8_t *buf)
+    {
+        std::lock_guard<IMutex> lock(*_mut);
+        return _sendData(buf);
+    }
+    mResult receive(uint8_t *buf) 
+    {
+        std::lock_guard<IMutex> lock(*_mut);
+        return _receive(buf);
+    }
+    mResult autoPolling(QSPICommand* cmd, QSPIAutoPolling* poll, uint32_t timeout)
+    {
+        std::lock_guard<IMutex> lock(*_mut);
+        return _autoPolling(cmd, poll, timeout);
+    }
+    mResult memoryMapped(QSPICommand* cmd, QSPIMemoryMappedCfg* cfg)
+    {
+        std::lock_guard<IMutex> lock(*_mut);
+        return _memoryMapped(cmd, cfg);
+    }
+    void setTransferMode(transferMode mode)
+    {
+        std::lock_guard<IMutex> lock(*_mut);
+        _transferMode = mode;
+    }
+    void setRecvMode(recvMode mode)
+    {
+        std::lock_guard<IMutex> lock(*_mut);
+        _recvMode = mode;
+    }
     recvMode getRecvMode() const {return _recvMode;}
 protected:
-    virtual mResult remapCmd(QSPICommand* cmd, void* dst) = 0;
-    virtual mResult remapAutoPolling(QSPIAutoPolling* poll, void* dst) = 0;
-    virtual mResult remapMemMapCfg(QSPIMemoryMappedCfg* cfg, void* dst) = 0;
+    virtual mResult _remapCmd(QSPICommand* cmd, void* dst) = 0;
+    virtual mResult _remapAutoPolling(QSPIAutoPolling* poll, void* dst) = 0;
+    virtual mResult _remapMemMapCfg(QSPIMemoryMappedCfg* cfg, void* dst) = 0;
 
+    virtual mResult _sendCmd(QSPICommand* cmd) = 0;
+    virtual mResult _sendData(uint8_t *buf)  = 0;
+    virtual mResult _receive(uint8_t *buf)  = 0;
+    virtual mResult _autoPolling(QSPICommand* cmd, QSPIAutoPolling* poll, uint32_t timeout) = 0;
+    virtual mResult _memoryMapped(QSPICommand* cmd, QSPIMemoryMappedCfg* cfg) = 0;
 protected:
     transferMode _transferMode;
     recvMode _recvMode;
+    std::unique_ptr<IMutex> _mut = nullptr;
 };
 }

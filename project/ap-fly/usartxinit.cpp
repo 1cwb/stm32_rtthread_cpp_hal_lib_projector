@@ -97,7 +97,6 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     usart* usartx = containerof(huart, usart, _uartHandle);
     if(huart == usartx->usartHandle())
     {
-      printf("%s() %s recv data\r\n",__FUNCTION__,usartx->getDeviceName());
         mDev::mUsart::usartData rxdata = {
           .data = usartx->getRxBuff(),
           .dataPerSize = 1,
@@ -131,7 +130,7 @@ extern "C" void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
   __HAL_UNLOCK(huart);
   if(huart == usartx->usartHandle())
   {
-    printf("error happend %s ErrorCode = %ld\r\n",usartx->getDeviceName(),huart->ErrorCode);
+    printf("error happend %s ErrorCode = %ld\r\n",usartx->getDeviceName().c_str(),huart->ErrorCode);
     usartx->setRecvMode(usartx->getRecvMode());
     usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
   }

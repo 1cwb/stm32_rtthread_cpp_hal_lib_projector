@@ -28,31 +28,37 @@ struct devCbData
     uint32_t dataOfobjCount;
     uint32_t len;
 };
-    using initCallbackExt = std::function<void(bool binit)>;
+
+using initCallbackExt = std::function<void(bool binit)>;
+
 class mDevice
 {
     using interruptCallback = std::function<void(mDevice*, void*)>;
 public:
-    explicit mDevice(const char* name):_devname(name)
+    explicit mDevice(const std::string& name):_devname(name)
     {
-        mDeviceManager::getInstance()->registerDevice(_devname.c_str(),this);
+        mDeviceManager::getInstance()->registerDevice(_devname,this);
+    }
+    explicit mDevice(std::string&& name):_devname(std::move(name))
+    {
+        mDeviceManager::getInstance()->registerDevice(_devname,this);
     }
     virtual ~mDevice()
     {
-        mDeviceManager::getInstance()->unregisterDevice(_devname.c_str());
+        mDeviceManager::getInstance()->unregisterDevice(_devname);
     }
     mDevice(const mDevice&) = delete;
     mDevice(mDevice&&) = delete;
     mDevice& operator=(const mDevice&) = delete;
     mDevice& operator=(mDevice&&) = delete;
-    const char* getDeviceName() const {return _devname.c_str();}
+    std::string getDeviceName() const {return _devname;}
 
     void registerInterruptCb(const interruptCallback& cb){_cb = cb;}
     void unregisterInterrupt(){_cb = nullptr;}
     void runInterruptCb(void* p){if(_cb)_cb(this,p);}
     void runInitCallback(bool binit){if(_initcb)_initcb(binit);}
 protected:
-    std::basic_string<char, std::char_traits<char>, mMemAllocator<char>>  _devname;
+    std::string _devname;
     initCallbackExt _initcb;
 private:
     interruptCallback _cb;

@@ -205,7 +205,7 @@ public:
         _sem.semTake(WAITING_FOREVER);
         for(auto& it : _buttonlist)
         {
-            if(strcmp(it->getDeviceName(), button->getDeviceName()) == 0)
+            if(it->getDeviceName().compare(button->getDeviceName()) == 0)
             {
                 return;
             }
@@ -224,7 +224,7 @@ public:
         _sem.semTake(WAITING_FOREVER);
         for(auto it = _buttonlist.begin(); it != _buttonlist.end(); it++)
         {
-            if(strcmp((*it)->getDeviceName(), name) == 0)
+            if((*it)->getDeviceName().compare(name) == 0)
             {
                 _buttonlist.remove(*it);
                 break;

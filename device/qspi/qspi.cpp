@@ -21,10 +21,10 @@ mResult Qspi::deInit()
     return M_RESULT_EOK;
 }
 
-mResult Qspi::sendCmd(mDev::QSPICommand* cmd)
+mResult Qspi::_sendCmd(mDev::QSPICommand* cmd)
 {
     QSPI_CommandTypeDef dst;
-    if(remapCmd(cmd, &dst) != M_RESULT_EOK)
+    if(_remapCmd(cmd, &dst) != M_RESULT_EOK)
     {
         ALOGE("%s()%d remapCmd Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
@@ -60,7 +60,7 @@ mResult Qspi::sendCmd(mDev::QSPICommand* cmd)
     }
     return M_RESULT_EOK;
 }
-mResult Qspi::sendData(uint8_t *buf)
+mResult Qspi::_sendData(uint8_t *buf)
 {
     if (!buf)
     {
@@ -101,7 +101,7 @@ mResult Qspi::sendData(uint8_t *buf)
     return M_RESULT_EOK;
 }
 
-mResult Qspi::receive(uint8_t *buf)
+mResult Qspi::_receive(uint8_t *buf)
 {
     if (!buf)
     {
@@ -141,18 +141,18 @@ mResult Qspi::receive(uint8_t *buf)
 
     return M_RESULT_EOK;
 }
-mResult Qspi::autoPolling(mDev::QSPICommand* cmd, mDev::QSPIAutoPolling* poll, uint32_t timeout)
+mResult Qspi::_autoPolling(mDev::QSPICommand* cmd, mDev::QSPIAutoPolling* poll, uint32_t timeout)
 {
     QSPI_CommandTypeDef dst;
     QSPI_AutoPollingTypeDef polldst;
-    if(remapCmd(cmd, &dst) != M_RESULT_EOK)
+    if(_remapCmd(cmd, &dst) != M_RESULT_EOK)
     {
         ALOGE("%s()%d remapCmd Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
-    if(remapAutoPolling(poll, &polldst)!= M_RESULT_EOK)
+    if(_remapAutoPolling(poll, &polldst)!= M_RESULT_EOK)
     {
-        ALOGE("%s()%d remapAutoPolling Fail\r\n",__FUNCTION__,__LINE__);
+        ALOGE("%s()%d _remapAutoPolling Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     if(_transferMode == mDev::transferMode::TRANSFER_MODE_NOMAL && _recvMode == mDev::recvMode::RECV_MODE_NOMAL)
@@ -172,7 +172,7 @@ mResult Qspi::autoPolling(mDev::QSPICommand* cmd, mDev::QSPIAutoPolling* poll, u
     return M_RESULT_EOK;
 }
 
-mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
+mResult Qspi::_remapCmd(mDev::QSPICommand* cmd, void* dst)
 {
     if(!dst || !cmd)
         return M_RESULT_ERROR;
@@ -325,7 +325,7 @@ mResult Qspi::remapCmd(mDev::QSPICommand* cmd, void* dst)
 
     return M_RESULT_EOK;
 }
-mResult Qspi::remapMemMapCfg(mDev::QSPIMemoryMappedCfg* cfg, void* dst)
+mResult Qspi::_remapMemMapCfg(mDev::QSPIMemoryMappedCfg* cfg, void* dst)
 {
     if (!cfg || !dst)
     {
@@ -354,19 +354,19 @@ mResult Qspi::remapMemMapCfg(mDev::QSPIMemoryMappedCfg* cfg, void* dst)
 
     return M_RESULT_EOK;
 }
-mResult Qspi::memoryMapped(mDev::QSPICommand* cmd, mDev::QSPIMemoryMappedCfg* cfg)
+mResult Qspi::_memoryMapped(mDev::QSPICommand* cmd, mDev::QSPIMemoryMappedCfg* cfg)
 {
     if(!cmd ||!cfg)
         return M_RESULT_ERROR;
 
     QSPI_CommandTypeDef dst;
-    if(remapCmd(cmd, &dst) != M_RESULT_EOK)
+    if(_remapCmd(cmd, &dst) != M_RESULT_EOK)
     {
         ALOGE("%s()%d remapCmd Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
     }
     QSPI_MemoryMappedTypeDef hlcfg;
-    if(remapMemMapCfg(cfg, &hlcfg)!= M_RESULT_EOK)
+    if(_remapMemMapCfg(cfg, &hlcfg)!= M_RESULT_EOK)
     {
         ALOGE("%s()%d remapMemMapCfg Fail\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
@@ -377,7 +377,7 @@ mResult Qspi::memoryMapped(mDev::QSPICommand* cmd, mDev::QSPIMemoryMappedCfg* cf
     }
     return M_RESULT_EOK;
 }
-mResult Qspi::remapAutoPolling(mDev::QSPIAutoPolling* poll, void* dst)
+mResult Qspi::_remapAutoPolling(mDev::QSPIAutoPolling* poll, void* dst)
 {
     if(!poll || !dst)
         return M_RESULT_ERROR;
