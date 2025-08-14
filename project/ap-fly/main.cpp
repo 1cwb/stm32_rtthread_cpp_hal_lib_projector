@@ -110,6 +110,7 @@ int main(void)
     if(timer1)
     {
         timer1->registerInterruptCb([&](mDev::mDevice* dev, void* p){
+            printf("time out \r\n");
         });
         timer1->start();
         //KLOGI("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());

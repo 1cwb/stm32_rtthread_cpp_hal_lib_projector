@@ -346,14 +346,6 @@ void runCallBack(TIM_HandleTypeDef *htim, bool binit)
         tim->runInitCallback(binit);
     }
 }
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
-{
-    runCallBack(htim, true);
-}
-void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *htim)
-{
-    runCallBack(htim, false);
-}
 void HAL_TIM_OC_MspInit(TIM_HandleTypeDef *htim)
 {
     runCallBack(htim, true);

@@ -1,36 +1,30 @@
-#include "timer.hpp"
+#include "newtimer.hpp"
 #include "project.hpp"
-#if 0
-static timerx* timer1 = nullptr;
-static timerx* timer2 = nullptr;
+
+static newTimerx* timer1 = nullptr;
+static newTimerx* timer2 = nullptr;
 
 /*********************Interrupt Callback******************************/
 extern "C" void TIM1_UP_IRQHandler(void)
 {
-    timerx* timx = timer1;
-    if(timx  != nullptr)
+    if(timer1)
     {
-        if(__HAL_TIM_GET_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE))
+        if(__HAL_TIM_GET_FLAG(timer1->getTimHandle(), TIM_FLAG_UPDATE))
         {
-            __HAL_TIM_CLEAR_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE);
-            timx->runInterruptCb(nullptr);
+            __HAL_TIM_CLEAR_FLAG(timer1->getTimHandle(), TIM_FLAG_UPDATE);
+            timer1->runInterruptCb(nullptr);
         }
     }
 }
 
 extern "C" void TIM2_IRQHandler(void)
 {
-    timerx* timx = timer2;
-    if(timx != nullptr)
+    if(timer2)
     {
-        if(__HAL_TIM_GET_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE))
+        if(__HAL_TIM_GET_FLAG(timer2->getTimHandle(), TIM_FLAG_UPDATE))
         {
-            __HAL_TIM_CLEAR_FLAG(timx->getTimHandle(), TIM_FLAG_UPDATE);
-            timx->runInterruptCb(nullptr);
-        }
-        if(__HAL_TIM_GET_FLAG(timx->getTimHandle(), TIM_FLAG_CC1))
-        {
-            __HAL_TIM_CLEAR_FLAG(timx->getTimHandle(), TIM_FLAG_CC1);
+            __HAL_TIM_CLEAR_FLAG(timer2->getTimHandle(), TIM_FLAG_UPDATE);
+            timer2->runInterruptCb(nullptr);
         }
     }
 }
@@ -47,7 +41,7 @@ int timeInit()
     timerst.Init.CounterMode = TIM_COUNTERMODE_UP;
     timerst.Init.RepetitionCounter = 0;
 
-    timer1 = new timerx("timer1");
+    timer1 = new newTimerx("timer1");
     timer1->calcPeriodAndPrescalerByFreq(&timerst,200);
     timer1->baseTimeInit([](bool b){
         if(b)
@@ -56,9 +50,8 @@ int timeInit()
             HAL_NVIC_SetPriority(TIM1_UP_IRQn, 3, 0);
             HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
         }
-    }, &timerst,mDev::TIMESTARTMODE_IT);
+    }, &timerst);
     return 0;
 }
-//INIT_EXPORT(timeInit, "0.4");
+INIT_EXPORT(timeInit, "0.4");
 
-#endif
