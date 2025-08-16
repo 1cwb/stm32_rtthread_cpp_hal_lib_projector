@@ -200,7 +200,7 @@ mResult spix::rxDmaDeInit()
 }
 extern "C" void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 {
-    spix* spi = containerof(hspi, spix, _spixHandle);
+    spix* spi = spix::GetObjectFromPrivateMember(hspi);
     if(hspi == spi->spixHandle())
     {
         spi->runInitCallback(true);
@@ -208,7 +208,7 @@ extern "C" void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi)
 }
 extern "C" void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
 {
-    spix* spi = containerof(hspi, spix, _spixHandle);
+    spix* spi = spix::GetObjectFromPrivateMember(hspi);
     if(hspi == spi->spixHandle())
     {
         spi->runInitCallback(false);
