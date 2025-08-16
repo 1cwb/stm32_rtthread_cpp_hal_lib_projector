@@ -451,7 +451,7 @@ void Qspi::csDisable(mDev::mGpio* cspin)
 
 extern "C" void HAL_QSPI_MspInit(QSPI_HandleTypeDef* hqspi)
 {
-    Qspi* qspi = containerof(hqspi, Qspi, hQspi);
+    Qspi* qspi = Qspi::GetObjectFromPrivateMember(hqspi);
     if(hqspi == qspi->getQspiHandle())
     {
         qspi->runInitCallback(true);
@@ -460,7 +460,7 @@ extern "C" void HAL_QSPI_MspInit(QSPI_HandleTypeDef* hqspi)
 
 extern "C" void HAL_QSPI_MspDeInit(QSPI_HandleTypeDef *hqspi)
 {
-    Qspi* qspi = containerof(hqspi, Qspi, hQspi);
+    Qspi* qspi = Qspi::GetObjectFromPrivateMember(hqspi);
     if(hqspi == qspi->getQspiHandle())
     {
         qspi->runInitCallback(false);

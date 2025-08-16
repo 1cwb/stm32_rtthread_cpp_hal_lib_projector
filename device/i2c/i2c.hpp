@@ -53,7 +53,11 @@ public:
     {
         return &_i2cxHandle;
     }
-    I2C_HandleTypeDef _i2cxHandle;
+    static i2cx* GetObjectFromPrivateMember(I2C_HandleTypeDef* member_address) {
+            // 使用模板函数，传入成员指针和地址
+            return GetObjectFromMember(&i2cx::_i2cxHandle, member_address);
+    }
+
 private:
     /*
     * Compute SCLDEL, SDADEL, SCLH and SCLL for TIMINGR register according to reference manuals.
@@ -121,4 +125,5 @@ private:
         *sclh = SCLH;
         *scll = SCLL;
     }
+    I2C_HandleTypeDef _i2cxHandle;
 };

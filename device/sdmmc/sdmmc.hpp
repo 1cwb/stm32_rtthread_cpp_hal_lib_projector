@@ -20,8 +20,12 @@ public:
     bool waitSdCardReady();
     uint32_t getNbBlockSize() {return buffSize / BLOCKSIZE;}
     SD_HandleTypeDef* sdmmcHandle() {return &uSdHandle;}
-public:
-    SD_HandleTypeDef uSdHandle;
+    static sdmmc* GetObjectFromPrivateMember(SD_HandleTypeDef* member_address)
+    {
+        // 使用模板函数，传入成员指针和地址
+        return GetObjectFromMember(&sdmmc::uSdHandle, member_address);
+    }
 private:
+    SD_HandleTypeDef uSdHandle;
     mDev::mGpio* mDetectPin;
 };

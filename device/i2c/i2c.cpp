@@ -211,7 +211,7 @@ mResult i2cx::_readReg(uint16_t slaveAddr, uint8_t reg, uint8_t* buff, size_t le
 
 extern "C" void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 {
-    i2cx* i2c = containerof(hi2c, i2cx, _i2cxHandle);
+    i2cx* i2c = i2cx::GetObjectFromPrivateMember(hi2c);
     if(hi2c == i2c->i2cxHandle())
     {
         i2c->runInitCallback(true);
@@ -219,7 +219,7 @@ extern "C" void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
 }
 extern "C" void HAL_I2C_MspDeInit(I2C_HandleTypeDef *hi2c)
 {
-    i2cx* i2c = containerof(hi2c, i2cx, _i2cxHandle);
+    i2cx* i2c = i2cx::GetObjectFromPrivateMember(hi2c);
     if(hi2c == i2c->i2cxHandle())
     {
         i2c->runInitCallback(false);

@@ -155,7 +155,7 @@ bool sdmmc::waitSdCardReady()
 
 extern "C" void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 {
-    sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
+    sdmmc* sdx = sdmmc::GetObjectFromPrivateMember(hsd);
     if(hsd == sdx->sdmmcHandle())
     {
         sdx->runInitCallback(true);
@@ -164,7 +164,7 @@ extern "C" void HAL_SD_MspInit(SD_HandleTypeDef *hsd)
 
 extern "C" void HAL_SD_MspDeInit(SD_HandleTypeDef *hsd)
 {
-    sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
+    sdmmc* sdx = sdmmc::GetObjectFromPrivateMember(hsd);
     if(hsd == sdx->sdmmcHandle())
     {
         sdx->runInitCallback(false);

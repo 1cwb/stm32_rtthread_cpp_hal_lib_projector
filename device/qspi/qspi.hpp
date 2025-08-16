@@ -13,6 +13,11 @@ public:
     inline virtual void csEnable(mDev::mGpio* cspin)override;
     inline virtual void csDisable(mDev::mGpio* cspin)override;
     QSPI_HandleTypeDef* getQspiHandle() {return &hQspi;}
+    static Qspi* GetObjectFromPrivateMember(QSPI_HandleTypeDef* member_address)
+    {
+        // 使用模板函数，传入成员指针和地址
+        return GetObjectFromMember(&Qspi::hQspi, member_address);
+    }
 protected:
     virtual mResult _sendCmd(mDev::QSPICommand* cmd) override;
     virtual mResult _sendData(uint8_t *buf) override;
@@ -22,7 +27,6 @@ protected:
     virtual mResult _remapAutoPolling(mDev::QSPIAutoPolling* poll, void* dst) override;
     virtual mResult _remapMemMapCfg(mDev::QSPIMemoryMappedCfg* cfg, void* dst) override;
     virtual mResult _memoryMapped(mDev::QSPICommand* cmd, mDev::QSPIMemoryMappedCfg* cfg) override;
-public:
-    QSPI_HandleTypeDef hQspi;
 private:
+    QSPI_HandleTypeDef hQspi;
 };

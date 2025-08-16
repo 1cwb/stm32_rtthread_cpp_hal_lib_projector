@@ -60,7 +60,7 @@ void HAL_SDEx_Write_DMADoubleBuffer1CpltCallback(SD_HandleTypeDef *hsd)
   */
 extern "C" void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
 {
-    sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
+    sdmmc* sdx = sdmmc::GetObjectFromPrivateMember(hsd);
     if(hsd == sdx->sdmmcHandle())
     {
         mDev::MSDMMCdata data = {
@@ -80,7 +80,7 @@ extern "C" void HAL_SD_AbortCallback(SD_HandleTypeDef *hsd)
   */
 extern "C" void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
 {
-    sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
+    sdmmc* sdx = sdmmc::GetObjectFromPrivateMember(hsd);
     if(hsd == sdx->sdmmcHandle())
     {
           mDev::MSDMMCdata data = {
@@ -99,7 +99,7 @@ extern "C" void HAL_SD_TxCpltCallback(SD_HandleTypeDef *hsd)
   */
 extern "C" void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
 {
-    sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
+    sdmmc* sdx = sdmmc::GetObjectFromPrivateMember(hsd);
     if(hsd == sdx->sdmmcHandle())
     {
         if(sdx->getTransferMode() == mDev::MSDMMC_TRANSFER_MODE::SDMMC_TRANSFER_MODE_DMA)
@@ -122,7 +122,7 @@ extern "C" void HAL_SD_RxCpltCallback(SD_HandleTypeDef *hsd)
   */
 extern "C" void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
 {
-    sdmmc* sdx = containerof(hsd, sdmmc, uSdHandle);
+    sdmmc* sdx = sdmmc::GetObjectFromPrivateMember(hsd);
     if(hsd == sdx->sdmmcHandle())
     {
           mDev::MSDMMCdata data = {
