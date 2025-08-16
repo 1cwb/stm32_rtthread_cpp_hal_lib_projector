@@ -148,17 +148,15 @@ mResult adcx::read(uint32_t* value)
 
 extern "C" void HAL_ADC_MspInit(ADC_HandleTypeDef *hadc)
 {
-    adcx* adc = containerof(hadc, adcx, _adcHandle);
-    if(hadc == adc->adcHandle())
+    if(adcx::GetObjectFromPrivateMember(hadc)->getAdcHandle() == hadc)
     {
-        adc->runInitCallback(true);
+        adcx::GetObjectFromPrivateMember(hadc)->runInitCallback(true);
     }
 }
 extern "C" void HAL_ADC_MspDeInit(ADC_HandleTypeDef *hadc)
 {
-    adcx* adc = containerof(hadc, adcx, _adcHandle);
-    if(hadc == adc->adcHandle())
+    if(adcx::GetObjectFromPrivateMember(hadc)->getAdcHandle() == hadc)
     {
-        adc->runInitCallback(false);
+        adcx::GetObjectFromPrivateMember(hadc)->runInitCallback(false);
     }
 }

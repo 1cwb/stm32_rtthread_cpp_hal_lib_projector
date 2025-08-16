@@ -35,7 +35,7 @@ extern "C" void DMA1_Stream3_IRQHandler(void)
 
 extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         if(padc->buseRxDma())
@@ -74,7 +74,7 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         if(padc->buseRxDma())
@@ -94,7 +94,7 @@ extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 }
 extern "C" void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         mDev::mAdc::usartData data = {
@@ -108,7 +108,7 @@ extern "C" void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc)
 }
 extern "C" void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         mDev::mAdc::usartData data = {

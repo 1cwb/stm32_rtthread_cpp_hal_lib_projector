@@ -37,11 +37,18 @@ public:
     {
         _itcoverCount = count;
     }
-
+    ADC_HandleTypeDef* getAdcHandle()
+    {
+        return &_adcHandle;
+    }
+    static adcx* GetObjectFromPrivateMember(ADC_HandleTypeDef* member_address) {
+            // 使用模板函数，传入成员指针和地址
+            return GetObjectFromMember(&adcx::_adcHandle, member_address);
+    }
+private:
     ADC_HandleTypeDef   _adcHandle;
 	ADC_ChannelConfTypeDef   _sConfig;
     DMA_HandleTypeDef   _dmaHandle;
-private:
     inline uint32_t calDmaBuffsize(uint32_t totalBuffsize = RX_BUFF_LEN)
     {
         totalBuffsize = totalBuffsize/2;

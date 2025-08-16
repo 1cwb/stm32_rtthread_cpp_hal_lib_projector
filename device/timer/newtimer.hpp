@@ -119,17 +119,9 @@ public:
     {
         return &_TimHandle;
     }
-
     static newTimerx* GetObjectFromPrivateMember(TIM_HandleTypeDef* member_address) {
-        // 临时对象用于计算偏移量（不调用构造函数）
-        alignas(newTimerx) char temp_buf[sizeof(newTimerx)]{};
-        newTimerx* temp_obj = reinterpret_cast<newTimerx*>(temp_buf);
-        
-        // 计算 _TimHandle 的偏移量
-        uintptr_t offset = reinterpret_cast<uintptr_t>(&temp_obj->_TimHandle) - reinterpret_cast<uintptr_t>(temp_obj);
-        
-        // 返回实际对象地址
-        return reinterpret_cast<newTimerx*>(reinterpret_cast<uintptr_t>(member_address) - offset);
+            // 使用模板函数，传入成员指针和地址
+            return GetObjectFromMember(&newTimerx::_TimHandle, member_address);
     }
 private:
     uint32_t getInputClk(TIM_TypeDef* TIMx)

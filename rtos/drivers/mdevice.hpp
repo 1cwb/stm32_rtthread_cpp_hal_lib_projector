@@ -57,6 +57,21 @@ public:
     void unregisterInterrupt(){_cb = nullptr;}
     void runInterruptCb(void* p){if(_cb)_cb(this,p);}
     void runInitCallback(bool binit){if(_initcb)_initcb(binit);}
+
+protected:
+    template<typename ClassType, typename MemberType>
+    static ClassType* GetObjectFromMember(MemberType ClassType::* member_ptr, MemberType* member_address) {
+        // 临时存储用于计算偏移量（不调用构造函数）
+        alignas(ClassType) char temp_buf[sizeof(ClassType)]{};
+        ClassType* temp_obj = reinterpret_cast<ClassType*>(temp_buf);
+        
+        // 计算成员变量的偏移量
+        uintptr_t offset = reinterpret_cast<uintptr_t>(&(temp_obj->*member_ptr)) - 
+                        reinterpret_cast<uintptr_t>(temp_obj);
+        
+        // 返回所属对象地址
+        return reinterpret_cast<ClassType*>(reinterpret_cast<uintptr_t>(member_address) - offset);
+    }
 protected:
     std::string _devname;
     initCallbackExt _initcb;
