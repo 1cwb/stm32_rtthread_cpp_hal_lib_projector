@@ -45,7 +45,7 @@ public:
         float dutyCycle = 0.0f;
         dutyCycle = (pwmGetCurPulse(channel) + 1)*100.0f / pwmGetMaxPulse();
         return dutyCycle;
-    } 
+    }
 
     TIM_HandleTypeDef* getTimHandle()
     {

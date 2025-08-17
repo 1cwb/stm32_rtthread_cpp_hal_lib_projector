@@ -1,9 +1,10 @@
 #include "newtimer.hpp"
 #include "project.hpp"
-
+#include "pwm.hpp"
+#include "gpio.hpp"
 static newTimerx* timer1 = nullptr;
 static newTimerx* timer2 = nullptr;
-
+static PWMX* pwm1 = nullptr;
 /*********************Interrupt Callback******************************/
 extern "C" void TIM1_UP_IRQHandler(void)
 {
@@ -51,6 +52,23 @@ int timeInit()
             HAL_NVIC_EnableIRQ(TIM1_UP_IRQn);
         }
     }, &timerst);
+
+    TIM_OC_InitTypeDef sConfig;
+    sConfig.OCMode       = TIM_OCMODE_PWM1;
+    sConfig.OCPolarity   = TIM_OCPOLARITY_HIGH;
+    sConfig.OCFastMode   = TIM_OCFAST_DISABLE;
+    sConfig.OCNPolarity  = TIM_OCNPOLARITY_HIGH;
+    sConfig.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+
+    sConfig.OCIdleState  = TIM_OCIDLESTATE_RESET;
+    
+    /* Set the pulse value for channel 1 */
+    sConfig.Pulse = 1024;
+    pwm1 = new PWMX("pwm1", timer1);
+    pwm1->pwmConfig(&sConfig, mDev::mCHANNEL::CHANNEL_1);
+    gpiox* pe9 = new gpiox("pe9");
+    pe9->init([](bool b){if(b)__HAL_RCC_GPIOE_CLK_ENABLE();},GPIOE, GPIO_PIN_9, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF1_TIM1);
+    pwm1->start(mDev::mCHANNEL::CHANNEL_1);
     return 0;
 }
 INIT_EXPORT(timeInit, "0.4");
