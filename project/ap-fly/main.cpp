@@ -159,18 +159,22 @@ int main(void)
         #endif
     }, nullptr);
 
-
-
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(dataSendbackItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
 
-    //uint32_t j;
+    float duty = 0.0f;
     CreateNewFile();
     while(1)
     {
         if(led0)
         led0->toggle();
+        duty+=10.0f;
+        if(duty>100.0f)
+        {
+            duty = 0.0f;
+        }
+        pwm1->pwmSetDutyCycle(duty,mDev::mCHANNEL::CHANNEL_4);
 
         mthread::threadDelay(1000);
     }
