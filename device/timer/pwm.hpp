@@ -1,12 +1,12 @@
 #pragma once
 #include "mpwmdrv.hpp"
-#include "newtimer.hpp"
+#include "timer.hpp"
 #include "stm32h7xx_hal_conf.h"
 
 class PWMX : public mDev::mPWM
 {
 public:
-    PWMX(const char* name, newTimerx* newTimer):mDev::mPWM(name),_newTimer(newTimer){}
+    PWMX(const char* name, timerx* newTimer):mDev::mPWM(name),_newTimer(newTimer){}
     ~PWMX(){}
     mResult pwmConfig(TIM_OC_InitTypeDef* TIM_OCInitStructure, uint32_t channel, TIM_BreakDeadTimeConfigTypeDef* TIM_BDTRInitStructure = nullptr, bool enableNch = false)
     {
@@ -147,7 +147,7 @@ private:
         }
     }
 private:
-    newTimerx* _newTimer = nullptr;
+    timerx* _newTimer = nullptr;
     uint32_t _channelNum = 0;
     bool _bUseBreakDeadTime = false;
     bool _bEnableNch = false;

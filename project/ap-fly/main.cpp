@@ -9,7 +9,6 @@
 #include "DFRobot_ICM42688.h"
 #include "mdevicemanager.hpp"
 #include "mgpiodrv.hpp"
-#include "mtimerdrv.hpp"
 #include "delay.h"
 #include "mmagnetmetordrv.hpp"
 #include "mbarometordrv.hpp"
@@ -29,8 +28,8 @@
 #include "datapublish.hpp"
 #include "crsf.hpp"
 #include "madcdrv.hpp"
-
-
+#include "mpwmdrv.hpp"
+#include "mtimerdrv.hpp"
 /*
 *********************************************************************************************************
 *	函 数 名: CreateNewFile
@@ -93,26 +92,23 @@ int main(void)
     mDev::mLed* led0 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED0);
     mDev::mLed* led1 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED1);
     mDev::mLed* led2 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED2);
-    mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER2);
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER1);
     mDev::mAdc* adc1 = (mDev::mAdc*)mDev::mDeviceManager::getInstance()->getDevice(DEV_ADC1);
+    mDev::mPWM* pwm1 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice("pwm1");
     uint8_t usbBuff[64];
 
-    if(timer2)
-    {
-        timer2->registerInterruptCb([&](mDev::mDevice* dev, void* p){
-            
-        });
-        timer2->start(mDev::CHANNEL_1);
-        //KLOGI("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
-    }
 
     if(timer1)
     {
         timer1->registerInterruptCb([&](mDev::mDevice* dev, void* p){
+           // printf("on time\r\n");
         });
-        timer1->start();
+        //timer1->start();
         //KLOGI("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
+    }
+    if(pwm1)
+    {
+        pwm1->start(mDev::mCHANNEL::CHANNEL_4);
     }
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
