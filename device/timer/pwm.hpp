@@ -19,7 +19,7 @@ public:
             _bUseBreakDeadTime = true;
         }
         _bEnableNch = enableNch;
-        _channelNum |= remapTimChannelToChannel(channel);
+        _channel = channel;
         
         if(HAL_TIM_PWM_ConfigChannel(_newTimer->getTimHandle(),TIM_OCInitStructure,channel) != HAL_OK)
         {
@@ -47,34 +47,35 @@ public:
         {
             return _newTimer->getFreq();
         }
+        return 0;
     }
-    virtual void start(mDev::mCHANNEL channel = mDev::mCHANNEL::mCHANNEL_INVALED)override
+    virtual void start()override
     {
         if(!_newTimer)
         {
             return;
         }
-        HAL_TIM_PWM_Start(_newTimer->getTimHandle(),remapChannelToTimChannel(channel));
+        HAL_TIM_PWM_Start(_newTimer->getTimHandle(),_channel);
         if(_bEnableNch)
         {
-            HAL_TIMEx_PWMN_Start(_newTimer->getTimHandle(),remapChannelToTimChannel(channel));
+            HAL_TIMEx_PWMN_Start(_newTimer->getTimHandle(),_channel);
         }
     }
-    virtual void stop(mDev::mCHANNEL channel)override
+    virtual void stop()override
     {
         if(!_newTimer)
         {
             return;
         }
-        HAL_TIM_PWM_Stop(_newTimer->getTimHandle(),remapChannelToTimChannel(channel));
+        HAL_TIM_PWM_Stop(_newTimer->getTimHandle(),_channel);
         if(_bEnableNch)
         {
-            HAL_TIMEx_PWMN_Stop(_newTimer->getTimHandle(),remapChannelToTimChannel(channel));
+            HAL_TIMEx_PWMN_Stop(_newTimer->getTimHandle(),_channel);
         }
     }
-    virtual void pwmUpdatePulse(uint32_t pulse, mDev::mCHANNEL channel)override
+    virtual void pwmUpdatePulse(uint32_t pulse)override
     {
-        __HAL_TIM_SET_COMPARE(_newTimer->getTimHandle(),remapChannelToTimChannel(channel),pulse);
+        __HAL_TIM_SET_COMPARE(_newTimer->getTimHandle(),_channel,pulse);
     }
     virtual uint32_t pwmGetMaxPulse()override
     {
@@ -84,11 +85,11 @@ public:
         }
         return _newTimer->getTimHandle()->Init.Period;
     }
-    virtual uint32_t pwmGetCurPulse(mDev::mCHANNEL channel)override
+    virtual uint32_t pwmGetCurPulse()override
     {
-        return __HAL_TIM_GET_COMPARE(_newTimer->getTimHandle(), remapChannelToTimChannel(channel));
+        return __HAL_TIM_GET_COMPARE(_newTimer->getTimHandle(), _channel);
     }
-    virtual void pwmSetDutyCycle(float dutyCycle, mDev::mCHANNEL channel)override
+    virtual void pwmSetDutyCycle(float dutyCycle)override
     {
         if(dutyCycle < 1.0f)
         {
@@ -99,56 +100,17 @@ public:
             dutyCycle = 100.0f;
         }
         uint32_t pulse = (uint32_t)((pwmGetMaxPulse() * dutyCycle) / 100.0f) - 1;
-        pwmUpdatePulse(pulse,channel);
+        pwmUpdatePulse(pulse);
     }
-    virtual float pwmGetDutyCycle(mDev::mCHANNEL channel)override
+    virtual float pwmGetDutyCycle()override
     {
         float dutyCycle = 0.0f;
-        dutyCycle = (pwmGetCurPulse(channel) + 1)*100.0f / pwmGetMaxPulse();
+        dutyCycle = (pwmGetCurPulse() + 1)*100.0f / pwmGetMaxPulse();
         return dutyCycle;
-    }
-    bool isChannelInited(mDev::mCHANNEL ch)
-    {
-        if(_channelNum & (uint32_t)ch)
-        {
-            return true;
-        }
-        return false;
-    }
-private:
-    uint32_t remapChannelToTimChannel(mDev::mCHANNEL ch)
-    {
-        switch(ch)
-        {
-            case mDev::mCHANNEL::CHANNEL_1: return TIM_CHANNEL_1;
-            case mDev::mCHANNEL::CHANNEL_2: return TIM_CHANNEL_2;
-            case mDev::mCHANNEL::CHANNEL_3: return TIM_CHANNEL_3;
-            case mDev::mCHANNEL::CHANNEL_4: return TIM_CHANNEL_4;
-            case mDev::mCHANNEL::CHANNEL_5: return TIM_CHANNEL_5;
-            case mDev::mCHANNEL::CHANNEL_6: return TIM_CHANNEL_6;
-            case mDev::mCHANNEL::CHANNEL_ALL: return TIM_CHANNEL_ALL;
-            default:
-            return 0;
-        }
-    }
-    uint32_t remapTimChannelToChannel(uint32_t timch)
-    {
-        switch(timch)
-        {
-            case TIM_CHANNEL_1 : return (uint32_t)mDev::mCHANNEL::CHANNEL_1;
-            case TIM_CHANNEL_2 : return (uint32_t)mDev::mCHANNEL::CHANNEL_2;
-            case TIM_CHANNEL_3 : return (uint32_t)mDev::mCHANNEL::CHANNEL_3;
-            case TIM_CHANNEL_4 : return (uint32_t)mDev::mCHANNEL::CHANNEL_4;
-            case TIM_CHANNEL_5 : return (uint32_t)mDev::mCHANNEL::CHANNEL_5;
-            case TIM_CHANNEL_6 : return (uint32_t)mDev::mCHANNEL::CHANNEL_6;
-            case TIM_CHANNEL_ALL: return (uint32_t)mDev::mCHANNEL::CHANNEL_ALL;
-            default:
-            return 0;
-        }
     }
 private:
     timerx* _newTimer = nullptr;
-    uint32_t _channelNum = 0;
+    uint32_t _channel = 0;
     bool _bUseBreakDeadTime = false;
     bool _bEnableNch = false;
 };

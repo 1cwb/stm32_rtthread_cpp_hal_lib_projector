@@ -41,3 +41,8 @@
 #define DEV_ADC1            "adc1"
 #define DEV_ADC2            "adc2"
 #define DEV_ADC3            "adc3"
+#define DEV_PWM1            "pwm1"
+#define DEV_PWM2            "pwm2"
+#define DEV_PWM3            "pwm3"
+#define DEV_PWM4            "pwm4"
+

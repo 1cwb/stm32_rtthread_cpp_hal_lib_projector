@@ -94,7 +94,11 @@ int main(void)
     mDev::mLed* led2 = (mDev::mLed*)mDev::mDeviceManager::getInstance()->getDevice(DEV_LED2);
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER1);
     mDev::mAdc* adc1 = (mDev::mAdc*)mDev::mDeviceManager::getInstance()->getDevice(DEV_ADC1);
-    mDev::mPWM* pwm1 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice("pwm1");
+    mDev::mPWM* pwm1 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM1);
+    mDev::mPWM* pwm2 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM2);
+    mDev::mPWM* pwm3 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM3);
+    mDev::mPWM* pwm4 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM4);
+
     uint8_t usbBuff[64];
 
 
@@ -108,8 +112,25 @@ int main(void)
     }
     if(pwm1)
     {
-        pwm1->start(mDev::mCHANNEL::CHANNEL_4);
+        pwm1->pwmSetDutyCycle(30.0f);
+        pwm1->start();
     }
+    if(pwm2)
+    {
+        pwm2->pwmSetDutyCycle(30.0f);
+        pwm2->start();
+    }
+    if(pwm3)
+    {
+        pwm3->pwmSetDutyCycle(30.0f);
+        pwm3->start();
+    }
+    if(pwm4)
+    {
+        pwm4->pwmSetDutyCycle(30.0f);
+        pwm4->start();
+    }
+
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
         led1->toggle();
@@ -150,7 +171,7 @@ int main(void)
             //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f P%10f\r\n",ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3]);
         }
     }, nullptr);
-    workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 1000, [](void* param){
+    workItem* sysInfoWorkItem = new workItem("sysinfo", 2000, 3000, [](void* param){
         #if 1
         ALOGI("memHeap Total:%lu Used:%lu(%0.2f%%)\r\n",mMem::getInstance()->total(),mMem::getInstance()->used(),((float)mMem::getInstance()->used()/(float)mMem::getInstance()->total() * 100.0F));
         ALOGI("thread stack Info:\r\n");
@@ -174,7 +195,7 @@ int main(void)
         {
             duty = 0.0f;
         }
-        pwm1->pwmSetDutyCycle(duty,mDev::mCHANNEL::CHANNEL_4);
+        pwm1->pwmSetDutyCycle(duty);
 
         mthread::threadDelay(1000);
     }
