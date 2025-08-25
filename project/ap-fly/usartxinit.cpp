@@ -103,6 +103,7 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
           .len = usart::RX_BUFF_LEN,
         };
         usartx->runInterruptCb(&rxdata);
+        usartx->switchNextBuff();
         usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
     }
 }
@@ -121,6 +122,7 @@ extern "C" void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t S
             SCB_InvalidateDCache_by_Addr((uint32_t*)usartx->getRxBuff(), usart::RX_BUFF_LEN);
         }
         usartx->runInterruptCb(&rxdata);
+        usartx->switchNextBuff();
         usartx->recvData(usartx->getRxBuff(),usart::RX_BUFF_LEN);
     }
 }

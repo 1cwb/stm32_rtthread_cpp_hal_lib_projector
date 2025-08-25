@@ -50,6 +50,7 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
             };
             padc->setTransferComplete(true);
             padc->runInterruptCb(&data);
+            padc->switchNextBuff();
         }
         else
         {
@@ -65,8 +66,8 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
                     .len = padc->getItcoverCount()*padc->getDataPerSize(),
                 };
                 padc->setItcoverCount(0);
-                padc->setTransferComplete(true);
                 padc->runInterruptCb(&data);
+                padc->switchNextBuff();
             }
         }
     }
@@ -87,7 +88,6 @@ extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
                 .dataOfobjCount = padc->getChannelNum(),
                 .len = padc->getDataPerSize()*padc->getDmaBuffsize()/2,
             };
-            padc->setTransferComplete(true);
             padc->runInterruptCb(&data);
         }
     }

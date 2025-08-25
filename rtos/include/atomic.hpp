@@ -30,7 +30,7 @@ public:
 
     // 加载操作
     template <memory_order order = seq_cst>
-    T load() const noexcept {
+    T load() noexcept {
         T oldval;
         do {
             oldval = __LDREXW(&_value);
@@ -132,7 +132,7 @@ public:
 
     // 运算符重载
     T operator=(T value) noexcept { store(value); return value; }
-    operator T() const noexcept { return load(); }
+    operator T() noexcept { return load(); }
 
     mAtomic& operator++() noexcept { fetch_add(1); return *this; }
     T operator++(int) noexcept { return fetch_add(1); }

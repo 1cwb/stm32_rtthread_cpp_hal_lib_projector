@@ -30,7 +30,7 @@ enum INTERFACE_ID
 struct interfaceData
 {
     INTERFACE_ID id;
-    uint8_t data[mDev::mUsart::RX_BUFF_LEN];
+    uint8_t* data;
     uint32_t dataPerSize;
     uint32_t dataOfobjCount;
     uint32_t len;
@@ -83,8 +83,9 @@ int uartRecvQueueInit(void)
                 ifdata.id = INTERFACE_ID_U1;
                 ifdata.len = data->len;
                 ifdata.p = dev;
-                memset(ifdata.data, 0, sizeof(ifdata.data));
-                memcpy(ifdata.data, data->data, data->len);
+                ifdata.data = data->data;
+                //memset(ifdata.data, 0, sizeof(ifdata.data));
+                //memcpy(ifdata.data, data->data, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
             }
         });
@@ -101,8 +102,9 @@ int uartRecvQueueInit(void)
                 ifdata.id = INTERFACE_ID_U2;
                 ifdata.len = data->len;
                 ifdata.p = dev;
-                memcpy(ifdata.data, data->data, data->len);
-                memset(data->data, 0, data->len);
+                ifdata.data = data->data;
+                //memcpy(ifdata.data, data->data, data->len);
+                //memset(data->data, 0, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
             }
         });
@@ -119,8 +121,9 @@ int uartRecvQueueInit(void)
                 ifdata.id = INTERFACE_ID_U3;
                 ifdata.len = data->len;
                 ifdata.p = dev;
-                memcpy(ifdata.data, data->data, data->len);
-                memset(data->data, 0, data->len);
+                ifdata.data = data->data;
+                //memcpy(ifdata.data, data->data, data->len);
+                //memset(data->data, 0, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
             }
         });
@@ -137,8 +140,9 @@ int uartRecvQueueInit(void)
                 ifdata.id = INTERFACE_ID_U4;
                 ifdata.len = data->len;
                 ifdata.p = dev;
-                memcpy(ifdata.data, data->data, data->len);
-                memset(data->data, 0, data->len);
+                ifdata.data = data->data;
+                //memcpy(ifdata.data, data->data, data->len);
+                //memset(data->data, 0, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
             }
         });
@@ -155,8 +159,9 @@ int uartRecvQueueInit(void)
                 ifdata.id = INTERFACE_ID_U5;
                 ifdata.len = data->len;
                 ifdata.p = dev;
-                memcpy(ifdata.data, data->data, data->len);
-                memset(data->data, 0, data->len);
+                ifdata.data = data->data;
+                //memcpy(ifdata.data, data->data, data->len);
+                //memset(data->data, 0, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
             }
         });
@@ -173,8 +178,9 @@ int uartRecvQueueInit(void)
                 ifdata.id = INTERFACE_ID_U6;
                 ifdata.len = data->len;
                 ifdata.p = dev;
-                memcpy(ifdata.data, data->data, data->len);
-                memset(data->data, 0, data->len);
+                ifdata.data = data->data;
+                //memcpy(ifdata.data, data->data, data->len);
+                //memset(data->data, 0, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
             }
         });
@@ -191,8 +197,9 @@ int uartRecvQueueInit(void)
                 ifdata.id = INTERFACE_ID_U8;
                 ifdata.len = data->len;
                 ifdata.p = dev;
-                memcpy(ifdata.data, data->data, data->len);
-                memset(data->data, 0, data->len);
+                ifdata.data = data->data;
+                //memcpy(ifdata.data, data->data, data->len);
+                //memset(data->data, 0, data->len);
                 uartRecvQueue.send(&ifdata, sizeof(interfaceData));
             }
         });
@@ -211,7 +218,8 @@ int uartRecvQueueInit(void)
                     ifdata.dataPerSize = data->dataPerSize;
                     ifdata.dataOfobjCount = data->dataOfobjCount;
                     ifdata.p = dev;
-                    memcpy(ifdata.data, data->data, data->len);
+                    //memcpy(ifdata.data, data->data, data->len);
+                    ifdata.data = data->data;
                     uartRecvQueue.send(&ifdata, sizeof(interfaceData));
                 }
                 else
@@ -236,8 +244,9 @@ int uartRecvQueueInit(void)
                     ifdata.dataPerSize = data->dataPerSize;
                     ifdata.dataOfobjCount = data->dataOfobjCount;
                     ifdata.p = dev;
-                    memcpy(ifdata.data, data->data, data->len);
+                    //memcpy(ifdata.data, data->data, data->len);
                     //memset(data->data, 0, data->len);
+                    ifdata.data = data->data;
                     uartRecvQueue.send(&ifdata, sizeof(interfaceData));
                 }
                 else
