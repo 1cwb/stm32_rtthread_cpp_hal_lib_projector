@@ -98,7 +98,10 @@ int main(void)
     mDev::mPWM* pwm2 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM2);
     mDev::mPWM* pwm3 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM3);
     mDev::mPWM* pwm4 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM4);
-
+    mDev::mPWM* pwm5 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM5);
+    mDev::mPWM* pwm6 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM6);
+    mDev::mPWM* pwm7 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM7);
+    mDev::mPWM* pwm8 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM8);
     uint8_t usbBuff[64];
 
 
@@ -112,12 +115,12 @@ int main(void)
     }
     if(pwm1)
     {
-        pwm1->pwmSetDutyCycle(30.0f);
+        pwm1->pwmSetDutyCycle(10.0f);
         pwm1->start();
     }
     if(pwm2)
     {
-        pwm2->pwmSetDutyCycle(30.0f);
+        pwm2->pwmSetDutyCycle(20.0f);
         pwm2->start();
     }
     if(pwm3)
@@ -127,10 +130,29 @@ int main(void)
     }
     if(pwm4)
     {
-        pwm4->pwmSetDutyCycle(30.0f);
+        pwm4->pwmSetDutyCycle(40.0f);
         pwm4->start();
     }
-
+    if(pwm5)
+    {
+        pwm5->pwmSetDutyCycle(50.0f);
+        pwm5->start();
+    }
+    if(pwm6)
+    {
+        pwm6->pwmSetDutyCycle(60.0f);
+        pwm6->start();
+    }
+    if(pwm7)
+    {
+        pwm7->pwmSetDutyCycle(70.0f);
+        pwm7->start();
+    }
+    if(pwm8)
+    {
+        pwm8->pwmSetDutyCycle(80.0f);
+        pwm8->start();
+    }
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
         led1->toggle();
@@ -183,20 +205,11 @@ int main(void)
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(dataSendbackItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
-
-    float duty = 0.0f;
     CreateNewFile();
     while(1)
     {
         if(led0)
         led0->toggle();
-        duty+=10.0f;
-        if(duty>100.0f)
-        {
-            duty = 0.0f;
-        }
-        pwm1->pwmSetDutyCycle(duty);
-
         mthread::threadDelay(1000);
     }
     return 0;

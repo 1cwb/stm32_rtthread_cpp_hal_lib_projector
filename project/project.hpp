@@ -45,4 +45,8 @@
 #define DEV_PWM2            "pwm2"
 #define DEV_PWM3            "pwm3"
 #define DEV_PWM4            "pwm4"
+#define DEV_PWM5            "pwm5"
+#define DEV_PWM6            "pwm6"
+#define DEV_PWM7            "pwm7"
+#define DEV_PWM8            "pwm8"
 
