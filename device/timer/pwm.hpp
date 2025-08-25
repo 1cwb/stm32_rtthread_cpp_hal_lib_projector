@@ -73,11 +73,11 @@ public:
             HAL_TIMEx_PWMN_Stop(_newTimer->getTimHandle(),_channel);
         }
     }
-    virtual void pwmUpdatePulse(uint32_t pulse)override
+    virtual void updatePulse(uint32_t pulse)override
     {
         __HAL_TIM_SET_COMPARE(_newTimer->getTimHandle(),_channel,pulse);
     }
-    virtual uint32_t pwmGetMaxPulse()override
+    virtual uint32_t getMaxPulse()override
     {
         if(!_newTimer)
         {
@@ -85,11 +85,11 @@ public:
         }
         return _newTimer->getTimHandle()->Init.Period;
     }
-    virtual uint32_t pwmGetCurPulse()override
+    virtual uint32_t getCurPulse()override
     {
         return __HAL_TIM_GET_COMPARE(_newTimer->getTimHandle(), _channel);
     }
-    virtual void pwmSetDutyCycle(float dutyCycle)override
+    virtual void setDutyCycle(float dutyCycle)override
     {
         if(dutyCycle < 1.0f)
         {
@@ -99,13 +99,13 @@ public:
         {
             dutyCycle = 100.0f;
         }
-        uint32_t pulse = (uint32_t)((pwmGetMaxPulse() * dutyCycle) / 100.0f) - 1;
-        pwmUpdatePulse(pulse);
+        uint32_t pulse = (uint32_t)((getMaxPulse() * dutyCycle) / 100.0f) - 1;
+        updatePulse(pulse);
     }
-    virtual float pwmGetDutyCycle()override
+    virtual float getDutyCycle()override
     {
         float dutyCycle = 0.0f;
-        dutyCycle = (pwmGetCurPulse() + 1)*100.0f / pwmGetMaxPulse();
+        dutyCycle = (getCurPulse() + 1)*100.0f / getMaxPulse();
         return dutyCycle;
     }
 private:

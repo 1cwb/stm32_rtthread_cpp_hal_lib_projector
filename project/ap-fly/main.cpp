@@ -115,42 +115,42 @@ int main(void)
     }
     if(pwm1)
     {
-        pwm1->pwmSetDutyCycle(10.0f);
+        pwm1->setDutyCycle(10.0f);
         pwm1->start();
     }
     if(pwm2)
     {
-        pwm2->pwmSetDutyCycle(20.0f);
+        pwm2->setDutyCycle(20.0f);
         pwm2->start();
     }
     if(pwm3)
     {
-        pwm3->pwmSetDutyCycle(30.0f);
+        pwm3->setDutyCycle(30.0f);
         pwm3->start();
     }
     if(pwm4)
     {
-        pwm4->pwmSetDutyCycle(40.0f);
+        pwm4->setDutyCycle(40.0f);
         pwm4->start();
     }
     if(pwm5)
     {
-        pwm5->pwmSetDutyCycle(50.0f);
+        pwm5->setDutyCycle(50.0f);
         pwm5->start();
     }
     if(pwm6)
     {
-        pwm6->pwmSetDutyCycle(60.0f);
+        pwm6->setDutyCycle(60.0f);
         pwm6->start();
     }
     if(pwm7)
     {
-        pwm7->pwmSetDutyCycle(70.0f);
+        pwm7->setDutyCycle(70.0f);
         pwm7->start();
     }
     if(pwm8)
     {
-        pwm8->pwmSetDutyCycle(80.0f);
+        pwm8->setDutyCycle(80.0f);
         pwm8->start();
     }
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
