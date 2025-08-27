@@ -195,7 +195,7 @@ public:
     static void registerInitHookCallback(const mThreadHookCallbackFunc& initHookCb) {initHookCb_ = initHookCb;}
     static void registerDeInitHookCallback(const mThreadHookCallbackFunc& deInitHookCb) {deInitHookCb_ = deInitHookCb;}
 private:
-    mResult threadInit( const char       *name,
+    mResult threadInit( const std::string& name,
                         void (*entry)(void *parameter),
                         void             *parameter,
                         void             *stackStart,
@@ -221,7 +221,7 @@ private:
      *
      * @return the created thread object
      */
-    mResult threadCreate(const char *name,
+    mResult threadCreate(const std::string& name,
                                 void (*entry)(void *parameter),
                                 void       *parameter,
                                 uint32_t stackSize,

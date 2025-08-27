@@ -74,7 +74,7 @@ public:
     mSemaphore& operator=(const mSemaphore&) = delete;
     mSemaphore& operator=(mSemaphore&&) = delete;
 
-    static mSemaphore* semCreate(const char *name, uint32_t value, mIpcFlag flag)
+    static mSemaphore* semCreate(const std::string& name, uint32_t value, mIpcFlag flag)
     {
         mSemaphore* sem = new mSemaphore;
         if(sem)
@@ -105,7 +105,7 @@ public:
      *
      * @return the operation status, RT_EOK on successful
      */
-    mResult init(const char *name, uint32_t value, mIpcFlag flag);
+    mResult init(const std::string& name, uint32_t value, mIpcFlag flag);
     /**
      * This function will detach a semaphore from resource management
      *
@@ -170,7 +170,7 @@ private:
      *
      * @see rt_sem_init
      */
-    mResult semCreateEx(const char *name, uint32_t value, mIpcFlag flag);
+    mResult semCreateEx(const std::string& name, uint32_t value, mIpcFlag flag);
 
 private:
     mSemaphore_t sem_;
@@ -182,7 +182,7 @@ public:
     mMutex()
     {
     }
-    mMutex(const char *name, mIpcFlag flag)
+    mMutex(const std::string& name, mIpcFlag flag)
     {
         init(name, flag);
     }
@@ -205,7 +205,7 @@ public:
      *
      * @return the operation status, RT_EOK on successful
      */
-    mResult init(const char *name, mIpcFlag flag);
+    mResult init(const std::string& name, mIpcFlag flag);
 
     /**
      * This function will detach a mutex from resource management
@@ -265,7 +265,7 @@ public:
      *
      * @return the operation status, RT_EOK on successful
      */
-    mResult init(const char *name, mIpcFlag flag);
+    mResult init(const std::string& name, mIpcFlag flag);
 
     /**
      * This function will detach an event object from resource management
@@ -350,7 +350,7 @@ public:
      *
      * @return the operation status, RT_EOK on successful
      */
-    mResult init(const char *name,
+    mResult init(const std::string& name,
                     uint32_t   msgSize,
                     uint32_t   poolSize,
                     mIpcFlag   flag);

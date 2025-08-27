@@ -69,7 +69,7 @@ struct rt_irq_desc
 void hwInterruptInit(void);
 void hwInterruptMask(int vector);
 void hwInterruptUmask(int vector);
-isrhandler_t hwInterruptInstall(int vector, isrhandler_t handler, void *param, const char *name);
+isrhandler_t hwInterruptInstall(int vector, isrhandler_t handler, void *param, const std::string& name);
 #endif
 
 

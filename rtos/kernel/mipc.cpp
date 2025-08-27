@@ -228,7 +228,7 @@ mResult mIpc::ipcListResumeAll(mList_t *list)
  *
  * @see rt_sem_init
  */
-mResult mSemaphore::semCreateEx(const char *name, uint32_t value, mIpcFlag flag)
+mResult mSemaphore::semCreateEx(const std::string& name, uint32_t value, mIpcFlag flag)
 {
     //RT_DEBUG_NOT_IN_INTERRUPT;
     MASSERT(value < 0x10000U);
@@ -285,7 +285,7 @@ mResult mSemaphore::semDelete()
  *
  * @return the operation status, M_RESULT_EOK on successful
  */
-mResult  mSemaphore::init(const char *name, uint32_t value, mIpcFlag flag)
+mResult  mSemaphore::init(const std::string& name, uint32_t value, mIpcFlag flag)
 {
     MASSERT(value < 0x10000U);
 
@@ -547,7 +547,7 @@ mResult  mSemaphore::semControl(mIpcCmd cmd, void *arg)
  *
  * @return the operation status, M_RESULT_EOK on successful
  */
-mResult mMutex::init(const char *name, mIpcFlag flag)
+mResult mMutex::init(const std::string& name, mIpcFlag flag)
 {
     /* initialize object */
     mObject::getInstance()->objectInit((mObject_t*)(this),M_OBJECT_CLASS_MUTEX, name);
@@ -860,7 +860,7 @@ mResult mMutex::mutexRelease()
  *
  * @return the operation status, M_RESULT_EOK on successful
  */
-mResult mEvent::init(const char *name, mIpcFlag flag)
+mResult mEvent::init(const std::string& name, mIpcFlag flag)
 {
     /* initialize object */
     mObject::getInstance()->objectInit((mObject_t*)this, M_OBJECT_CLASS_EVENT, name);
@@ -1206,7 +1206,7 @@ mResult mEvent::control(mIpcCmd cmd, void *arg)
  *
  * @return the operation status, M_RESULT_EOK on successful
  */
-mResult mMessagequeue::init(const char *name,
+mResult mMessagequeue::init(const std::string& name,
                 uint32_t   msgSize,
                 uint32_t   poolSize,
                 mIpcFlag   flag)

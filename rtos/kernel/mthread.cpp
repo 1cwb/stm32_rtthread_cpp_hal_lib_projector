@@ -634,7 +634,7 @@ std::string mthread::name() const
     return ((mObject_t*)&thData_)->name;
 }
 
-mResult mthread::threadInit( const char       *name,
+mResult mthread::threadInit( const std::string& name,
                     void (*entry)(void *parameter),
                     void             *parameter,
                     void             *stackStart,
@@ -720,7 +720,7 @@ mResult mthread::threadCreate(const char       *name,
  *
  * @return the created thread object
  */
-mResult mthread::threadCreate(const char *name,
+mResult mthread::threadCreate(const std::string& name,
                             void (*entry)(void *parameter),
                             void       *parameter,
                             uint32_t stackSize,
