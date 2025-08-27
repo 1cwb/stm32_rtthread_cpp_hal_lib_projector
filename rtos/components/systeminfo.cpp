@@ -78,7 +78,7 @@ void systemInfo::showAllThreadStackSizeInfo()
         if(object)
         {
             pthread = reinterpret_cast<mthread*>(object);
-            ALOGI("thread %s totalStackSize = %ld, usedStackSize = %ld, freeStackSize = %ld, usedTick = %lu\r\n",   pthread->getThTimer_t()->name,
+            ALOGI("thread %s totalStackSize = %ld, usedStackSize = %ld, freeStackSize = %ld, usedTick = %lu\r\n",   pthread->name().c_str(),
                                                                                 pthread->getTotalStackSize(),
                                                                                 pthread->getTotalStackSize() - pthread->getFreeStackSize(),
                                                                                 pthread->getFreeStackSize(),

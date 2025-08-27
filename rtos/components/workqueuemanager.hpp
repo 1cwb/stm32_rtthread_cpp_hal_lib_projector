@@ -11,7 +11,7 @@ public:
         static workQueueManager qma;
         return &qma;
     }
-    workQueue* find(const char* name);
+    workQueue* find(const std::string& name);
 private:
     workQueueManager();
     ~workQueueManager();

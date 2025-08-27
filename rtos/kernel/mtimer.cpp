@@ -15,7 +15,7 @@ void mTimer::mTimerCommonCallbackFunc(void* p)
     }
 }
 
-mTimer* mTimer::create(const char *name,
+mTimer* mTimer::create(const std::string& name,
             uint32_t   time,
             mTimerStateFlag   flag,
             const mTimerCallBack& cb)
@@ -29,7 +29,7 @@ mTimer* mTimer::create(const char *name,
     return nullptr;
 }
 
-mResult mTimer::timerCreate(const char *name,
+mResult mTimer::timerCreate(const std::string& name,
             uint32_t   time,
             mTimerStateFlag   flag,
             const mTimerCallBack& cb)
@@ -48,7 +48,7 @@ mResult mTimer::timerCreate(const char *name,
  *
  * @return the created timer object
  */
-mResult mTimer::timerCreate(const char *name,
+mResult mTimer::timerCreate(const std::string& name,
                         void (*timeout)(void *parameter),
                         void       *parameter,
                         unsigned long   time,
@@ -92,7 +92,7 @@ mResult mTimer::timerDelete()
     delete this;
     return M_RESULT_EOK;
 }
-void mTimer::init(  const char *name,
+void mTimer::init(const std::string& name,
             uint32_t   time,
             mTimerStateFlag   flag,
             const mTimerCallBack& cb)
@@ -111,7 +111,7 @@ void mTimer::init(  const char *name,
  * @param time the tick of timer
  * @param flag the flag of timer
  */
-void mTimer::init(  const char *name,
+void mTimer::init(const std::string& name,
             void (*timeout)(void *parameter),
             void       *parameter,
             uint32_t   time,

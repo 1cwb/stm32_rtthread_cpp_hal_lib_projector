@@ -27,11 +27,11 @@ public:
 
     static void mTimerCommonCallbackFunc(void* p);
 
-    static mTimer* create(const char *name,
+    static mTimer* create(const std::string& name,
                 uint32_t   time,
                 mTimerStateFlag   flag,
                 const mTimerCallBack& cb);
-    mResult timerCreate(const char *name,
+    mResult timerCreate(const std::string& name,
             uint32_t   time,
             mTimerStateFlag   flag,
             const mTimerCallBack& cb);
@@ -43,7 +43,7 @@ public:
      * @return the operation status, RT_EOK on OK; RT_ERROR on error
      */
     mResult timerDelete();
-    void init(  const char *name,
+    void init(  const std::string& name,
                 uint32_t   time,
                 mTimerStateFlag   flag,
                 const mTimerCallBack& cb);
@@ -58,7 +58,7 @@ public:
      * @param time the tick of timer
      * @param flag the flag of timer
      */
-    void init(  const char *name,
+    void init(  const std::string& name,
                 void (*timeout)(void *parameter),
                 void       *parameter,
                 uint32_t   time,
@@ -127,7 +127,7 @@ private:
      *
      * @return the created timer object
      */
-    mResult timerCreate(const char *name,
+    mResult timerCreate(const std::string& name,
                             void (*timeout)(void *parameter),
                             void       *parameter,
                             unsigned long   time,

@@ -93,7 +93,7 @@ int mObject::objectGetPointers(mObjectClassType type, mObject_t **pointers, int 
  * @param type the object type.
  * @param name the object name. In system, the object's name must be unique.
  */
-void mObject::objectInit(mObject_t *object, mObjectClassType type, const char *name)
+void mObject::objectInit(mObject_t *object, mObjectClassType type, const std::string& name)
 {
     long temp;
     struct mList_t *node = nullptr;
@@ -176,7 +176,7 @@ void mObject::objectDetach(mObject_t* object)
  *
  * @return object
  */
-mResult mObject::objectAdd(struct mObject_t *object, const mObjectClassType type, const char *name)
+mResult mObject::objectAdd(struct mObject_t *object, const mObjectClassType type, const std::string& name)
 {
     long temp;
     struct mObjectInformation_t *information;
@@ -289,7 +289,7 @@ bool mObject::objectIsSystemobject(mObject_t* object)
  *
  * @note this function shall not be invoked in interrupt status.
  */
-mObject_t* mObject::objectFind(const char *name, mObjectClassType type)
+mObject_t* mObject::objectFind(const std::string& name, mObjectClassType type)
 {
     struct mObject_t *object = nullptr;
     struct mList_t *node = nullptr;
@@ -298,7 +298,7 @@ mObject_t* mObject::objectFind(const char *name, mObjectClassType type)
     information = mObject::objectGetInformation(type);
 
     /* parameter check */
-    if ((name == nullptr) || (information == nullptr)) return nullptr;
+    if ((name.empty()) || (information == nullptr)) return nullptr;
 
     /* which is invoke in interrupt status */
     //DEBUG_NOT_IN_INTERRUPT;

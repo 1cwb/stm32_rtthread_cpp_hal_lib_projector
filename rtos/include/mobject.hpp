@@ -79,7 +79,7 @@ public:
      * @param type the object type.
      * @param name the object name. In system, the object's name must be unique.
      */
-    void objectInit(mObject_t *object, mObjectClassType type, const char *name);
+    void objectInit(mObject_t *object, mObjectClassType type, const std::string& name);
     /**
      * This function will detach a static object from object system,
      * and the memory of static object is not freed.
@@ -95,7 +95,7 @@ public:
      *
      * @return object
      */
-    mResult objectAdd(struct mObject_t *object, const mObjectClassType type, const char *name);
+    mResult objectAdd(struct mObject_t *object, const mObjectClassType type, const std::string& name);
 
     /**
      * This function will delete an object and release object memory.
@@ -134,7 +134,7 @@ public:
      *
      * @note this function shall not be invoked in interrupt status.
      */
-    mObject_t* objectFind(const char *name, mObjectClassType type);
+    mObject_t* objectFind(const std::string& name, mObjectClassType type);
 
     /**@}*/
 

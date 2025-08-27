@@ -181,7 +181,7 @@ public:
     mResult threadDetach();
     mTimer* getThTimer();
     mTimer_t* getThTimer_t();
-    const char* name() const;
+    std::string name() const;
     int32_t getTotalStackSize() const {return thData_.stackSize;}
     int32_t getFreeStackSize() {return (reinterpret_cast<uint8_t*>(thData_.sp) - reinterpret_cast<uint8_t*>(thData_.stackAddr));}
     void setUsrData(void* usrdata) {thData_.userData = usrdata;}

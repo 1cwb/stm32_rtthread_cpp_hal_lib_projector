@@ -56,11 +56,11 @@ mResult workQueueManager::init()
     }
     return M_RESULT_ERROR;
 }
-workQueue* workQueueManager::find(const char* name)
+workQueue* workQueueManager::find(const std::string& name)
 {
     for(auto& it : wqList)
     {
-        if(strcmp(it->getThread()->name(), name) == 0)
+        if (it->getThread()->name() != name)
         {
             return it;
         }
