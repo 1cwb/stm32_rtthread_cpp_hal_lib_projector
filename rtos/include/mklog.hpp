@@ -24,24 +24,52 @@ public:
     mResult LOGE(const char *format, ...);
     mResult LOGC(const char *format, ...);
     void setLevel(logLevel level) {this->_level = level;}
+    
+    // 颜色控制相关方法
+    void enableColor(bool enable) { _colorEnabled = enable; }
+    bool isColorEnabled() const { return _colorEnabled; }
+    
+    // 设置输出目标（终端或文件）
+    void setOutputToFile(bool toFile) { _outputToFile = toFile; }
+    bool isOutputToFile() const { return _outputToFile; }
+    
 protected:
     void registerSelf(mKlog* logx) {this->logx = logx;}
     virtual mResult send(const uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
+    
+    // 内部格式化方法（处理颜色）
+    mResult formatAndSend(logLevel level, const char* colorCode, const char* prefix, const char* format, va_list args);
+    
+    // 内部颜色获取方法
+    const char* getColorDebug() const { return _colorEnabled && !_outputToFile ? "\033[34m" : ""; }
+    const char* getColorInfo() const { return _colorEnabled && !_outputToFile ? "\033[32m" : ""; }
+    const char* getColorWarning() const { return _colorEnabled && !_outputToFile ? "\033[33m" : ""; }
+    const char* getColorError() const { return _colorEnabled && !_outputToFile ? "\033[31m" : ""; }
+    const char* getColorCritical() const { return _colorEnabled && !_outputToFile ? "\033[35m" : ""; }
+    const char* getColorReset() const { return _colorEnabled && !_outputToFile ? "\033[0m" : ""; }
+    
 protected:
-    mKlog() : _level(LOG_LEVEL_INFO) {_sem.init("klogsem", 1, IPC_FLAG_FIFO);}
+    mKlog() : _level(LOG_LEVEL_INFO), _colorEnabled(true), _outputToFile(false) 
+    {
+        _sem.init("klogsem", 1, IPC_FLAG_FIFO);
+    }
     virtual ~mKlog() {_sem.detach();}
     mKlog(const mKlog&) = delete;
     mKlog(mKlog&&) = delete;
     mKlog& operator=(const mKlog&) = delete;
     mKlog& operator=(mKlog&&) = delete;
+    
 private:
-    static constexpr uint16_t LOG_BUFF_SIZE = 256;
+    static constexpr uint16_t LOG_BUFF_SIZE = 512; // 增大缓冲区以容纳颜色代码
     logLevel _level;
+    bool _colorEnabled;      // 颜色启用标志
+    bool _outputToFile;      // 是否输出到文件
     uint8_t _logBuff[LOG_BUFF_SIZE];
     mSemaphore _sem;
     static mKlog* logx;
 };
 
+// 恢复原来的宏定义（不包含颜色处理）
 #define KLOGD(fmt, ...) \
 {   \
     if(mKlog::getInstance())    \

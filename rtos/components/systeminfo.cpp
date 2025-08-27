@@ -1,16 +1,17 @@
 #include "systeminfo.hpp"
+#include "mklog.hpp"
 mResult systemInfo::init()
 {
     idle = mIdle::getInstance();
     if(!idle)
     {
-        printf("Error: idleThread not found\r\n");
+        ALOGE("Error: idleThread not found\r\n");
         return M_RESULT_ENOSYS;
     }
     systime = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice("systick");
     if(!systime)
     {
-        printf("Error: systime driver not found\r\n");
+        ALOGE("Error: systime driver not found\r\n");
         return M_RESULT_EINVAL;
     }
     idle->regitserHookCallback([this](){
@@ -77,7 +78,7 @@ void systemInfo::showAllThreadStackSizeInfo()
         if(object)
         {
             pthread = reinterpret_cast<mthread*>(object);
-            printf("thread %s totalStackSize = %ld, usedStackSize = %ld, freeStackSize = %ld, usedTick = %lu\r\n",   pthread->getThTimer_t()->name,
+            ALOGI("thread %s totalStackSize = %ld, usedStackSize = %ld, freeStackSize = %ld, usedTick = %lu\r\n",   pthread->getThTimer_t()->name,
                                                                                 pthread->getTotalStackSize(),
                                                                                 pthread->getTotalStackSize() - pthread->getFreeStackSize(),
                                                                                 pthread->getFreeStackSize(),

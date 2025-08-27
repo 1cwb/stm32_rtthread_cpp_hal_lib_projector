@@ -128,7 +128,7 @@ void mObject::objectInit(mObject_t *object, mObjectClassType type, const char *n
     object->type = type | M_OBJECT_CLASS_STATIC;
 
     /* copy name */
-    strncpy(object->name, name, NAME_MAX);
+    object->name = name;
 
     //RT_OBJECT_HOOK_CALL(rt_object_attach_hook, (object));
 
@@ -203,7 +203,7 @@ mResult mObject::objectAdd(struct mObject_t *object, const mObjectClassType type
     object->flag = 0;
 
     /* copy name */
-    strncpy(object->name, name, NAME_MAX);
+    object->name = name;
 
     /* lock interrupt */
     temp = HW::hwInterruptDisable();
@@ -310,7 +310,7 @@ mObject_t* mObject::objectFind(const char *name, mObjectClassType type)
     for(node = information->objectList.next; node != &(information->objectList); node = node->next)
     {
         object = listEntry(node, mObject_t, list);
-        if (strncmp(object->name, name, NAME_MAX) == 0)
+        if (object->name == name)
         {
             /* leave critical */
             mSchedule::getInstance()->exitCritical();

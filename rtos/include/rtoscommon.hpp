@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-//#include <limits>
+#include <string>
 #include "mbase.hpp"
 #ifndef NAME_MAX
 #define NAME_MAX 8
@@ -201,7 +201,7 @@ struct sList_t
  */
 struct mObject_t
 {
-    char       name[NAME_MAX];                       /**< name of kernel object */
+    std::string name;                                /**< name of kernel object */
     uint8_t type;                                    /**< type of kernel object */
     uint8_t flag;                                    /**< flag of kernel object */
 

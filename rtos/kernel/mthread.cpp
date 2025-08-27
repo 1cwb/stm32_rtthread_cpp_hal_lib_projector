@@ -629,9 +629,9 @@ mTimer_t* mthread::getThTimer_t()
 {
     return reinterpret_cast<mTimer_t*>(&thTimer_);
 }
-char* mthread::name() const
+const char* mthread::name() const
 {
-    return ((mObject_t*)&thData_)->name;
+    return ((mObject_t*)&thData_)->name.c_str();
 }
 
 mResult mthread::threadInit( const char       *name,
@@ -688,7 +688,7 @@ mResult mthread::threadInit( const char       *name,
     thData_.userData = 0;
 
     /* initialize thread timer */
-    thTimer_.init(thData_.name,threadTimeout,this,0,TIMER_FLAG_ONE_SHOT);
+    thTimer_.init(thData_.name.c_str(),threadTimeout,this,0,TIMER_FLAG_ONE_SHOT);
     //RT_OBJECT_HOOK_CALL(rt_thread_inited_hook, (thread));
     if(initHookCb_)
     {
