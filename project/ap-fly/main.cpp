@@ -23,69 +23,11 @@
 #include "mklog.hpp"
 #include "musartdrv.hpp"
 #include "project.hpp"
-#include "ff.h"
-#include "fatfsff.hpp"
 #include "datapublish.hpp"
 #include "crsf.hpp"
 #include "madcdrv.hpp"
 #include "mpwmdrv.hpp"
 #include "mtimerdrv.hpp"
-/*
-*********************************************************************************************************
-*	函 数 名: CreateNewFile
-*	功能说明: 在SD卡创建一个新文件，文件内容填写“www.armfly.com”
-*	形    参：无
-*	返 回 值: 无
-*********************************************************************************************************
-*/
-char FsWriteBuf[1024] = {"FatFS Write Demo \r\n www.armfly.com caonima\r\n"};
-
-static void CreateNewFile(void)
-{
-	FRESULT result;
-	unsigned int bw;
-	char path[32];
-
-    mFatFs fs;
-    mFile file;
-
- 	/* 挂载文件系统 */
-     result = fs.mount("0:/", 0);			/* Mount a logical drive */
-	if (result != FR_OK)
-	{
-		printf("挂载文件系统失败 (%s)\r\n", mFatFs::errToStr(result));
-        return;
-	}
-
-	/* 打开文件 */
-	sprintf(path, "%sarmfly.txt", "0:/");
-	result =file.open(path, FA_CREATE_ALWAYS | FA_WRITE);
-	if (result == FR_OK)
-	{
-		printf("armfly.txt 文件打开成功\r\n");
-	}
-	else
-	{
-		printf("armfly.txt 文件打开失败  (%s)\r\n", mFatFs::errToStr(result));
-	}
-
-	/* 写一串数据 */
-	result = file.write(FsWriteBuf, strlen(FsWriteBuf), &bw);
-	if (result == FR_OK)
-	{
-		printf("armfly.txt 文件写入成功\r\n");
-	}
-	else
-	{
-		printf("armfly.txt 文件写入失败  (%s)\r\n", mFatFs::errToStr(result));
-	}
-
-	/* 关闭文件*/
-	file.close();
-
-	/* 卸载文件系统 */
-	mFatFs::unmount("0:/");
-}
 
 int main(void)
 {
@@ -102,8 +44,6 @@ int main(void)
     mDev::mPWM* pwm6 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM6);
     mDev::mPWM* pwm7 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM7);
     mDev::mPWM* pwm8 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM8);
-    uint8_t usbBuff[64];
-
 
     if(timer1)
     {
@@ -205,7 +145,7 @@ int main(void)
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(dataSendbackItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
-    CreateNewFile();
+
     while(1)
     {
         if(led0)

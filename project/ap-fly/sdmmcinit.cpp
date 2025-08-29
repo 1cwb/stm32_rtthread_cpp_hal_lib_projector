@@ -245,5 +245,5 @@ index = 0;
 #endif
     return 0;
 }
-INIT_EXPORT(sdmmcInit, "0.4");
+INIT_EXPORT(sdmmcInit, "0.2");
 

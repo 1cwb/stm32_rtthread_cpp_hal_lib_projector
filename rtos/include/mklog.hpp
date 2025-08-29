@@ -32,10 +32,10 @@ public:
     // 设置输出目标（终端或文件）
     void setOutputToFile(bool toFile) { _outputToFile = toFile; }
     bool isOutputToFile() const { return _outputToFile; }
-    
+    virtual void saveLogToFile(const std::string& fileName) = 0;
 protected:
     void registerSelf(mKlog* logx) {this->logx = logx;}
-    virtual mResult send(const uint8_t* data, uint32_t len) {return M_RESULT_EOK;}
+    virtual mResult send(const uint8_t* data, uint32_t len) = 0;
     
     // 内部格式化方法（处理颜色）
     mResult formatAndSend(logLevel level, const char* colorCode, const char* prefix, const char* format, va_list args);

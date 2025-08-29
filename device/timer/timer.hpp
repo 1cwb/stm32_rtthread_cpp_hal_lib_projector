@@ -20,7 +20,6 @@ public:
     }
     virtual uint32_t getTimeOutUs() override
     {
-        printf("period = %u\r\n",_TimHandle.Init.Period);
         return (uint32_t)(((float)((_TimHandle.Init.Period+1)*1000.0f))/((float)(getInputClk(_TimHandle.Instance)/(_TimHandle.Init.Prescaler+1))) * 1000U);
     }
     virtual void start() override
@@ -42,7 +41,6 @@ public:
     }
     static timerx* GetObjectFromPrivateMember(TIM_HandleTypeDef* member_address) {
             // 使用模板函数，传入成员指针和地址
-            printf("timerxxxxxx\r\n");
             return GetObjectFromMember(&timerx::_TimHandle, member_address);
     }
 private:

@@ -8,15 +8,15 @@ mResult mKlog::formatAndSend(logLevel level, const char* colorCode, const char* 
     {
         return M_RESULT_EOK;
     }
-    
+
     _sem.semTake(WAITING_FOREVER);
-    
+
     // 格式化消息
     int length = 0;
     if (prefix) {
         // 带前缀的格式化（KLOG系列）
         length = snprintf((char*)_logBuff, sizeof(_logBuff), "%s%s", colorCode, prefix);
-        if (length > 0 && length < (int)sizeof(_logBuff)) {
+        if (length < (int)sizeof(_logBuff)) {
             length += vsnprintf((char*)_logBuff + length, sizeof(_logBuff) - length, format, args);
             if (length > 0 && length < (int)sizeof(_logBuff)) {
                 snprintf((char*)_logBuff + length, sizeof(_logBuff) - length, "%s\r\n", getColorReset());
@@ -26,7 +26,7 @@ mResult mKlog::formatAndSend(logLevel level, const char* colorCode, const char* 
     } else {
         // 不带前缀的格式化（ALOG系列）
         length = snprintf((char*)_logBuff, sizeof(_logBuff), "%s", colorCode);
-        if (length > 0 && length < (int)sizeof(_logBuff)) {
+        if (length < (int)sizeof(_logBuff)) {
             length += vsnprintf((char*)_logBuff + length, sizeof(_logBuff) - length, format, args);
             if (length > 0 && length < (int)sizeof(_logBuff)) {
                 snprintf((char*)_logBuff + length, sizeof(_logBuff) - length, "%s", getColorReset());
@@ -36,12 +36,16 @@ mResult mKlog::formatAndSend(logLevel level, const char* colorCode, const char* 
     }
     
     mResult result = M_RESULT_EOK;
-    if (length > 0 && length < (int)sizeof(_logBuff)) {
+    if(length > (int)sizeof(_logBuff))
+    {
+        length = (int)sizeof(_logBuff);
+    }
+    if (length > 0) {
         result = send(_logBuff, length);
     } else {
         result = M_RESULT_ERROR;
     }
-    
+
     _sem.semRelease();
     return result;
 }

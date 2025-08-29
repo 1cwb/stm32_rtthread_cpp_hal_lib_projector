@@ -51,26 +51,21 @@ static DSTATUS SD_CheckStatus(BYTE lun)
         switch(data->type)
         {
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ABORT:
-                printf("abort\r\n");
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_COMPLETE:
             WriteStatus = 1;
             sdEvent.send(2);
-                printf("tx complete\r\n");
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_RX_COMPLETE:
             ReadStatus = 1;
             sdEvent.send(1);
-                printf("rx complete\r\n");
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_ERROR:
-                printf("error\r\n");
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_1V8_MODE_SET:
-                printf("tx 1.8v set\r\n");
+
                 break;
             case mDev::MSDMMC_IRQ_TYPE::SDMMC_IRQ_TX_1V8_MODE_RESET:
-                printf("tx 1.8v reset\r\n");
                 break;
             default:
                 break;

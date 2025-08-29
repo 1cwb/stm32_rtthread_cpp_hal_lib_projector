@@ -11,6 +11,7 @@
 #include "mgpiodrv.hpp"
 #include "datapublish.hpp"
 #include "crsf.hpp"
+#include "mklog.hpp"
 
 enum INTERFACE_ID
 {
@@ -277,6 +278,7 @@ void usartRecvEnter(void* p)
     {
         if(uartRecvQueue.recv(&ifdata, sizeof(ifdata), WAITING_FOREVER) == M_RESULT_EOK)
         {
+            std::string str;
             switch(ifdata.id)
             {
                 case INTERFACE_ID_VCOM:
@@ -287,8 +289,9 @@ void usartRecvEnter(void* p)
                 printf("\r\n");
                     break;
                 case INTERFACE_ID_U1:
-                    printf("tony recv %s\r\n",ifdata.data);
-                    if(strncmp((const char*)ifdata.data,"reboot",6) == 0)
+                    str = std::string((const char*)ifdata.data, ifdata.len);
+                    ALOGD("tony recv %s\r\n",str.c_str());
+                    if(strncmp(str.c_str(),"reboot",6) == 0)
                     {
                         SoftReset();
                     }
