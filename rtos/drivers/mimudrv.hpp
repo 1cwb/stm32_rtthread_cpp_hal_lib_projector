@@ -19,20 +19,20 @@ class mImu : public mDevice
 public:
     explicit mImu(const char* name) : mDevice(name){}
     virtual ~mImu() = default;
-    virtual float getTemp(){return 0.0f;};
-    virtual int16_t getAccelX(){return 0;};
-    virtual int16_t getAccelY(){return 0;};
-    virtual int16_t getAccelZ(){return 0;};
-    virtual int16_t getGyroX(){return 0;};
-    virtual int16_t getGyroY(){return 0;};
-    virtual int16_t getGyroZ(){return 0;};
-    virtual float getAccelXms2(){return 0.0f;};
-    virtual float getAccelYms2(){return 0.0f;};
-    virtual float getAccelZms2(){return 0.0f;};
-    virtual float getGyroXrad(){return 0.0f;};
-    virtual float getGyroYrad(){return 0.0f;};
-    virtual float getGyroZrad(){return 0.0f;};
-    virtual bool updateData(){return true;}
+    virtual float getTemp() = 0;
+    virtual int16_t getAccelX() = 0;
+    virtual int16_t getAccelY() = 0;
+    virtual int16_t getAccelZ() = 0;
+    virtual int16_t getGyroX() = 0;
+    virtual int16_t getGyroY() = 0;
+    virtual int16_t getGyroZ() = 0;
+    virtual float getAccelXms2() = 0;
+    virtual float getAccelYms2() = 0;
+    virtual float getAccelZms2() = 0;
+    virtual float getGyroXrad() = 0;
+    virtual float getGyroYrad() = 0;
+    virtual float getGyroZrad() = 0;
+    virtual bool updateData() = 0;
     void rotation(float *v, sensorAlign align)
     {
         float tmp[3] = {v[0], v[1], v[2]};

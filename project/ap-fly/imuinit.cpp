@@ -1,9 +1,9 @@
-#include "bmi088new.hpp"
+//#include "bmi088new.hpp"
 #include "mspidrv.hpp"
 #include "mdevicemanager.hpp"
 #include "gpio.hpp"
 #include "project.hpp"
-
+#if 0
 int bimxxInit()
 {
     mDev::mSpi* spi1 = (mDev::mSpi*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SPI1);
@@ -40,3 +40,4 @@ int bimxxInit()
     return 0; 
 }
 INIT_EXPORT(bimxxInit, "1");
+#endif
