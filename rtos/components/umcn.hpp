@@ -3,9 +3,10 @@
 #include "mscheduler.hpp"
 #include "mtimer.hpp"
 #include <functional>
-#include <list>
+#include <unordered_map>
 #include "containers.hpp"
 #include "atomic.hpp"
+#include "doublebuffer.hpp"
 
 #define MCN_PUB_EVENT            (1 << 0)
 #define MCN_MAX_LINK_NUM         30
@@ -14,10 +15,10 @@ class mcnNode;
 class mcnHub
 {
 public:
-    mcnHub(const char* objname, const uint32_t objsize):
+    mcnHub(const std::string& objname, const uint32_t objsize):
     _objName(objname),
     _objSize(objsize),
-    _pdata(nullptr),
+    _doubleBuffer(nullptr),
     _linkHead(nullptr),
     _linkTail(nullptr),
     _linkNum(0),
@@ -36,9 +37,12 @@ public:
     mcnHub& operator=(mcnHub&& mq) = delete;
     mResult init();
     mResult deInit();
-    const char* getObjName() const {return _objName;}
+    const std::string& getObjName() const {return _objName;}
     const uint32_t getObjSize() const {return _objSize;}
-    void* getData() {return _pdata;}
+    void* getData() {    
+        if (!_doubleBuffer) return nullptr;
+        return _doubleBuffer->getReadBuffer();
+    }
     mcnNode* getLinkHead() {return _linkHead;}
     mcnNode* getLinkT() {return _linkTail;}
     uint32_t getLinkNum() const {return _linkNum;}
@@ -48,8 +52,8 @@ public:
     void resume() {_bsuspend = false;}
     mcnNode* subscribe(const char* nodeName);
     mResult unSubscribe(mcnNode* node);
-    mResult unSubscribe(const char* nodeName);
-    mcnNode* getNode(const char* nodeName);
+    mResult unSubscribe(const std::string& nodeName);
+    mcnNode* getNode(const std::string& nodeName);
     mResult publish(const void* data, bool bsync = false);
     bool poll(mcnNode* node);
     bool wait(int32_t timeout);
@@ -60,22 +64,22 @@ public:
     void clear(const char* nodeName);
     static mcnHub* getObject(const char* objname);
 private:
-    const char* _objName;
+    const std::string _objName;
     const uint32_t _objSize;
-    void* _pdata;
+    DoubleBuffer* _doubleBuffer;
     mcnNode* _linkHead;
     mcnNode* _linkTail;
     uint32_t _linkNum;
     bool _bpublished;
     bool _bsuspend;
     mEvent _event;
-    static std::list<mcnHub*, mMemAllocator<mcnHub*>> _mcnHubList;
+    static std::unordered_map<std::string, mcnHub*> _mcnHubList;
 };
 
 class mcnNode
 {
 public:
-    mcnNode(const char* name, mcnHub* hub):
+    mcnNode(const std::string& name, mcnHub* hub):
     _hub(hub),
     _renewal(0),
     _next(nullptr),
@@ -96,10 +100,10 @@ public:
     void setRenewal(uint8_t renewal) {_renewal = renewal;}
     void setNext(mcnNode* next) {_next = next;}
     mcnNode* getNext() {return _next;}
-    const char* getName() const {return _name;}
+    const std::string& getName() const {return _name;}
 private:
     mcnHub* _hub;
     volatile uint8_t _renewal;
     mcnNode* _next;
-    const char* _name;
+    const std::string _name;
 };

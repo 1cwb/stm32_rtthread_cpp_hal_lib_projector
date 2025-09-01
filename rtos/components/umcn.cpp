@@ -1,27 +1,25 @@
 #include "umcn.hpp"
 #include <cstring>
-std::list<mcnHub*, mMemAllocator<mcnHub*>> mcnHub::_mcnHubList;
+std::unordered_map<std::string, mcnHub*> mcnHub::_mcnHubList;
 
 mResult mcnHub::init()
 {
-    void* pdata = nullptr;
-
-    if(_pdata != nullptr)
+    if(_doubleBuffer != nullptr)
     {
         return M_RESULT_EINVAL;
     }
-    pdata = new uint8_t[_objSize];
-    if(!pdata)
+    
+    // 创建双缓冲
+    _doubleBuffer = new DoubleBuffer(_objSize);
+    if(!_doubleBuffer)
     {
         return M_RESULT_ENOMEM;
     }
-    memset(pdata, 0, _objSize);
 
     _event.init(_objName, IPC_FLAG_FIFO);
 
     mSchedule::getInstance()->enterCritical();
-    _pdata = pdata;
-    _mcnHubList.emplace_back(this);
+    _mcnHubList.emplace(_objName, this);
     mSchedule::getInstance()->exitCritical();
 
     return M_RESULT_EOK;
@@ -40,9 +38,9 @@ mResult mcnHub::deInit()
     }
     _linkTail = _linkHead = nullptr;
     _linkNum = 0;
-    _mcnHubList.remove(this);
-    delete [](uint8_t*)_pdata;
-    _pdata = nullptr;
+    _mcnHubList.erase(_objName);
+    delete _doubleBuffer;
+    _doubleBuffer = nullptr;
     mSchedule::getInstance()->exitCritical();
     return M_RESULT_EOK;
 }
@@ -125,17 +123,17 @@ mResult mcnHub::unSubscribe(mcnNode* node)
     delete node;
     return M_RESULT_EOK;
 }
-mResult mcnHub::unSubscribe(const char* nodeName)
+mResult mcnHub::unSubscribe(const std::string& nodeName)
 {
     return unSubscribe(getNode(nodeName));
 }
-mcnNode* mcnHub::getNode(const char* nodeName)
+mcnNode* mcnHub::getNode(const std::string& nodeName)
 {
     mSchedule::getInstance()->enterCritical();
     mcnNode* node = _linkHead;
     while(node != nullptr)
     {
-        if(strcmp(node->getName(), nodeName) == 0)
+        if(node->getName() == nodeName)
         {
             break;
         }
@@ -149,9 +147,9 @@ mcnHub* mcnHub::getObject(const char* objname)
     mSchedule::getInstance()->enterCritical();
     for(auto& it : _mcnHubList)
     {
-        if(strcmp(it->getObjName(), objname) == 0)
+        if(it.first == objname)
         {
-            return it;
+            return it.second;
         }
     }
     mSchedule::getInstance()->exitCritical();
@@ -168,7 +166,12 @@ mResult mcnHub::publish(const void* data, bool bsync)
         return M_RESULT_EINVAL;
     }
     mSchedule::getInstance()->enterCritical();
-    memcpy(_pdata, data, _objSize);
+    // 获取写缓冲区并拷贝数据
+    void* writeBuffer = _doubleBuffer->getWriteBuffer();
+    memcpy(writeBuffer, data, _objSize);
+    // 交换缓冲区
+    _doubleBuffer->swap();
+
     mcnNode* node = _linkHead;
     while(node != nullptr)
     {
@@ -220,7 +223,7 @@ mResult mcnHub::copy(mcnNode* node, void* buffer)
     {
         return M_RESULT_EINVAL;
     }
-    if(_pdata == nullptr)
+    if(_doubleBuffer == nullptr)
     {
         return M_RESULT_ERROR;
     }
@@ -229,7 +232,9 @@ mResult mcnHub::copy(mcnNode* node, void* buffer)
         return M_RESULT_BADF;
     }
     mSchedule::getInstance()->enterCritical();
-    memcpy(buffer, _pdata, _objSize);
+    // 从读缓冲区拷贝数据
+    void* readBuffer = _doubleBuffer->getReadBuffer();
+    memcpy(buffer, readBuffer, _objSize);
     node->setRenewal(0);
     mSchedule::getInstance()->exitCritical();
     return M_RESULT_EOK;
@@ -241,7 +246,7 @@ mResult mcnHub::copyDirectly(void* buffer)
     {
         return M_RESULT_EINVAL;
     }
-    if(!_pdata)
+    if(!_doubleBuffer)
     {
         return M_RESULT_ERROR;
     }
@@ -250,7 +255,9 @@ mResult mcnHub::copyDirectly(void* buffer)
         return M_RESULT_BADF;
     }
     mSchedule::getInstance()->enterCritical();
-    memcpy(buffer, _pdata, _objSize);
+    // 从读缓冲区拷贝数据
+    void* readBuffer = _doubleBuffer->getReadBuffer();
+    memcpy(buffer, readBuffer, _objSize);
     mSchedule::getInstance()->exitCritical();
     return M_RESULT_EOK;
 }
