@@ -12,6 +12,11 @@ export AP_FLY_BOARD := 1
 export RC_FLY_BOARD := 2
 export DEMO_BOARD := 3
 BOARD_TYPE := $(AP_FLY_BOARD)
+
+# Build configuration: 0 for Release, 1 for Debug.
+# To build with debug info, run: make DEBUG=1
+DEBUG ?= 0
+
 ########################################MEM_MAP################################################
 APP_FLASH_ORIGIN := 0x8032000
 APP_FLASH_LEN := 1848K
@@ -26,7 +31,7 @@ else
 BUILD_DIR := $(CURDIR)/startup $(CURDIR)/core $(CURDIR)/stm32h7hallib $(CURDIR)/device $(CURDIR)/project $(CURDIR)/rtos $(CURDIR)/system $(CURDIR)/3rdlib
 endif
 
-#$(info "$(BUILD_DIR)")
+#$(info \"$(BUILD_DIR)\")
 SUBDIRS := $(shell find $(BUILD_DIR) -maxdepth 4 -type d)
 SUBMK += $(foreach dir, $(SUBDIRS), $(wildcard $(dir)/*.mk))
 include $(SUBMK)
@@ -42,11 +47,11 @@ OUTPUTDIR += $(OUTPUT)/app
 endif
 
 define ensure_dir
-    @if [ ! -d "$(1)" ]; then \
-        echo "创建目录: $(1)"; \
+    @if [ ! -d \"$(1)\" ]; then \
+        echo \"创建目录: $(1)\"; \
         mkdir -p $(1); \
     else \
-        echo "目录已存在: $(1)"; \
+        echo \"目录已存在: $(1)\"; \
     fi
 endef
 
@@ -73,8 +78,38 @@ ARM_INSTRUCTION 	:= -mthumb
 MCU_FLAGS       	:= $(CPU) $(ARM_INSTRUCTION) $(FPU) $(FLOAT_ABT) -ftree-vectorize
 
 ##################################################COMPILE_FLAGS#################################
-##################################################COMPILE_FLAGS#################################
-# 优化后的 C 编译标志
+ifeq ($(DEBUG), 1)
+# --- DEBUG FLAGS ---
+C_COMPILE_FLAGS 	:= -lc -lm -lnosys -std=c11 \
+                   -Wall \
+                   -fno-common \
+                   -fmessage-length=0 \
+                   -O0 \
+                   -g3 \
+                   -flto \
+                   -fno-stack-protector
+
+CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys \
+                   -std=c++17 \
+                   -fno-rtti \
+                   -fno-exceptions \
+                   -fno-builtin \
+                   -fno-threadsafe-statics \
+                   -fno-use-cxa-atexit \
+                   -Wall \
+                   -O0 \
+                   -g3 \
+                   -flto \
+                   -fvisibility=hidden
+
+EXTRA_LINK_FLAGS	:= \
+                   -L/opt/gcc-arm-none-eabi-10.3-2021.10/arm-none-eabi/lib/thumb/v7e-m+fp/hard \
+                   -Wl,-Map=$(OUTPUTDIR)/$(TARGET).map \
+                   -Wl,--cref \
+                   -Wl,--no-warn-mismatch
+
+else
+# --- RELEASE FLAGS ---
 C_COMPILE_FLAGS 	:= -lc -lm -lnosys -std=c11 \
                    -Wall \
                    -ffunction-sections \
@@ -86,7 +121,6 @@ C_COMPILE_FLAGS 	:= -lc -lm -lnosys -std=c11 \
                    -fno-stack-protector \
                    -fomit-frame-pointer
 
-# 优化后的 C++ 编译标志
 CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys \
                    -std=c++17 \
                    -fno-rtti \
@@ -102,17 +136,17 @@ CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys \
                    -fomit-frame-pointer \
                    -fvisibility=hidden
 
-# ASM 编译标志保持不变
-ASM_COMPILE_FLAGS 	:= -x assembler-with-cpp -Wa,-mimplicit-it=thumb
-
-#################################################################################################
-# 优化后的链接标志
 EXTRA_LINK_FLAGS	:= \
+                   -L/opt/gcc-arm-none-eabi-10.3-2021.10/arm-none-eabi/lib/thumb/v7e-m+fp/hard \
                    -Wl,--gc-sections \
                    -Wl,--strip-all \
                    -Wl,-Map=$(OUTPUTDIR)/$(TARGET).map \
                    -Wl,--cref \
-                   -Wl,--no-warn-mismatch \
+                   -Wl,--no-warn-mismatch
+endif
+
+# --- COMMON LINK FLAGS ---
+EXTRA_LINK_FLAGS	+= \
                    -lc \
                    -lm \
                    -lstdc++ \
@@ -121,10 +155,13 @@ EXTRA_LINK_FLAGS	:= \
                    -specs=nano.specs \
                    -specs=nosys.specs \
 				   -u _printf_float \
-           			-u _scanf_float \
+           		   -u _scanf_float \
                    -flto \
                    -Wl,--defsym=_app_flash_origin=$(APP_FLASH_ORIGIN) \
                    -Wl,--defsym=_app_flash_len=$(APP_FLASH_LEN)
+
+# ASM 编译标志保持不变
+ASM_COMPILE_FLAGS 	:= -x assembler-with-cpp -Wa,-mimplicit-it=thumb
 #################################################################################################
 ifeq ($(BOARD_TYPE), $(RC_FLY_BOARD))
 DEFINE    +=-DSTM32H743xx \
@@ -217,8 +254,8 @@ define analyze_elf_sections_color
     {printf "\033[1;32m%-20s \033[1;35m%10d \033[1;31m%7.2fK\033[0m\n", $$1, $$2, $$2/1024}'
 endef
 
-#$(info "SFILES = $(SFILES) ")
-#$(info "CFILES = $(CFILES) ")
+#$(info \"SFILES = $(SFILES) \")
+#$(info \"CFILES = $(CFILES) \")
 
 $(OUTPUTDIR)/$(TARGET).elf:$(OBJS)
 	$(CC) -o $(OUTPUTDIR)/$(TARGET).elf $^ $(LFLAGS)

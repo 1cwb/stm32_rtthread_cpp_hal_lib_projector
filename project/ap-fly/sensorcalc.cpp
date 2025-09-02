@@ -75,7 +75,7 @@ int sensorCalTask(void)
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
         MadgwickAHRS ahrs1(1000.0f,0.6f);
-        workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
+        workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
 
             float pressure = 0.0;
             float ahrsData[7] = {0.0};
@@ -134,7 +134,7 @@ int sensorCalTask(void)
             if(ahrsHub->poll(ahrsNode))
             {
                 ahrsHub->copy(ahrsNode, ahrsData);
-                //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[0], ahrsData[1], ahrsData[2]);
+                ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[0], ahrsData[1], ahrsData[2]);
                 ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[6], 0, 0);
             }
             if(mag1Hub->poll(mag1Node))

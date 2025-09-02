@@ -6,7 +6,6 @@
 #include "containers.hpp"
 #include "atomic.hpp"
 #include "waitqueue.hpp"
-#include "DFRobot_ICM42688.h"
 #include "mdevicemanager.hpp"
 #include "mgpiodrv.hpp"
 #include "delay.h"

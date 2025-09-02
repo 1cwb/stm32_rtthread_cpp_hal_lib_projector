@@ -36,29 +36,7 @@ mResult spix::deInit()
     HAL_SPI_DeInit(&_spixHandle);
     return M_RESULT_EOK;
 }
-void spix::csEnable(mDev::mGpio* cspin)
-{
-    if(cspin)
-    {
-        cspin->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-    }
-    else
-    {
-        KLOGE("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
-    }
-}
-void spix::csDisable(mDev::mGpio* cspin)
-{
-    if(cspin)
-    {
-        cspin->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
-    }
-    else
-    {
-        KLOGE("Error: %s()%d CS pin not set\r\n",__FUNCTION__,__LINE__);
-    }
-}
-mResult spix::write(const uint8_t* buff, size_t len)
+mResult spix::_write(const uint8_t* buff, size_t len)
 {
     if(_transferMode == mDev::transferMode::TRANSFER_MODE_NOMAL)
     {
@@ -89,7 +67,7 @@ mResult spix::write(const uint8_t* buff, size_t len)
     }
     return M_RESULT_EOK;
 }
-mResult spix::read(uint8_t* buff, size_t len)
+mResult spix::_read(uint8_t* buff, size_t len)
 {
     if (_recvMode == mDev::recvMode::RECV_MODE_NOMAL)
     {
@@ -118,7 +96,7 @@ mResult spix::read(uint8_t* buff, size_t len)
 
     return M_RESULT_EOK;
 }
-mResult spix::writeRead(uint8_t* txbuff, uint8_t* rxbuff, size_t len)
+mResult spix::_transfer(uint8_t* txbuff, uint8_t* rxbuff, size_t len)
 {
     if(_transferMode == mDev::transferMode::TRANSFER_MODE_NOMAL)
     {

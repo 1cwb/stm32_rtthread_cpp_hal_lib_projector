@@ -10,12 +10,7 @@ public:
     virtual ~spix();
     mResult init(const mDev::initCallbackExt& cb ,SPI_HandleTypeDef* spihandle, DMA_HandleTypeDef* hdmaUsartxTx = nullptr, DMA_HandleTypeDef* hdmaUsartxRx = nullptr);
     mResult deInit();
-    inline virtual void csEnable(mDev::mGpio* cspin)override;
-    inline virtual void csDisable(mDev::mGpio* cspin)override;
-    virtual mResult write(const uint8_t* buff, size_t len)override;
-    virtual mResult read(uint8_t* buff, size_t len)override;
     virtual bool btransferComplete()override;
-    mResult writeRead(uint8_t* txbuff, uint8_t* rxbuff, size_t len);
     mResult txDmaInit();
     mResult txDmaDeInit();
     mResult rxDmaInit();
@@ -31,6 +26,10 @@ public:
         // 使用模板函数，传入成员指针和地址
         return GetObjectFromMember(&spix::_spixHandle, member_address);
     }
+protected:
+    virtual mResult _write(const uint8_t* buff, size_t len)override;
+    virtual mResult _read(uint8_t* buff, size_t len)override;
+    virtual mResult _transfer(uint8_t* txbuff, uint8_t* rxbuff, size_t len) override;
 private:
     constexpr static int RX_BUFF_LEN = 64;
     SPI_HandleTypeDef _spixHandle;

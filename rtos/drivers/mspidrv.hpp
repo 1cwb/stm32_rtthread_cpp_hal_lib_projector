@@ -9,66 +9,81 @@ public:
     mSpi() = delete;
     explicit mSpi(const char* name) : mDevice(name),_transferMode(transferMode::TRANSFER_MODE_NOMAL),_recvMode(recvMode::RECV_MODE_NOMAL){}
     virtual ~mSpi() = default;
-    inline virtual void csEnable(mDev::mGpio* cspin){}
-    inline virtual void csDisable(mDev::mGpio* cspin){}
-    virtual mResult write(const uint8_t* buff, size_t len){return M_RESULT_EOK;}
-    virtual mResult read(uint8_t* buff, size_t len){return M_RESULT_EOK;}
-    mResult writeReg(mDev::mGpio* cspin, uint8_t reg, const uint8_t* buff, size_t len)
+
+    mResult write(const uint8_t* buff, size_t len, mGpio* cspin = nullptr)
     {
         mResult ret = M_RESULT_ERROR;
+        _csEnable(cspin);
+        ret = _write(buff, len);
+        _csDisable(cspin);
+        return ret;
+    }
+    mResult read(uint8_t* buff, size_t len, mGpio* cspin = nullptr)
+    {
+        mResult ret = M_RESULT_ERROR;
+        _csEnable(cspin);
+        ret = _read(buff, len);
+        _csDisable(cspin);
+        return ret;
+    }
+    mResult transfer(uint8_t* tx, uint8_t* rx, size_t len, mGpio* cspin = nullptr)
+    {
+        mResult ret = M_RESULT_ERROR;
+        _csEnable(cspin);
+        ret = _transfer(tx, rx, len);
+        _csDisable(cspin);
+        return ret;
+    }
+    mResult writeReg(uint8_t reg, const uint8_t* buff, size_t len, mDev::mGpio* cspin)
+    {
+        mResult ret = M_RESULT_ERROR;
+        _csEnable(cspin);
         reg &= 0x7F;
-        if(cspin)
-        {
-            csEnable(cspin);
-        }
         do{
-            ret = write(&reg, 1);
+            ret = _write(&reg, 1);
             if(ret != M_RESULT_EOK)
             {
                 break;
             }
-            ret = write(buff, len);
+            ret = _write(buff, len);
             if(ret != M_RESULT_EOK)
             {
                 break;
             }
         }while(0);
-        if(cspin)
-        {
-            csDisable(cspin);
-        }
+        _csDisable(cspin);
         return ret;
     }
-    mResult readReg(mDev::mGpio* cspin, uint8_t reg, uint8_t* buff, size_t len)
+    mResult readReg(uint8_t reg, uint8_t* buff, size_t len, mDev::mGpio* cspin)
     {
         mResult ret = M_RESULT_ERROR;
         reg |= 0x80;
-        if(cspin)
-        {
-            csEnable(cspin);
-        }
+        _csEnable(cspin);
         do{
-            ret = write(&reg, 1);
+            ret = _write(&reg, 1);
             if(ret != M_RESULT_EOK)
             {
                 break;
             }
-            ret = read(buff, len);
+            ret = _read(buff, len);
             if(ret != M_RESULT_EOK)
             {
                 break;
             }
         }while(0);
-        if(cspin)
-        {
-            csDisable(cspin);
-        }
+        _csDisable(cspin);
         return ret; 
     }
     void setTransferMode(transferMode mode) {_transferMode = mode;}
     void setRecvMode(recvMode mode) {_recvMode = mode;}
     recvMode getRecvMode() const {return _recvMode;}
     virtual bool btransferComplete() = 0;
+protected:
+    void _csEnable(mGpio* cspin) {if(cspin){cspin->setLevel(mGpio::GPIOLEVEL::LEVEL_LOW);}};
+    void _csDisable(mGpio* cspin) {if(cspin){cspin->setLevel(mGpio::GPIOLEVEL::LEVEL_HIGH);}};
+    virtual mResult _write(const uint8_t* buff, size_t len) = 0;
+    virtual mResult _read(uint8_t* buff, size_t len) = 0;
+    virtual mResult _transfer(uint8_t* tx, uint8_t* rx, size_t len) = 0;
 protected:
     transferMode _transferMode;
     recvMode _recvMode;

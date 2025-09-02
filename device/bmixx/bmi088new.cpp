@@ -34,15 +34,15 @@ void bmi088_rotate_to_frd(float* data, uint32_t dev_id)
 mResult bmi088::writeCheckedReg(mDev::mGpio* cspin, uint8_t reg, uint8_t val)
 {
     uint8_t r_val;
-    if(_spi->writeReg(cspin, reg, &val, 1)!=M_RESULT_EOK)
+    if(_spi->writeReg(reg, &val, 1, cspin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
-    if(_spi->readReg(cspin, reg, &r_val, 1)!=M_RESULT_EOK)
+    if(_spi->readReg(reg, &r_val, 1, cspin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
-    if(_spi->readReg(cspin, reg, &r_val, 1)!=M_RESULT_EOK)
+    if(_spi->readReg(reg, &r_val, 1, cspin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     } 
@@ -56,11 +56,11 @@ mResult bmi088::modifyReg(mDev::mGpio* cspin, uint8_t reg, regVal regval)
     /* In case of read operations of the accelerometer part, the requested data is not sent 
     immediately, but instead first a dummy byte is sent, and after this dummy byte the actual 
     reqested register content is transmitted. */
-    if(_spi->readReg(cspin, reg, &value, 1)!=M_RESULT_EOK)
+    if(_spi->readReg(reg, &value, 1, cspin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
-    if(_spi->readReg(cspin, reg, &value, 1)!=M_RESULT_EOK)
+    if(_spi->readReg(reg, &value, 1, cspin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     } 
@@ -146,7 +146,7 @@ mResult bmi088::gyroSetRange(unsigned maxDps)
 
 mResult bmi088::gyroReadRaw()
 {
-    if(_spi->readReg(_gyroCsPin, BMI088_RATE_X_LSB_ADDR, (uint8_t*)gyr, 6) != M_RESULT_EOK)
+    if(_spi->readReg(BMI088_RATE_X_LSB_ADDR, (uint8_t*)gyr, 6, _gyroCsPin) != M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
@@ -171,7 +171,7 @@ mResult bmi088::gyroScopeInit(uint32_t gyroRange, uint32_t gyroRate)
 {
     uint8_t gyroId;
 
-    _spi->readReg(_gyroCsPin, BMI088_CHIP_ID_ADDR, &gyroId, 1);
+    _spi->readReg(BMI088_CHIP_ID_ADDR, &gyroId, 1, _gyroCsPin);
     if (gyroId != BMI088_GRRO_CHIP_ID)
     {
         KLOGE("Warning: not found BMI088 gyro id: %02x\r\n", gyroId);
@@ -180,7 +180,7 @@ mResult bmi088::gyroScopeInit(uint32_t gyroRange, uint32_t gyroRate)
 
     /* soft reset */
     gyroId = 0xB6;
-    if(_spi->writeReg(_gyroCsPin, BMI088_BGW_SOFT_RST_ADDR, &gyroId, 1) != M_RESULT_EOK)
+    if(_spi->writeReg(BMI088_BGW_SOFT_RST_ADDR, &gyroId, 1, _gyroCsPin) != M_RESULT_EOK)
     {
         KLOGE("Error: soft reset fail\r\n");
         return M_RESULT_ERROR;
@@ -381,7 +381,7 @@ mResult bmi088::accelSetRange(uint32_t maxG)
     } else {
         return M_RESULT_EINVAL;
     }
-    if(_spi->writeReg(_accelCsPin, BMI088_ACC_RANGE, &regval, 1)!=M_RESULT_EOK)
+    if(_spi->writeReg(BMI088_ACC_RANGE, &regval, 1, _accelCsPin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
@@ -394,10 +394,10 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
     uint8_t regval;
 
     /* dummy read to let accel enter SPI mode */
-    _spi->readReg(_accelCsPin, BMI088_ACC_BGW_CHIPID, &accelId, 1);
+    _spi->readReg(BMI088_ACC_BGW_CHIPID, &accelId, 1, _accelCsPin);
 
     /* read accel id */
-    _spi->readReg(_accelCsPin, BMI088_ACC_BGW_CHIPID, &accelId, 1);
+    _spi->readReg(BMI088_ACC_BGW_CHIPID, &accelId, 1, _accelCsPin);
     if (accelId != BMI088_ACC_BGW_CHIPID_VALUE)
     {
         KLOGE("Warning: not found BMI088 accel id: %02x\n", accelId);
@@ -406,7 +406,7 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
 
     /* soft reset */
     regval = 0xB6;
-    if(_spi->writeReg(_accelCsPin, BMI088_ACC_SOFTRESET, &regval, 1)!=M_RESULT_EOK)
+    if(_spi->writeReg(BMI088_ACC_SOFTRESET, &regval, 1, _accelCsPin)!=M_RESULT_EOK)
     {
         KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
@@ -415,7 +415,7 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
 
     /* enter active mode */
     regval = 0x00;
-    if(_spi->writeReg(_accelCsPin, BMI088_ACC_PWR_CONF, &regval, 1)!=M_RESULT_EOK)
+    if(_spi->writeReg(BMI088_ACC_PWR_CONF, &regval, 1, _accelCsPin)!=M_RESULT_EOK)
     {
         KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
@@ -424,7 +424,7 @@ mResult bmi088::accelErometerInit(uint32_t sampleRate, uint32_t dlpfFreqHz, uint
 
     /* enter normal mode */
     regval = 0x04;
-    if(_spi->writeReg(_accelCsPin, BMI088_ACC_PWR_CTRL, &regval, 1)!=M_RESULT_EOK)
+    if(_spi->writeReg(BMI088_ACC_PWR_CTRL, &regval, 1, _accelCsPin)!=M_RESULT_EOK)
     {
         KLOGE("Error: %s()%d return\r\n",__FUNCTION__,__LINE__);
         return M_RESULT_ERROR;
@@ -459,7 +459,7 @@ mResult bmi088::accelReadRaw()
     immediately, but instead first a dummy byte is sent, and after this dummy byte the actual 
     reqested register content is transmitted. */
 
-    if(_spi->readReg(_accelCsPin, BMI088_ACCD_X_LSB, buffer, 7) != M_RESULT_EOK)
+    if(_spi->readReg(BMI088_ACCD_X_LSB, buffer, 7, _accelCsPin) != M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
@@ -489,7 +489,7 @@ float bmi088::readTemp()
     uint8_t _buffer[3];
     uint16_t temp_uint11;
     int16_t temp_int11;
-    if(_spi->readReg(_accelCsPin, BMI088_INT_TEMP_MSB, _buffer, 3)!=M_RESULT_EOK)
+    if(_spi->readReg(BMI088_INT_TEMP_MSB, _buffer, 3, _accelCsPin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
@@ -508,7 +508,7 @@ float bmi088::readTemp()
 uint32_t bmi088::readTime()
 {
     uint8_t _buffer[4];
-    if(_spi->readReg(_accelCsPin, BMI088_SENSORTIME_0, _buffer, 4)!=M_RESULT_EOK)
+    if(_spi->readReg(BMI088_SENSORTIME_0, _buffer, 4, _accelCsPin)!=M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
