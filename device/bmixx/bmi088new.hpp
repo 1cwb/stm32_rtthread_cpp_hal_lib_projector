@@ -22,6 +22,8 @@
 #include "mgpiodrv.hpp"
 #include "mmagnetmetordrv.hpp"
 #include "sys.h"
+#include "imucalibration.hpp"
+
 #ifdef BIT
     #undef BIT
 #endif
@@ -192,11 +194,10 @@ private:
     float   gyrRad[3];
     int16_t acc[3];
     float   accgMs[3];
-    int16_t _gyroZeroOffset[3];
-    int16_t _accelZeroOffset[3];
     float _gyroRangesSale;
     float _accelRangeScale;
     float _sampleRate;
+    IMU_Calibration _imuCalibration;
     mDev::mGpio* _accelCsPin;
     mDev::mGpio* _gyroCsPin;
     mDev::mSpi *_spi;

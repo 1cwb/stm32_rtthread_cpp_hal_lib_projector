@@ -151,9 +151,9 @@ mResult bmi088::gyroReadRaw()
     {
         return M_RESULT_ERROR;
     }
-    gyr[0] = (buffer[1] << 8) | buffer[0];
-    gyr[1] = (buffer[3] << 8) | buffer[2];
-    gyr[2] = (buffer[5] << 8) | buffer[4];
+    gyr[0] = ((buffer[1] << 8) | buffer[0]);
+    gyr[1] = ((buffer[3] << 8) | buffer[2]);
+    gyr[2] = ((buffer[5] << 8) | buffer[4]);
     return M_RESULT_EOK;
 }
 
@@ -163,7 +163,12 @@ mResult bmi088::gyroReadRad()
     {
         return M_RESULT_ERROR;
     }
-
+    if(_imuCalibration.isGyroCalibrated())
+    {
+        gyr[0] -= _imuCalibration.getGyroBias(0);
+        gyr[1] -= _imuCalibration.getGyroBias(1);
+        gyr[2] -= _imuCalibration.getGyroBias(2);
+    }
     gyrRad[0] = _gyroRangesSale * gyr[0];
     gyrRad[1] = _gyroRangesSale * gyr[1];
     gyrRad[2] = _gyroRangesSale * gyr[2];
@@ -467,9 +472,15 @@ mResult bmi088::accelReadRaw()
     {
         return M_RESULT_ERROR;
     }
-    acc[0] = buffer[2] << 8 | buffer[1];
-    acc[1] = buffer[4] << 8 | buffer[3];
-    acc[2] = buffer[6] << 8 | buffer[5];
+    if(_imuCalibration.isAccelCalibrated())
+    {
+        acc[0] -= _imuCalibration.getAccelBias(0);
+        acc[1] -= _imuCalibration.getAccelBias(1);
+        acc[2] -= _imuCalibration.getAccelBias(2);
+    }
+    acc[0] = (buffer[2] << 8 | buffer[1]);
+    acc[1] = (buffer[4] << 8 | buffer[3]);
+    acc[2] = (buffer[6] << 8 | buffer[5]);
 
     return M_RESULT_EOK;
 }
@@ -530,36 +541,39 @@ mResult bmi088::init(uint32_t gyroRange, uint32_t gyroRate, uint32_t sampleRate,
     {
         return M_RESULT_ERROR;
     }
+    calibrateZeroOffset(2000);
     return M_RESULT_EOK;
 }
 
 mResult bmi088::calibrateZeroOffset(uint16_t sample_count) 
 {
-    int32_t gyroSum[3] = {0};
-    int32_t accelSum[3] = {0};
-    
+    //int32_t gyroSum[3] = {0};
+    ///int32_t accelSum[3] = {0};
+    //int16_t raw = static_cast<int16_t>((1.0f * 32768) / _accrange);
+
     // 采集指定数量的样本
     for(uint16_t i = 0; i < sample_count; i++) {
-        if(gyroReadRaw() != M_RESULT_EOK || accelReadRaw() != M_RESULT_EOK) {
+        if(gyroReadRad() != M_RESULT_EOK || accelReadMs2() != M_RESULT_EOK) {
             return M_RESULT_ERROR;
         }
-        
-        gyroSum[0] += gyr[0];
-        gyroSum[1] += gyr[1];
-        gyroSum[2] += gyr[2];
-        
-        accelSum[0] += acc[0];
-        accelSum[1] += acc[1];
-        accelSum[2] += acc[2];
-        
-        delay_ms(10);
+        _imuCalibration.updateBias(accgMs[0], accgMs[1], accgMs[2], gyrRad[0], gyrRad[1], gyrRad[2]);
+        //gyroSum[0] += gyr[0];
+        //gyroSum[1] += gyr[1];
+        //gyroSum[2] += gyr[2];
+//
+        //accelSum[0] += acc[0];
+        //accelSum[1] += acc[1];
+        //accelSum[2] += (acc[2] - raw);
+        delay_ms(1);
     }
-    
+    ALOGD("gyro:%f, %f, %f, ACC:%f, %f, %f\r\n",_imuCalibration.getGyroBias(0),_imuCalibration.getGyroBias(1),_imuCalibration.getGyroBias(2), _imuCalibration.getAccelBias(0),_imuCalibration.getAccelBias(1),_imuCalibration.getAccelBias(2));
     // 计算平均值作为零偏
+    #if 0
     for(int i = 0; i < 3; i++) {
         _gyroZeroOffset[i] = static_cast<int16_t>(gyroSum[i] / sample_count);
         _accelZeroOffset[i] = static_cast<int16_t>(accelSum[i] / sample_count);
     }
-    
+    _zeroCalibrated = true;
+    #endif
     return M_RESULT_EOK;
 }
