@@ -146,10 +146,14 @@ mResult bmi088::gyroSetRange(unsigned maxDps)
 
 mResult bmi088::gyroReadRaw()
 {
-    if(_spi->readReg(BMI088_RATE_X_LSB_ADDR, (uint8_t*)gyr, 6, _gyroCsPin) != M_RESULT_EOK)
+    uint8_t buffer[6];
+    if(_spi->readReg(BMI088_RATE_X_LSB_ADDR, (uint8_t*)buffer, 6, _gyroCsPin) != M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
     }
+    gyr[0] = (buffer[1] << 8) | buffer[0];
+    gyr[1] = (buffer[3] << 8) | buffer[2];
+    gyr[2] = (buffer[5] << 8) | buffer[4];
     return M_RESULT_EOK;
 }
 
@@ -257,7 +261,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 1Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 3) {
+        else if (dlpfFreqHz <= 3) {
             // 2Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {
@@ -269,7 +273,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 3Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 7) {
+        else if (dlpfFreqHz <= 7) {
             // 5Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {
@@ -281,7 +285,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 5Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 14) {
+        else if (dlpfFreqHz <= 14) {
             // 9Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {
@@ -293,7 +297,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 10Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 29) {
+        else if (dlpfFreqHz <= 29) {
             // 19Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {
@@ -305,7 +309,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 20Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 59) {
+        else if (dlpfFreqHz <= 59) {
             // 38Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {
@@ -317,7 +321,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 40Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 110) {
+        else if (dlpfFreqHz <= 110) {
             // 75Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {
@@ -329,7 +333,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 80Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 175) {
+        else if (dlpfFreqHz <= 175) {
             // 140Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {
@@ -341,7 +345,7 @@ mResult bmi088::accelSetBwpOdr(uint32_t dlpfFreqHz)
             // 145Hz
             regval = BMI088_ACCEL_OSR_4;
         }
-        if (dlpfFreqHz <= 257) {
+        else if (dlpfFreqHz <= 257) {
             // 234Hz
             regval = BMI088_ACCEL_OSR_2;
         } else {

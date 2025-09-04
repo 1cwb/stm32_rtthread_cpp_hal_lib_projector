@@ -166,7 +166,7 @@ public:
         accelReadMs2();
         return true;
     }
-    mResult init(uint32_t gyroRange = 2000, uint32_t gyroRate = 1000, uint32_t sampleRate = 1600, uint32_t dlpfFreqHz = 145, uint32_t Grange = 12);
+    mResult init(uint32_t gyroRange = 2000, uint32_t gyroRate = 1000, uint32_t sampleRate = 1600, uint32_t dlpfFreqHz = 145, uint32_t Grange = 24);
 private:
     mResult writeCheckedReg(mDev::mGpio* cspin, uint8_t reg, uint8_t val);
     mResult modifyReg(mDev::mGpio* cspin, uint8_t reg, regVal reg_val);
@@ -181,7 +181,7 @@ private:
     mResult accelSetSampleRate(uint32_t frequencyHz);
     mResult accelSetBwpOdr(uint32_t dlpf_freq_hz);
     mResult accelSetRange(uint32_t maxG);
-    mResult accelErometerInit(uint32_t sampleRate = 1600, uint32_t dlpfFreqHz = 145, uint32_t Grange = 12);
+    mResult accelErometerInit(uint32_t sampleRate = 1600, uint32_t dlpfFreqHz = 145, uint32_t Grange = 24);
     mResult accelReadRaw();
     mResult accelReadMs2();
     float readTemp();
