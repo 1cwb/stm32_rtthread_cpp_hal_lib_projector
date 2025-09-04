@@ -186,11 +186,14 @@ private:
     mResult accelReadMs2();
     float readTemp();
     uint32_t readTime();
+    mResult calibrateZeroOffset(uint16_t sample_count);
 private:
     int16_t gyr[3];
     float   gyrRad[3];
     int16_t acc[3];
     float   accgMs[3];
+    int16_t _gyroZeroOffset[3];
+    int16_t _accelZeroOffset[3];
     float _gyroRangesSale;
     float _accelRangeScale;
     float _sampleRate;

@@ -532,3 +532,34 @@ mResult bmi088::init(uint32_t gyroRange, uint32_t gyroRate, uint32_t sampleRate,
     }
     return M_RESULT_EOK;
 }
+
+mResult bmi088::calibrateZeroOffset(uint16_t sample_count) 
+{
+    int32_t gyroSum[3] = {0};
+    int32_t accelSum[3] = {0};
+    
+    // 采集指定数量的样本
+    for(uint16_t i = 0; i < sample_count; i++) {
+        if(gyroReadRaw() != M_RESULT_EOK || accelReadRaw() != M_RESULT_EOK) {
+            return M_RESULT_ERROR;
+        }
+        
+        gyroSum[0] += gyr[0];
+        gyroSum[1] += gyr[1];
+        gyroSum[2] += gyr[2];
+        
+        accelSum[0] += acc[0];
+        accelSum[1] += acc[1];
+        accelSum[2] += acc[2];
+        
+        delay_ms(10);
+    }
+    
+    // 计算平均值作为零偏
+    for(int i = 0; i < 3; i++) {
+        _gyroZeroOffset[i] = static_cast<int16_t>(gyroSum[i] / sample_count);
+        _accelZeroOffset[i] = static_cast<int16_t>(accelSum[i] / sample_count);
+    }
+    
+    return M_RESULT_EOK;
+}

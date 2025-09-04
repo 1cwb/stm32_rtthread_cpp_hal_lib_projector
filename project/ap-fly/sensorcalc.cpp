@@ -74,7 +74,7 @@ int sensorCalTask(void)
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
-        MadgwickAHRS ahrs1(1000.0f,0.6f);
+        MadgwickAHRS ahrs1(200.0f,0.6f);
         workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
 
             float pressure = 0.0;
@@ -91,6 +91,7 @@ int sensorCalTask(void)
                 accelGyroBias1[4] = imu1->getAccelYms2();
                 accelGyroBias1[5] = imu1->getAccelZms2();
                 //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
+                printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
                 imu1Hub->publish(accelGyroBias1);
             }
 
@@ -134,7 +135,7 @@ int sensorCalTask(void)
             if(ahrsHub->poll(ahrsNode))
             {
                 ahrsHub->copy(ahrsNode, ahrsData);
-                ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[0], ahrsData[1], ahrsData[2]);
+                //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[0], ahrsData[1], ahrsData[2]);
                 ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[6], 0, 0);
             }
             if(mag1Hub->poll(mag1Node))
