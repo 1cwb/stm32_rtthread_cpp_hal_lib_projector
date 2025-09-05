@@ -95,7 +95,7 @@ int sensorCalTask(void)
                 accelGyroBias1[3] = imu1->getAccelXms2();
                 accelGyroBias1[4] = imu1->getAccelYms2();
                 accelGyroBias1[5] = imu1->getAccelZms2();
-                //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
+                printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
                 //printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
                 imu1Hub->publish(accelGyroBias1);
             }

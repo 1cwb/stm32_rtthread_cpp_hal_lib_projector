@@ -166,12 +166,6 @@ mResult bmi088::gyroReadRad()
     gyrRad[0] = _gyroRangesSale * gyr[0];
     gyrRad[1] = _gyroRangesSale * gyr[1];
     gyrRad[2] = _gyroRangesSale * gyr[2];
-    if(_imuCalibration.isGyroCalibrated())
-    {
-        gyrRad[0] -= _imuCalibration.getGyroBias(0);
-        gyrRad[1] -= _imuCalibration.getGyroBias(1);
-        gyrRad[2] -= _imuCalibration.getGyroBias(2);
-    }
     return M_RESULT_EOK;
 }
 
@@ -484,15 +478,11 @@ mResult bmi088::accelReadMs2()
     {
         return M_RESULT_ERROR;
     }
+
     accgMs[0] = _accelRangeScale * acc[0];
     accgMs[1] = _accelRangeScale * acc[1];
     accgMs[2] = _accelRangeScale * acc[2];
-    if(_imuCalibration.isAccelCalibrated())
-    {
-        accgMs[0] -= _imuCalibration.getAccelBias(0);
-        accgMs[1] -= _imuCalibration.getAccelBias(1);
-        accgMs[2] -= _imuCalibration.getAccelBias(2);
-    }
+
     return M_RESULT_EOK;
 }
 float bmi088::readTemp()
@@ -537,20 +527,6 @@ mResult bmi088::init(uint32_t gyroRange, uint32_t gyroRate, uint32_t sampleRate,
     if(accelErometerInit(sampleRate, dlpfFreqHz, Grange) != M_RESULT_EOK)
     {
         return M_RESULT_ERROR;
-    }
-    calibrateZeroOffset(2000);
-    return M_RESULT_EOK;
-}
-
-mResult bmi088::calibrateZeroOffset(uint16_t sample_count) 
-{
-    // 采集指定数量的样本
-    for(uint16_t i = 0; i < sample_count; i++) {
-        if(gyroReadRad() != M_RESULT_EOK || accelReadMs2() != M_RESULT_EOK) {
-            return M_RESULT_ERROR;
-        }
-        _imuCalibration.updateBias(accgMs[0], accgMs[1], accgMs[2], gyrRad[0], gyrRad[1], gyrRad[2]);
-        delay_ms(1);
     }
     return M_RESULT_EOK;
 }
