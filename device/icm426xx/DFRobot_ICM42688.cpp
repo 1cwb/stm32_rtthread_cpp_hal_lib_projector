@@ -293,6 +293,7 @@ bool DFRobot_ICM42688::setODRAndFSR(uint8_t who,uint8_t ODR,uint8_t FSR)
 {
   bool ret = true;
   uint8_t bank = 0;
+  float lsb_per_dps = 0.0f;
   writeReg(ICM42688_REG_BANK_SEL,&bank,1);
   if(who == GYRO){
     if(ODR > ODR_12_5KHZ || FSR > FSR_7){
@@ -303,30 +304,31 @@ bool DFRobot_ICM42688::setODRAndFSR(uint8_t who,uint8_t ODR,uint8_t FSR)
       writeReg(ICM42688_GYRO_CONFIG0,&gyroConfig0,1);
       switch(FSR){
         case FSR_0:
-          _gyroRange = 4000/65535.0;
-          break;
+            lsb_per_dps = 16.4f;  // ±2000dps
+            break;
         case FSR_1:
-          _gyroRange = 2000/65535.0;
-          break;
+            lsb_per_dps = 32.8f;  // ±1000dps
+            break;
         case FSR_2:
-          _gyroRange = 1000/65535.0;
-          break;
+            lsb_per_dps = 65.6f;  // ±500dps
+            break;
         case FSR_3:
-          _gyroRange = 500/65535.0;
-          break;
+            lsb_per_dps = 131.2f; // ±250dps
+            break;
         case FSR_4:
-          _gyroRange = 250/65535.0;
-          break;
+            lsb_per_dps = 262.4f; // ±125dps
+            break;
         case FSR_5:
-          _gyroRange = 125/65535.0;
-          break;
+            lsb_per_dps = 524.8f; // ±62.5dps
+            break;
         case FSR_6:
-          _gyroRange = 62.5/65535.0;
-          break;
+            lsb_per_dps = 1049.6f; // ±31.25dps
+            break;
         case FSR_7:
-          _gyroRange = 31.25/65535.0;
-          break;
+            lsb_per_dps = 2099.2f; // ±15.625dps
+            break;
       }
+      _gyroRange = (M_PI_F / (180.0f * lsb_per_dps));
     }
   } else if(who == ACCEL){
     if(ODR > ODR_500HZ || FSR > FSR_3){
@@ -337,16 +339,16 @@ bool DFRobot_ICM42688::setODRAndFSR(uint8_t who,uint8_t ODR,uint8_t FSR)
       writeReg(ICM42688_ACCEL_CONFIG0,&accelConfig0,1);
       switch(FSR){
         case FSR_0:
-          _accelRange = 0.488f;
+          _accelRange = (16 * ICM42688_ONE_G / 32768);
           break;
         case FSR_1:
-          _accelRange = 0.244f;
+          _accelRange = (8 * ICM42688_ONE_G / 32768);
           break;
         case FSR_2:
-          _accelRange = 0.122f;
+          _accelRange = (4 * ICM42688_ONE_G / 32768);
           break;
         case FSR_3:
-          _accelRange = 0.061f;
+          _accelRange = (2 * ICM42688_ONE_G / 32768);
           break;
       }
     }
@@ -749,7 +751,6 @@ int DFRobot_ICM42688_SPI::begin(void)
 {
   if(mspi)
   {
-    mspi->csDisable(_cs);
   }
   return DFRobot_ICM42688::begin();
 }
@@ -764,7 +765,7 @@ void DFRobot_ICM42688_SPI::writeReg(uint8_t reg, void* pBuf, size_t size)
     printf("Error: spi4 not init yet\r\n");
     return;
   }
-  if(mspi->writeReg(_cs, reg, (uint8_t*)pBuf, size) != M_RESULT_EOK)
+  if(mspi->writeReg(reg, (uint8_t*)pBuf, size, _cs) != M_RESULT_EOK)
   {
     printf("ERROR: SPI WRITE REG ERROR\r\n");
   }
@@ -781,7 +782,7 @@ uint8_t DFRobot_ICM42688_SPI::readReg(uint8_t reg, void* pBuf, size_t size)
     printf("Error: spi4 not init yet\r\n");
     return 0;
   }
-  ret = (uint8_t)mspi->readReg(_cs, reg, (uint8_t*)pBuf, size);
+  ret = (uint8_t)mspi->readReg(reg, (uint8_t*)pBuf, size, _cs);
   if(ret != (uint8_t)M_RESULT_EOK)
   {
     printf("ERROR: SPI READ REG ERROR\r\n");

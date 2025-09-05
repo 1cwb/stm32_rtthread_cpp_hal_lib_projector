@@ -35,7 +35,7 @@ extern "C" void DMA1_Stream3_IRQHandler(void)
 
 extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         if(padc->buseRxDma())
@@ -50,6 +50,7 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
             };
             padc->setTransferComplete(true);
             padc->runInterruptCb(&data);
+            padc->switchNextBuff();
         }
         else
         {
@@ -65,8 +66,8 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
                     .len = padc->getItcoverCount()*padc->getDataPerSize(),
                 };
                 padc->setItcoverCount(0);
-                padc->setTransferComplete(true);
                 padc->runInterruptCb(&data);
+                padc->switchNextBuff();
             }
         }
     }
@@ -74,7 +75,7 @@ extern "C" void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         if(padc->buseRxDma())
@@ -87,14 +88,13 @@ extern "C" void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
                 .dataOfobjCount = padc->getChannelNum(),
                 .len = padc->getDataPerSize()*padc->getDmaBuffsize()/2,
             };
-            padc->setTransferComplete(true);
             padc->runInterruptCb(&data);
         }
     }
 }
 extern "C" void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         mDev::mAdc::usartData data = {
@@ -108,7 +108,7 @@ extern "C" void HAL_ADC_LevelOutOfWindowCallback(ADC_HandleTypeDef *hadc)
 }
 extern "C" void HAL_ADC_ErrorCallback(ADC_HandleTypeDef *hadc)
 {
-    adcx* padc = containerof(hadc, adcx, _adcHandle);
+    adcx* padc = adcx::GetObjectFromPrivateMember(hadc);
     if(hadc == padc->adcHandle())
     {
         mDev::mAdc::usartData data = {

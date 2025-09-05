@@ -30,6 +30,7 @@
 #include "datapublish.hpp"
 #include "crsf.hpp"
 #include "madcdrv.hpp"
+#include "mpwmdrv.hpp"
 
 /*
 *********************************************************************************************************
@@ -96,23 +97,62 @@ int main(void)
     mDev::mTimer* timer2 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER2);
     mDev::mTimer* timer1 = (mDev::mTimer*)mDev::mDeviceManager::getInstance()->getDevice(DEV_TIMER1);
     mDev::mAdc* adc1 = (mDev::mAdc*)mDev::mDeviceManager::getInstance()->getDevice(DEV_ADC1);
-    uint8_t usbBuff[64];
-
-    if(timer2)
-    {
-        timer2->registerInterruptCb([&](mDev::mDevice* dev, void* p){
-            
-        });
-        timer2->start(mDev::CHANNEL_1);
-        //KLOGI("timer2 frq = %lu, timeout = %lu\r\n",timer2->getFreq(),timer2->getTimeOutUs());
-    }
+    mDev::mPWM* pwm1 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM1);
+    mDev::mPWM* pwm2 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM2);
+    mDev::mPWM* pwm3 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM3);
+    mDev::mPWM* pwm4 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM4);
+    mDev::mPWM* pwm5 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM5);
+    mDev::mPWM* pwm6 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM6);
+    mDev::mPWM* pwm7 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM7);
+    mDev::mPWM* pwm8 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM8);
 
     if(timer1)
     {
         timer1->registerInterruptCb([&](mDev::mDevice* dev, void* p){
+           // printf("on time\r\n");
         });
-        timer1->start();
+        //timer1->start();
         //KLOGI("timer1 frq = %lu, timeout = %lu\r\n",timer1->getFreq(),timer1->getTimeOutUs());
+    }
+    if(pwm1)
+    {
+        pwm1->setDutyCycle(10.0f);
+        pwm1->start();
+    }
+    if(pwm2)
+    {
+        pwm2->setDutyCycle(20.0f);
+        pwm2->start();
+    }
+    if(pwm3)
+    {
+        pwm3->setDutyCycle(30.0f);
+        pwm3->start();
+    }
+    if(pwm4)
+    {
+        pwm4->setDutyCycle(40.0f);
+        pwm4->start();
+    }
+    if(pwm5)
+    {
+        pwm5->setDutyCycle(50.0f);
+        pwm5->start();
+    }
+    if(pwm6)
+    {
+        pwm6->setDutyCycle(60.0f);
+        pwm6->start();
+    }
+    if(pwm7)
+    {
+        pwm7->setDutyCycle(70.0f);
+        pwm7->start();
+    }
+    if(pwm8)
+    {
+        pwm8->setDutyCycle(80.0f);
+        pwm8->start();
     }
     workItem* ledWorkItem = new workItem("ledworkItem", 0, 200, [&](void* param){
         if(led1)
