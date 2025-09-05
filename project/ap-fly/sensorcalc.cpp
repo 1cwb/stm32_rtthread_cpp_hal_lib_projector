@@ -13,6 +13,7 @@
 #include "mklog.hpp"
 #include "project.hpp"
 #include "musbdevicedrv.hpp"
+#include "mgpiodrv.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -69,18 +70,22 @@ int sensorCalTask(void)
 {
 
     mthread* sensorCal = mthread::create("sensorcal", 2048, 1, 20, [&](void* p){
-
+        mDev::mGpio* gpiox = (mDev::mGpio*)mDev::mDeviceManager::getInstance()->getDevice("pb1");
+        gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
+        mDev::mGpio* gpiox1 = (mDev::mGpio*)mDev::mDeviceManager::getInstance()->getDevice("pb0");
+        gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
         mDev::mImu* imu1 = (mDev::mImu*)mDev::mDeviceManager::getInstance()->getDevice(DEV_IMU1);
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
         MadgwickAHRS ahrs1(200.0f,0.6f);
         workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
-
+            gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
             float ahrsData[7] = {0.0};
             float accelGyroBias1[6];   // 原来就有，保留
             float magBias[3];          // 原来就有，保留
+            gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             if(imu1)
             {
                 imu1->updateData();
@@ -90,7 +95,7 @@ int sensorCalTask(void)
                 accelGyroBias1[3] = imu1->getAccelXms2();
                 accelGyroBias1[4] = imu1->getAccelYms2();
                 accelGyroBias1[5] = imu1->getAccelZms2();
-                printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
+                //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
                 //printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
                 imu1Hub->publish(accelGyroBias1);
             }
@@ -109,6 +114,7 @@ int sensorCalTask(void)
                 pressure = mb1->getPressure();
                 mb1Hub->publish(&pressure);
             }
+            gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
             if(imu1 && mag1)
             {
                 static uint64_t last_us = 0;
@@ -126,6 +132,7 @@ int sensorCalTask(void)
             }
             ahrsData[6] = pressure;
             ahrsHub->publish(&ahrsData);
+            gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
         }, nullptr);
         workQueueManager::getInstance()->find(WORKQUEUE_HP_WORK)->scheduleWork(senscal);
 

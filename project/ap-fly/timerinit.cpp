@@ -11,8 +11,8 @@ static PWMX* pwm3 = nullptr;
 static PWMX* pwm4 = nullptr;
 static PWMX* pwm5 = nullptr;
 static PWMX* pwm6 = nullptr;
-static PWMX* pwm7 = nullptr;
-static PWMX* pwm8 = nullptr;
+//static PWMX* pwm7 = nullptr;
+//static PWMX* pwm8 = nullptr;
 /*********************Interrupt Callback******************************/
 extern "C" void TIM1_UP_IRQHandler(void)
 {
@@ -142,16 +142,18 @@ int timeInit()
     gpiox* pb11 = new gpiox("pb11");
     pb11->init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_11, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF1_TIM2);
 
-    pwm7 = new PWMX(DEV_PWM7, timer3);
-    pwm7->pwmConfig(&sConfig, TIM_CHANNEL_3);
+    //pwm7 = new PWMX(DEV_PWM7, timer3);
+    //pwm7->pwmConfig(&sConfig, TIM_CHANNEL_3);
 
     gpiox* pb0 = new gpiox("pb0");
-    pb0->init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_0, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF2_TIM3);
+    //pb0->init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_0, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF2_TIM3);
+    pb0->init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_0, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH);
 
-    pwm8 = new PWMX(DEV_PWM8, timer3);
-    pwm8->pwmConfig(&sConfig, TIM_CHANNEL_4);
+    //pwm8 = new PWMX(DEV_PWM8, timer3);
+    //pwm8->pwmConfig(&sConfig, TIM_CHANNEL_4);
     gpiox* pb1 = new gpiox("pb1");
-    pb1->init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_1, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF2_TIM3);
+    //pb1->init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_1, GPIO_MODE_AF_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH, GPIO_AF2_TIM3);
+    pb1->init([](bool b){if(b)__HAL_RCC_GPIOB_CLK_ENABLE();},GPIOB, GPIO_PIN_1, GPIO_MODE_OUTPUT_PP, GPIO_PULLDOWN, GPIO_SPEED_FREQ_VERY_HIGH);
     return 0;
 }
 INIT_EXPORT(timeInit, "0.4");
