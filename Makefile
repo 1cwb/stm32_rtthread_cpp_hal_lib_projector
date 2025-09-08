@@ -11,7 +11,7 @@ export BOARD_TYPE :=
 export AP_FLY_BOARD := 1
 export RC_FLY_BOARD := 2
 export DEMO_BOARD := 3
-BOARD_TYPE := $(RC_FLY_BOARD)
+BOARD_TYPE := $(AP_FLY_BOARD)
 
 # Build configuration: 0 for Release, 1 for Debug.
 # To build with debug info, run: make DEBUG=1
@@ -116,7 +116,7 @@ C_COMPILE_FLAGS 	:= -lc -lm -lnosys -std=c11 \
                    -fdata-sections \
                    -fno-common \
                    -fmessage-length=0 \
-                   -Os \
+                   -Og \
                    -flto \
                    -fno-stack-protector \
                    -fomit-frame-pointer
@@ -131,7 +131,7 @@ CXX_COMPILE_FLAGS 	:= -lc -lm -lnosys \
                    -Wall \
                    -ffunction-sections \
                    -fdata-sections \
-                   -Os \
+                   -Og \
                    -flto \
                    -fomit-frame-pointer \
                    -fvisibility=hidden
