@@ -32,14 +32,14 @@ EKFAHRS::EKFAHRS() :
     
     // 初始化过程噪声协方差
     Q = Matrix::identity(7);
-    for(int i = 0; i < 4; i++) Q(i, i) = 1e-2f;  // 四元数过程噪声
-    for(int i = 4; i < 7; i++) Q(i, i) = 1e-6f;  // 偏置过程噪声
+    for(int i = 0; i < 4; i++) Q(i, i) = 1e-4f;  // 四元数过程噪声
+    for(int i = 4; i < 7; i++) Q(i, i) = 1e-8f;  // 偏置过程噪声
     
     // 初始化测量噪声协方差
     R_accel = Matrix::identity(3);
-    R_accel(0, 0) = 0.05f;  // 加速度计测量噪声
-    R_accel(1, 1) = 0.05f;
-    R_accel(2, 2) = 0.05f;
+    R_accel(0, 0) = 0.1f;  // 加速度计测量噪声
+    R_accel(1, 1) = 0.1f;
+    R_accel(2, 2) = 0.1f;
     
     R_mag = Matrix::identity(3);
     R_mag(0, 0) = 0.1f;    // 磁力计测量噪声
