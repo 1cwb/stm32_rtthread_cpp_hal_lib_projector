@@ -6,142 +6,118 @@
 #include <cstring>
 #include "mklog.hpp"
 
-// 平台无关的矩阵运算辅助类
+// ---------------------------------------------------------------------------
+//  STM32 零动态内存 Matrix 替换块
+// ---------------------------------------------------------------------------
 class Matrix {
-private:
-    float* data;
-    int rows, cols;
-    
 public:
-    // 构造函数
-    Matrix(int r, int c) : rows(r), cols(c) {
-        data = new float[r * c];
-        memset(data, 0, sizeof(float) * r * c);
+    /* 生命周期 --------------------------------------------------------------*/
+    Matrix(int r, int c) noexcept : rows_(r), cols_(c) {
+        // 超过7×7直接停在断言，也可改成返回空对象
+        if (r > MAX || c > MAX) { rows_ = cols_ = 0; }
     }
-    
-    // 拷贝构造函数
-    Matrix(const Matrix& other) : rows(other.rows), cols(other.cols) {
-        data = new float[rows * cols];
-        memcpy(data, other.data, sizeof(float) * rows * cols);
+    /* 新增：3 参数构造列向量，c 必须 =1，第三参数只做占位 */
+    Matrix(int r, int c, const float* src) noexcept : rows_(r), cols_(c) {
+        if (c != 1 || r > MAX) { rows_ = cols_ = 0; return; }  // 只接受列向量
+        for (int i = 0; i < r; ++i) buf_[i] = src[i];
     }
-    
-    // 析构函数
-    ~Matrix() {
-        if (data) {
-            delete[] data;
-            data = nullptr;
-        }
+    Matrix(const Matrix& o) noexcept : rows_(o.rows_), cols_(o.cols_) {
+        for (int i = 0; i < rows_ * cols_; ++i) buf_[i] = o.buf_[i];
     }
-
-    // 获取元素
-    float& operator()(int i, int j) {
-        return data[i * cols + j];
+    Matrix(Matrix&& o) noexcept : rows_(o.rows_), cols_(o.cols_) {
+        for (int i = 0; i < rows_ * cols_; ++i) buf_[i] = o.buf_[i];
     }
-    
-    // 获取常量元素
-    const float& operator()(int i, int j) const {
-        return data[i * cols + j];
-    }
-    
-    // 矩阵乘法 - 优化版本，避免临时对象
-    Matrix operator*(const Matrix& other) const {
-        if (cols != other.rows) {
-            // 返回空矩阵
-            return Matrix(0, 0);
-        }
-        
-        Matrix result(rows, other.cols);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < other.cols; j++) {
-                float sum = 0.0f;
-                for (int k = 0; k < cols; k++) {
-                    sum += (*this)(i, k) * other(k, j);
-                }
-                result(i, j) = sum;
-            }
-        }
-        return result;
-    }
-    
-    // 矩阵转置
-    Matrix transpose() const {
-        Matrix result(cols, rows);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                result(j, i) = (*this)(i, j);
-            }
-        }
-        return result;
-    }
-    // 矩阵加法
-    Matrix operator+(const Matrix& other) const {
-        if (rows != other.rows || cols != other.cols) {
-            // 返回空矩阵或抛出异常
-            return Matrix(0, 0);
-        }
-        Matrix result(rows, cols);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                result(i, j) = (*this)(i, j) + other(i, j);
-            }
-        }
-        return result;
-    }
-    
-    // 矩阵标量乘法
-    Matrix operator*(float scalar) const {
-        Matrix result(rows, cols);
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                result(i, j) = (*this)(i, j) * scalar;
-            }
-        }
-        return result;
-    }
-    
-    // 矩阵赋值
-    Matrix& operator=(const Matrix& other) {
-        if (this != &other) {
-            delete[] data;
-            rows = other.rows;
-            cols = other.cols;
-            data = new float[rows * cols];
-            memcpy(data, other.data, sizeof(float) * rows * cols);
-        }
+    Matrix& operator=(Matrix o) noexcept {
+        rows_ = o.rows_; cols_ = o.cols_;
+        for (int i = 0; i < rows_ * cols_; ++i) buf_[i] = o.buf_[i];
         return *this;
     }
-    
-    // 获取子矩阵
-    Matrix getSubMatrix(int startRow, int startCol, int numRows, int numCols) const {
-        Matrix sub(numRows, numCols);
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                sub(i, j) = (*this)(startRow + i, startCol + j);
-            }
-        }
-        return sub;
+    ~Matrix() = default;
+
+    /* 基本访问 --------------------------------------------------------------*/
+    int  getRows() const { return rows_; }
+    int  getCols() const { return cols_; }
+    float&       operator()(int i, int j)       { return buf_[i * cols_ + j]; }
+    const float& operator()(int i, int j) const { return buf_[i * cols_ + j]; }
+
+    /* 运算接口 --------------------------------------------------------------*/
+    Matrix operator*(const Matrix& b) const noexcept {
+        Matrix c(rows_, b.cols_);
+        gemm(*this, b, c);
+        return c;
     }
-    
-    // 设置子矩阵
-    void setSubMatrix(int startRow, int startCol, const Matrix& sub) {
-        for (int i = 0; i < sub.getRows(); i++) {
-            for (int j = 0; j < sub.getCols(); j++) {
-                (*this)(startRow + i, startCol + j) = sub(i, j);
-            }
-        }
+    Matrix operator+(const Matrix& b) const noexcept {
+        Matrix c(rows_, cols_);
+        const int n = rows_ * cols_;
+        for (int i = 0; i < n; ++i) c.buf_[i] = buf_[i] + b.buf_[i];
+        return c;
     }
-    // 单位矩阵
-    static Matrix identity(int n) {
+    /* 新增：矩阵减法 */
+    Matrix operator-(const Matrix& b) const noexcept {
+        Matrix c(rows_, cols_);
+        const int n = rows_ * cols_;
+        for (int i = 0; i < n; ++i) c.buf_[i] = buf_[i] - b.buf_[i];
+        return c;
+    }
+    Matrix operator*(float s) const noexcept {
+        Matrix c(rows_, cols_);
+        const int n = rows_ * cols_;
+        for (int i = 0; i < n; ++i) c.buf_[i] = buf_[i] * s;
+        return c;
+    }
+    Matrix transpose() const noexcept {
+        Matrix t(cols_, rows_);
+        for (int i = 0; i < rows_; ++i)
+            for (int j = 0; j < cols_; ++j)
+                t(j, i) = (*this)(i, j);
+        return t;
+    }
+    // 3×3 原地转置，EKF 旋转矩阵专用
+    void transpose_this_3x3() noexcept {
+        std::swap(buf_[1], buf_[3]);
+        std::swap(buf_[2], buf_[6]);
+        std::swap(buf_[5], buf_[7]);
+    }
+    static Matrix identity(int n) noexcept {
         Matrix I(n, n);
-        for (int i = 0; i < n; i++) {
-            I(i, i) = 1.0f;
-        }
+        for (int i = 0; i < n; ++i) I(i, i) = 1.0f;
         return I;
     }
-    
-    int getRows() const { return rows; }
-    int getCols() const { return cols; }
+    Matrix getSubMatrix(int sr, int sc, int nr, int nc) const noexcept {
+        Matrix sub(nr, nc);
+        for (int i = 0; i < nr; ++i)
+            for (int j = 0; j < nc; ++j)
+                sub(i, j) = (*this)(sr + i, sc + j);
+        return sub;
+    }
+    void setSubMatrix(int sr, int sc, const Matrix& o) noexcept {
+        for (int i = 0; i < o.rows_; ++i)
+            for (int j = 0; j < o.cols_; ++j)
+                (*this)(sr + i, sc + j) = o(i, j);
+    }
+
+private:
+    static constexpr int MAX = 7;          // EKF 最大 7×7
+    int     rows_ = 0;
+    int     cols_ = 0;
+    float   buf_[MAX * MAX] = {0.0f};      // 固定栈缓冲区
+
+    static void gemm(const Matrix& a, const Matrix& b, Matrix& c) noexcept {
+        const int M = a.rows_;
+        const int N = b.cols_;
+        const int K = a.cols_;
+        for (int i = 0; i < M; ++i)
+            for (int j = 0; j < N; ++j) {
+                float s = 0.0f;
+                for (int k = 0; k < K; ++k)
+                    s += a(i, k) * b(k, j);
+                c(i, j) = s;
+            }
+    }
 };
+// ---------------------------------------------------------------------------
+//  零内存分配 Matrix 替换块结束，下方原 EKF_AHRS.h 内容保持不动
+// ---------------------------------------------------------------------------
 
 // EKF姿态解算主类
 class EKFAHRS {
@@ -189,7 +165,7 @@ public:
     
     // 获取四元数
     void getQuaternion(float& q0, float& q1, float& q2, float& q3);
-    
+
     // 获取陀螺仪偏置
     void getGyroBias(float& bx, float& by, float& bz);
 };

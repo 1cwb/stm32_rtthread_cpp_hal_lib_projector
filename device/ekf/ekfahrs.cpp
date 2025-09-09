@@ -201,270 +201,204 @@ void EKFAHRS::updateCovarianceMatrix(float dt) {
     }
 }
 
-// 主更新函数
-void EKFAHRS::update(float gx, float gy, float gz, 
-                    float ax, float ay, float az,
-                    float mx, float my, float mz,
-                    float current_time) {
-    // 计算时间间隔
+// 完全替换 EKFAHRS::update 函数体
+void EKFAHRS::update(float gx, float gy, float gz,
+                     float ax, float ay, float az,
+                     float mx, float my, float mz,
+                     float current_time)
+{
+    /*---------- 1. 计算时间间隔 ----------*/
     float dt = current_time - last_time;
-    if (dt <= 0 || dt > 0.1f) dt = 0.01f;
+    if (dt <= 0.0f || dt > 0.1f) dt = 0.01f;
     last_time = current_time;
-    
-    // 提取当前状态
+
+    /*---------- 2. 取出当前状态 ----------*/
     float q0 = x(0, 0), q1 = x(1, 0), q2 = x(2, 0), q3 = x(3, 0);
     float bgx = x(4, 0), bgy = x(5, 0), bgz = x(6, 0);
-    
-    // 补偿陀螺仪偏置
+
+    /*---------- 3. 补偿陀螺仪零偏 ----------*/
     float wx = gx - bgx;
     float wy = gy - bgy;
     float wz = gz - bgz;
-    
-    // 四元数微分方程
-    float q0_dot = 0.5f * (-q1 * wx - q2 * wy - q3 * wz);
-    float q1_dot = 0.5f * ( q0 * wx - q3 * wy + q2 * wz);
-    float q2_dot = 0.5f * ( q3 * wx + q0 * wy - q1 * wz);
-    float q3_dot = 0.5f * (-q2 * wx + q1 * wy + q0 * wz);
-    
-    // 更新四元数
-    x(0, 0) += q0_dot * dt;
-    x(1, 0) += q1_dot * dt;
-    x(2, 0) += q2_dot * dt;
-    x(3, 0) += q3_dot * dt;
-    
-    // 归一化四元数
-    float norm = sqrt(x(0,0)*x(0,0) + x(1,0)*x(1,0) + x(2,0)*x(2,0) + x(3,0)*x(3,0));
-    if (norm > 0.0001f) {
-        x(0, 0) /= norm;
-        x(1, 0) /= norm;
-        x(2, 0) /= norm;
-        x(3, 0) /= norm;
+
+    /*---------- 4. 3 阶角速度恒定四元数积分 ----------*/
+    float half_dt = 0.5f * dt;
+    float w_norm = sqrtf(wx * wx + wy * wy + wz * wz);
+
+    float dq0, dq1, dq2, dq3;
+    if (w_norm < 1e-6f) {
+        // 角速度太小，退化成一阶
+        dq0 = 1.0f;
+        dq1 = wx * half_dt;
+        dq2 = wy * half_dt;
+        dq3 = wz * half_dt;
+    } else {
+        float sin_half = sinf(w_norm * half_dt);
+        float cos_half = cosf(w_norm * half_dt);
+        float k = sin_half / w_norm;
+        dq0 = cos_half;
+        dq1 = wx * k;
+        dq2 = wy * k;
+        dq3 = wz * k;
     }
-    
-    // 更新协方差矩阵
+
+    // 四元数乘法：q_{k+1} = q_k ⊗ dq
+    float new_q0 = q0 * dq0 - q1 * dq1 - q2 * dq2 - q3 * dq3;
+    float new_q1 = q0 * dq1 + q1 * dq0 + q2 * dq3 - q3 * dq2;
+    float new_q2 = q0 * dq2 - q1 * dq3 + q2 * dq0 + q3 * dq1;
+    float new_q3 = q0 * dq3 + q1 * dq2 - q2 * dq1 + q3 * dq0;
+
+    // 写回状态向量
+    x(0, 0) = new_q0;
+    x(1, 0) = new_q1;
+    x(2, 0) = new_q2;
+    x(3, 0) = new_q3;
+
+    /*---------- 5. 归一化四元数 ----------*/
+    float norm = sqrtf(new_q0 * new_q0 + new_q1 * new_q1 +
+                       new_q2 * new_q2 + new_q3 * new_q3);
+    if (norm > 0.0001f) {
+        float inv_norm = 1.0f / norm;
+        x(0, 0) *= inv_norm;
+        x(1, 0) *= inv_norm;
+        x(2, 0) *= inv_norm;
+        x(3, 0) *= inv_norm;
+    }
+
+    /*---------- 6. 协方差预测 ----------*/
     updateCovarianceMatrix(dt);
-    
-    // 测量更新 - 加速度计
-    if (fabs(ax) + fabs(ay) + fabs(az) > 0.1f) {
-        // 归一化加速度计测量值
+
+    /*---------- 7. 加速度计更新 ----------*/
+    if (fabsf(ax) + fabsf(ay) + fabsf(az) > 0.1f) {
         float accel[3] = {ax, ay, az};
         normalizeVector(accel);
-        
-        // 计算预期的重力向量
-        float expected_gx = 2.0f * (q1*q3 - q0*q2);
-        float expected_gy = 2.0f * (q2*q3 + q0*q1);
-        float expected_gz = 2.0f * (q0*q0 + q3*q3) - 1.0f;
-        
-        // 测量残差
+
+        q0 = x(0, 0); q1 = x(1, 0); q2 = x(2, 0); q3 = x(3, 0);
+        float expected_gx = 2.0f * (q1 * q3 - q0 * q2);
+        float expected_gy = 2.0f * (q2 * q3 + q0 * q1);
+        float expected_gz = 2.0f * (q0 * q0 + q3 * q3) - 1.0f;
+
         float dz[3] = {
             accel[0] - expected_gx,
             accel[1] - expected_gy,
             accel[2] - expected_gz
         };
-        
-        // 简化的测量雅可比矩阵 H (3x7)
+
         Matrix H(3, 7);
-        
-        // 对四元数的偏导数
         H(0, 0) = -2.0f * q2; H(0, 1) =  2.0f * q3; H(0, 2) = -2.0f * q0; H(0, 3) =  2.0f * q1;
         H(1, 0) =  2.0f * q1; H(1, 1) =  2.0f * q0; H(1, 2) =  2.0f * q3; H(1, 3) =  2.0f * q2;
         H(2, 0) =  2.0f * q0; H(2, 1) = -2.0f * q1; H(2, 2) = -2.0f * q2; H(2, 3) =  2.0f * q3;
-        
-        // 对偏置的偏导数为0
-        for (int i = 0; i < 3; i++) {
-            H(i, 4) = 0.0f;
-            H(i, 5) = 0.0f;
-            H(i, 6) = 0.0f;
+        for (int i = 0; i < 3; ++i) {
+            H(i, 4) = 0.0f; H(i, 5) = 0.0f; H(i, 6) = 0.0f;
         }
-        
-        // 计算 H * P * H^T + R
+
         Matrix H_T = H.transpose();
-        Matrix HP = H * P;
-        Matrix HPH_T = HP * H_T;
-        
-        // 加上测量噪声
-        for (int i = 0; i < 3; i++) {
-            HPH_T(i, i) += R_accel(i, i);
-        }
-        
-        // 计算卡尔曼增益 K = P * H^T * (HPH_T)^-1
-        // 简化求逆 (假设对角矩阵)
+        Matrix HP  = H * P;
+        Matrix S   = HP * H_T;
+        for (int i = 0; i < 3; ++i) S(i, i) += R_accel(i, i);
+
         Matrix S_inv(3, 3);
-        for(int i = 0; i < 3; i++) {
-            S_inv(i, i) = 1.0f / HPH_T(i, i);
-        }
-        
-        Matrix PH_T = P * H_T;
-        Matrix K = PH_T * S_inv;
-        
-        // 更新状态估计
-        for(int i = 0; i < 7; i++) {
-            float correction = 0.0f;
-            for(int j = 0; j < 3; j++) {
-                correction += K(i, j) * dz[j];
-            }
-            x(i, 0) += correction;
-        }
-        
-        // 更新协方差矩阵 P = (I - K * H) * P
+        for (int i = 0; i < 3; ++i) S_inv(i, i) = 1.0f / S(i, i);
+
+        Matrix K   = (P * H_T) * S_inv;
+        Matrix dx  = K * Matrix(3, 1, dz);
+        for (int i = 0; i < 7; ++i) x(i, 0) += dx(i, 0);
+
         Matrix I = Matrix::identity(7);
-        Matrix KH = K * H;
-        Matrix I_KH(7, 7);
-        
-        for(int i = 0; i < 7; i++) {
-            for(int j = 0; j < 7; j++) {
-                I_KH(i, j) = I(i, j) - KH(i, j);
-            }
-        }
-        
-        P = I_KH * P;
-        
-        // 再次归一化四元数
-        norm = sqrt(x(0,0)*x(0,0) + x(1,0)*x(1,0) + x(2,0)*x(2,0) + x(3,0)*x(3,0));
+        P = (I - K * H) * P;
+
+        norm = sqrtf(x(0, 0) * x(0, 0) + x(1, 0) * x(1, 0) +
+                     x(2, 0) * x(2, 0) + x(3, 0) * x(3, 0));
         if (norm > 0.0001f) {
-            x(0, 0) /= norm;
-            x(1, 0) /= norm;
-            x(2, 0) /= norm;
-            x(3, 0) /= norm;
+            float inv = 1.0f / norm;
+            x(0, 0) *= inv; x(1, 0) *= inv; x(2, 0) *= inv; x(3, 0) *= inv;
         }
     }
-    
-    // 测量更新 - 磁力计 (类似加速度计的处理)
-    // 测量更新 - 磁力计 (完整实现)
-    if (fabs(mx) + fabs(my) + fabs(mz) > 0.1f) {
-        // 归一化磁力计测量值
+
+    /*---------- 8. 磁力计更新（原逻辑保持不变） ----------*/
+    if (fabsf(mx) + fabsf(my) + fabsf(mz) > 0.1f) {
         float mag[3] = {mx, my, mz};
         normalizeVector(mag);
-        
-        // 获取当前四元数
-        float q0 = x(0, 0), q1 = x(1, 0), q2 = x(2, 0), q3 = x(3, 0);
-        
-        // 计算旋转矩阵
+
+        q0 = x(0, 0); q1 = x(1, 0); q2 = x(2, 0); q3 = x(3, 0);
         float R[3][3];
         quaternionToRotationMatrix(&x(0, 0), R);
-        
-        // 将机体坐标系的磁场向量转换到世界坐标系
+
         float hx = mag[0] * R[0][0] + mag[1] * R[1][0] + mag[2] * R[2][0];
         float hy = mag[0] * R[0][1] + mag[1] * R[1][1] + mag[2] * R[2][1];
         float hz = mag[0] * R[0][2] + mag[1] * R[1][2] + mag[2] * R[2][2];
-        
-        // 计算地磁场的水平分量（忽略Z轴干扰）
-        float bx = sqrt(hx * hx + hy * hy);
-        float by = 0.0f;  // 假设地磁场指向北（X轴方向）
-        float bz = hz;    // 保留垂直分量
-        
-        // 将世界坐标系的参考磁场向量转换回机体坐标系
+
+        float bx = sqrtf(hx * hx + hy * hy);
+        float by = 0.0f;
+        float bz = hz;
+
         float expected_mx = bx * R[0][0] + by * R[0][1] + bz * R[0][2];
         float expected_my = bx * R[1][0] + by * R[1][1] + bz * R[1][2];
         float expected_mz = bx * R[2][0] + by * R[2][1] + bz * R[2][2];
-        
-        // 测量残差
+
         float dz[3] = {
             mag[0] - expected_mx,
             mag[1] - expected_my,
             mag[2] - expected_mz
         };
-        
-        // 动态检测：如果残差过大，说明有磁干扰
-        float residual_norm = sqrt(dz[0]*dz[0] + dz[1]*dz[1] + dz[2]*dz[2]);
-        
-        // 自适应测量噪声：磁干扰情况下增加噪声协方差
+
+        float residual_norm = sqrtf(dz[0] * dz[0] + dz[1] * dz[1] + dz[2] * dz[2]);
         Matrix R_mag_adaptive = R_mag;
-        if (residual_norm > 0.5f) {  // 磁干扰阈值
+        if (residual_norm > 0.5f) {
             float scale = 1.0f + 20.0f * residual_norm;
-            for (int i = 0; i < 3; i++) {
-                R_mag_adaptive(i, i) = R_mag(i, i) * scale;
-            }
+            for (int i = 0; i < 3; ++i) R_mag_adaptive(i, i) *= scale;
         }
-        
-        // 磁力计测量雅可比矩阵 H (3x7)
+
         Matrix H(3, 7);
-        
-        // 对四元数的偏导数（简化版本，实际应该更复杂）
-        // 这里使用近似的雅可比矩阵，完整推导很复杂
         H(0, 0) =  2.0f * (q3 * mag[1] - q2 * mag[2]);
         H(0, 1) =  2.0f * (q2 * mag[1] + q3 * mag[2]);
         H(0, 2) =  2.0f * (q1 * mag[1] + q0 * mag[2] - 2.0f * q2 * mag[0]);
         H(0, 3) =  2.0f * (q0 * mag[1] - q1 * mag[2] - 2.0f * q3 * mag[0]);
-        
+
         H(1, 0) =  2.0f * (-q3 * mag[0] + q1 * mag[2]);
         H(1, 1) =  2.0f * (q2 * mag[0] - 2.0f * q1 * mag[1] + q0 * mag[2]);
         H(1, 2) =  2.0f * (q3 * mag[0] - 2.0f * q2 * mag[1] + q0 * mag[2]);
         H(1, 3) =  2.0f * (-q1 * mag[0] - q2 * mag[2] + 2.0f * q3 * mag[1]);
-        
+
         H(2, 0) =  2.0f * (q2 * mag[0] - q1 * mag[1]);
         H(2, 1) =  2.0f * (q3 * mag[0] + q0 * mag[1] - 2.0f * q1 * mag[2]);
         H(2, 2) =  2.0f * (-q0 * mag[0] + q3 * mag[1] - 2.0f * q2 * mag[2]);
         H(2, 3) =  2.0f * (q1 * mag[0] + q2 * mag[1]);
-        
-        // 对偏置的偏导数为0（磁力计不影响陀螺仪偏置）
-        for (int i = 0; i < 3; i++) {
-            H(i, 4) = 0.0f;
-            H(i, 5) = 0.0f;
-            H(i, 6) = 0.0f;
+        for (int i = 0; i < 3; ++i) {
+            H(i, 4) = 0.0f; H(i, 5) = 0.0f; H(i, 6) = 0.0f;
         }
-        
-        // 计算 H * P * H^T + R_mag_adaptive
+
         Matrix H_T = H.transpose();
-        Matrix HP = H * P;
-        Matrix HPH_T = HP * H_T;
-        
-        // 加上自适应测量噪声
-        for (int i = 0; i < 3; i++) {
-            HPH_T(i, i) += R_mag_adaptive(i, i);
-        }
-        
-        // 计算卡尔曼增益
+        Matrix HP  = H * P;
+        Matrix S   = HP * H_T;
+        for (int i = 0; i < 3; ++i) S(i, i) += R_mag_adaptive(i, i);
+
         Matrix S_inv(3, 3);
-        for(int i = 0; i < 3; i++) {
-            S_inv(i, i) = 1.0f / HPH_T(i, i);
-        }
-        
-        Matrix PH_T = P * H_T;
-        Matrix K = PH_T * S_inv;
-        
-        // 限制卡尔曼增益的大小，防止磁干扰导致过大的更新
-        for (int i = 0; i < 7; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (K(i, j) > 0.3f) K(i, j) = 0.3f;
-                if (K(i, j) < -0.3f) K(i, j) = -0.3f;
-            }
-        }
-        
-        // 更新状态估计（主要影响航向角）
-        for(int i = 0; i < 7; i++) {
-            float correction = 0.0f;
-            for(int j = 0; j < 3; j++) {
-                correction += K(i, j) * dz[j];
-            }
-            // 对四元数更新施加更严格的限制（磁力计更新应该更温和）
+        for (int i = 0; i < 3; ++i) S_inv(i, i) = 1.0f / S(i, i);
+
+        Matrix K = (P * H_T) * S_inv;
+        for (int i = 0; i < 7; ++i)
+            for (int j = 0; j < 3; ++j)
+                if (K(i, j) > 0.3f) K(i, j) = 0.3f; else if (K(i, j) < -0.3f) K(i, j) = -0.3f;
+
+        Matrix dx = K * Matrix(3, 1, dz);
+        for (int i = 0; i < 7; ++i) {
+            float corr = dx(i, 0);
             if (i < 4) {
-                if (correction > 0.05f) correction = 0.05f;
-                if (correction < -0.05f) correction = -0.05f;
+                if (corr >  0.05f) corr =  0.05f;
+                if (corr < -0.05f) corr = -0.05f;
             }
-            x(i, 0) += correction;
+            x(i, 0) += corr;
         }
-        
-        // 更新协方差矩阵 P = (I - K * H) * P
+
         Matrix I = Matrix::identity(7);
-        Matrix KH = K * H;
-        Matrix I_KH(7, 7);
-        
-        for(int i = 0; i < 7; i++) {
-            for(int j = 0; j < 7; j++) {
-                I_KH(i, j) = I(i, j) - KH(i, j);
-            }
-        }
-        
-        P = I_KH * P;
-        
-        // 再次归一化四元数
-        norm = sqrt(x(0,0)*x(0,0) + x(1,0)*x(1,0) + x(2,0)*x(2,0) + x(3,0)*x(3,0));
+        P = (I - K * H) * P;
+
+        norm = sqrtf(x(0, 0) * x(0, 0) + x(1, 0) * x(1, 0) +
+                     x(2, 0) * x(2, 0) + x(3, 0) * x(3, 0));
         if (norm > 0.0001f) {
-            x(0, 0) /= norm;
-            x(1, 0) /= norm;
-            x(2, 0) /= norm;
-            x(3, 0) /= norm;
+            float inv = 1.0f / norm;
+            x(0, 0) *= inv; x(1, 0) *= inv; x(2, 0) *= inv; x(3, 0) *= inv;
         }
     }
 }
