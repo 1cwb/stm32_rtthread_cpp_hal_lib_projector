@@ -84,7 +84,8 @@ int sensorCalTask(void)
         EKFAHRS ekf;
 
         // 初始化滤波器 (使用初始的加速度计和磁力计数据)
-        ekf.initialize(0.0f, 0.0f, 9.81f, 0.2f, 0.0f, 0.4f);
+        //ekf.initialize(0.0f, 0.0f, 9.81f, 0.0f, 0.0f, 0.0f);
+        bool binit = false;
         workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
@@ -136,8 +137,13 @@ int sensorCalTask(void)
                 //ahrsData[1] = ahrs1.getRoll()*57.3f;
                 //ahrsData[2] = ahrs1.getPitch()*57.3f;
                 // 更新滤波器
+                if(!binit)
+                {
+                    binit = true;
+                    ekf.initialize(accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
+                }
                 ekf.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2], dt);
-                
+
                 // 获取欧拉角
                 float roll, pitch, yaw;
                 ekf.getEulerAngles(roll, pitch, yaw);
