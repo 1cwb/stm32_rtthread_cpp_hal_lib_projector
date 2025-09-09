@@ -26,7 +26,7 @@ mResult workQueueManager::init()
             KLOGE("new workQueue fail");
             break;
         }
-        if(wqList[0]->init(WORKQUEUE_LP_WORK, 20, 4096, 6) != M_RESULT_EOK)
+        if(wqList[0]->init(WORKQUEUE_LP_WORK, 20, 4096*2, 6) != M_RESULT_EOK)
         {
             KLOGE("Init %s Fail",WORKQUEUE_LP_WORK);
             break;
@@ -37,7 +37,7 @@ mResult workQueueManager::init()
             KLOGE("new workQueue fail");
             break;
         }
-        if(wqList[1]->init(WORKQUEUE_HP_WORK, 20, 4096, 4) != M_RESULT_EOK)
+        if(wqList[1]->init(WORKQUEUE_HP_WORK, 20, 4096*2, 4) != M_RESULT_EOK)
         {
             KLOGE("Init %s Fail",WORKQUEUE_HP_WORK);
             break;

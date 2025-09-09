@@ -14,6 +14,7 @@
 #include "project.hpp"
 #include "musbdevicedrv.hpp"
 #include "mgpiodrv.hpp"
+#include "ekfahrs.hpp"
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -69,7 +70,7 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 int sensorCalTask(void)
 {
 
-    mthread* sensorCal = mthread::create("sensorcal", 2048, 1, 20, [&](void* p){
+    mthread* sensorCal = mthread::create("sensorcal", 2048*2, 1, 20, [&](void* p){
         mDev::mGpio* gpiox = (mDev::mGpio*)mDev::mDeviceManager::getInstance()->getDevice("pb1");
         gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
         mDev::mGpio* gpiox1 = (mDev::mGpio*)mDev::mDeviceManager::getInstance()->getDevice("pb0");
@@ -78,7 +79,12 @@ int sensorCalTask(void)
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
-        MadgwickAHRS ahrs1(200.0f,0.6f);
+        //MadgwickAHRS ahrs1(200.0f,0.6f);
+
+        EKFAHRS ekf;
+
+        // 初始化滤波器 (使用初始的加速度计和磁力计数据)
+        ekf.initialize(0.0f, 0.0f, 9.81f, 0.2f, 0.0f, 0.4f);
         workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
@@ -95,7 +101,7 @@ int sensorCalTask(void)
                 accelGyroBias1[3] = imu1->getAccelXms2();
                 accelGyroBias1[4] = imu1->getAccelYms2();
                 accelGyroBias1[5] = imu1->getAccelZms2();
-                printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
+                //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
                 //printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
                 imu1Hub->publish(accelGyroBias1);
             }
@@ -124,11 +130,20 @@ int sensorCalTask(void)
                 // 防止第一次 dt 为 0
                 if (dt <= 0.0f || dt > 0.05f) dt = 0.005f;
 
-                ahrs1.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
+                //ahrs1.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
                 //printf("YAW:%.4f,ROL:%.4f,PIT:%.4f\r\n", yaw, roll, pitch);
-                ahrsData[0] = ahrs1.getYaw()*57.3f;
-                ahrsData[1] = ahrs1.getRoll()*57.3f;
-                ahrsData[2] = ahrs1.getPitch()*57.3f;
+                //ahrsData[0] = ahrs1.getYaw()*57.3f;
+                //ahrsData[1] = ahrs1.getRoll()*57.3f;
+                //ahrsData[2] = ahrs1.getPitch()*57.3f;
+                // 更新滤波器
+                ekf.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2], dt);
+                
+                // 获取欧拉角
+                float roll, pitch, yaw;
+                ekf.getEulerAngles(roll, pitch, yaw);
+                ahrsData[0] = yaw*57.3f;
+                ahrsData[1] = roll*57.3f;
+                ahrsData[2] = pitch*57.3f;
             }
             ahrsData[6] = pressure;
             ahrsHub->publish(&ahrsData);
@@ -142,7 +157,7 @@ int sensorCalTask(void)
             if(ahrsHub->poll(ahrsNode))
             {
                 ahrsHub->copy(ahrsNode, ahrsData);
-                //ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[0], ahrsData[1], ahrsData[2]);
+                ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[0], ahrsData[1], ahrsData[2]);
                 ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[6], 0, 0);
             }
             if(mag1Hub->poll(mag1Node))
