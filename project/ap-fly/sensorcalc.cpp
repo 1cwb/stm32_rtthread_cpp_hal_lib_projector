@@ -4,7 +4,6 @@
 #include "mmagnetmetordrv.hpp"
 #include "mimudrv.hpp"
 #include "mbarometordrv.hpp"
-#include "MadgwickAHRS.hpp"
 #include "qmc5883.hpp"
 #include "datapublish.hpp"
 #include "systeminfo.hpp"
@@ -14,7 +13,9 @@
 #include "project.hpp"
 #include "musbdevicedrv.hpp"
 #include "mgpiodrv.hpp"
-#include "ekfahrs.hpp"
+#include "mahony.hpp"
+
+using namespace bfimu;
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -79,13 +80,8 @@ int sensorCalTask(void)
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
-        #if USED_MADGWICK
-        MadgwickAHRS ahrs1(200.0f,0.6f);
-        #else
-        EKFAHRS ekf;
-        bool binit = false;
-        #endif
-        workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
+        imuInit();
+        workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
             float ahrsData[7] = {0.0};
@@ -123,34 +119,10 @@ int sensorCalTask(void)
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
             if(imu1 && mag1)
             {
-                static uint64_t last_us = 0;
-                uint64_t now_us = systickx->systimeNowUs();
-                float dt = (now_us - last_us) / 1e6f;
-                last_us = now_us;
-                // 防止第一次 dt 为 0
-                if (dt <= 0.0f || dt > 0.05f) dt = 0.005f;
-                #if USED_MADGWICK
-                ahrs1.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
-                //printf("YAW:%.4f,ROL:%.4f,PIT:%.4f\r\n", yaw, roll, pitch);
-                ahrsData[0] = ahrs1.getYaw()*57.3f;
-                ahrsData[1] = ahrs1.getRoll()*57.3f;
-                ahrsData[2] = ahrs1.getPitch()*57.3f;
-                #else
-                // 更新滤波器
-                if(!binit)
-                {
-                    binit = true;
-                    ekf.initialize(accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
-                }
-                ekf.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2], dt);
-
-                // 获取欧拉角
-                float roll, pitch, yaw;
-                ekf.getEulerAngles(roll, pitch, yaw);
-                ahrsData[0] = yaw*57.3f;
-                ahrsData[1] = roll*57.3f;
-                ahrsData[2] = pitch*57.3f;
-                #endif
+                imuCalculateEstimatedAttitude(systickx->systimeNowUs(), accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
+                ahrsData[0] = attitude.values.yaw/10.0f;
+                ahrsData[1] = attitude.values.roll/10.0f;
+                ahrsData[2] = attitude.values.pitch/10.0f;
             }
             ahrsData[6] = pressure;
             ahrsHub->publish(&ahrsData);
