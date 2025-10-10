@@ -80,7 +80,8 @@ int sensorCalTask(void)
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
-        imuInit();
+        Mahony filter1;
+        filter1.imuInit();
         workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
@@ -119,10 +120,10 @@ int sensorCalTask(void)
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
             if(imu1 && mag1)
             {
-                imuCalculateEstimatedAttitude(systickx->systimeNowUs(), accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
-                ahrsData[0] = attitude.values.yaw/10.0f;
-                ahrsData[1] = attitude.values.roll/10.0f;
-                ahrsData[2] = attitude.values.pitch/10.0f;
+                filter1.update(systickx->systimeNowUs(), accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
+                ahrsData[0] = filter1.getYaw()/10.0f;
+                ahrsData[1] = filter1.getRoll()/10.0f;
+                ahrsData[2] = filter1.getPitch()/10.0f;
             }
             ahrsData[6] = pressure;
             ahrsHub->publish(&ahrsData);

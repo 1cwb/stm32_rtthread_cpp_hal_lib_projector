@@ -3,53 +3,9 @@
 #include "maths.hpp"
 #include "vector.hpp"
 
-#define SPIN_RATE_LIMIT 20
-
-#define ATTITUDE_RESET_QUIET_TIME 250000   // 250ms - gyro quiet period after disarm before attitude reset
-#define ATTITUDE_RESET_GYRO_LIMIT 15       // 15 deg/sec - gyro limit for quiet period
-#define ATTITUDE_RESET_ACTIVE_TIME 500000  // 500ms - Time to wait for attitude to converge at high gain
-
-
 namespace bfimu {
 
-
-static imuRuntimeConfig_t imuRuntimeConfig;
-
-matrix33_t rMat;
-static vector2_t north_ef;
-
-// quaternion of sensor frame relative to earth frame
-quaternion_t q;
-quaternionProducts qP;
-// headfree quaternions
-quaternion_t headfree;
-quaternion_t offset;
-
-// absolute angle inclination in multiple of 0.1 degree    180 deg = 1800
-attitudeEulerAngles_t attitude;
-quaternion_t imuAttitudeQuaternion;  
-
-static float throttleAngleScale;
-static int throttleAngleValue;
-static float smallAngleCosZ = 0;
-
-#ifdef USE_RACE_PRO
-#define DEFAULT_SMALL_ANGLE 180
-#else
-#define DEFAULT_SMALL_ANGLE 25
-#endif
-
-uint8_t armingFlags = 0;
-
-imuConfig_t imuConfig = {
-    .imu_dcm_kp = 2500,      // 1.0 * 10000
-    .imu_dcm_ki = 0,         // 0.003 * 10000
-    .small_angle = DEFAULT_SMALL_ANGLE,
-    .imu_process_denom = 2,
-    .mag_declination = 0
-};
-
-static void imuQuaternionComputeProducts(quaternion_t *quat, quaternionProducts *quatProd)
+void Mahony::imuQuaternionComputeProducts(quaternion_t *quat, quaternionProducts *quatProd)
 {
     quatProd->ww = quat->w * quat->w;
     quatProd->wx = quat->w * quat->x;
@@ -63,7 +19,7 @@ static void imuQuaternionComputeProducts(quaternion_t *quat, quaternionProducts 
     quatProd->zz = quat->z * quat->z;
 }
 
-void imuComputeRotationMatrix(void)
+void Mahony::imuComputeRotationMatrix(void)
 {
     imuQuaternionComputeProducts(&q, &qP);
 
@@ -80,12 +36,12 @@ void imuComputeRotationMatrix(void)
     rMat.m[2][2] = 1.0f - 2.0f * qP.xx - 2.0f * qP.yy;
 }
 
-static float calculateThrottleAngleScale(uint16_t throttle_correction_angle)
+float Mahony::calculateThrottleAngleScale(uint16_t throttle_correction_angle)
 {
     return (1800.0f / M_PIf) * (900.0f / throttle_correction_angle);
 }
 
-void imuConfigure(uint16_t throttle_correction_angle, uint8_t throttle_correction_value)
+void Mahony::imuConfigure(uint16_t throttle_correction_angle, uint8_t throttle_correction_value)
 {
     // current default for imu_dcm_kp is 2500; our 'normal' or baseline value for imuDcmKp is 0.25
     imuRuntimeConfig.imuDcmKp = imuConfig.imu_dcm_kp / 10000.0f;
@@ -102,13 +58,13 @@ void imuConfigure(uint16_t throttle_correction_angle, uint8_t throttle_correctio
     throttleAngleValue = throttle_correction_value;
 }
 
-void imuInit(void)
+void Mahony::imuInit(void)
 {
     imuConfigure(0, 0);
     imuComputeRotationMatrix();
 }
 
-float imuCalcMagErr(float x, float y, float z)
+float Mahony::imuCalcMagErr(float x, float y, float z)
 {
     // Use measured magnetic field vector
     vector3_t mag_bf = {x, y, z};
@@ -139,12 +95,12 @@ float imuCalcMagErr(float x, float y, float z)
     }
 }
 
-static float invSqrt(float x)
+float Mahony::invSqrt(float x)
 {
     return 1.0f / sqrtf(x);
 }
 
-void imuMahonyAHRSupdate(float dt,
+void Mahony::imuMahonyAHRSupdate(float dt,
                                 float gx, float gy, float gz,
                                 bool useAcc, float ax, float ay, float az,
                                 float headingErrMag, float headingErrCog,
@@ -226,7 +182,7 @@ void imuMahonyAHRSupdate(float dt,
     imuComputeRotationMatrix();
 }
 
-void imuUpdateEulerAngles(void)
+void Mahony::imuUpdateEulerAngles(void)
 {
     quaternionProducts buffer;
 
@@ -254,7 +210,7 @@ void imuUpdateEulerAngles(void)
 //   - wait for a 250ms period of low gyro activity to ensure the craft is not moving
 //   - use a large dcmKpGain value for 500ms to allow the attitude estimate to quickly converge
 //   - reset the gain back to the standard setting
-static float imuCalcKpGain(uint64_t currentTimeUs, bool useAcc, float *gyroAverage)
+float Mahony::imuCalcKpGain(uint64_t currentTimeUs, bool useAcc, float *gyroAverage)
 {
     static enum {
         stArmed,
@@ -266,7 +222,7 @@ static float imuCalcKpGain(uint64_t currentTimeUs, bool useAcc, float *gyroAvera
 
     static uint64_t stateTimeout;
 
-    const bool armState = ARMING_FLAG(ARMED);
+    const bool armState = isArmingFlagSet(ARMED);
 
     if (!armState) {
         // If gyro activity exceeds the threshold then restart the quiet period.
@@ -310,7 +266,7 @@ static float imuCalcKpGain(uint64_t currentTimeUs, bool useAcc, float *gyroAvera
     }
 }
 
-void imuCalculateEstimatedAttitude(uint64_t currentTimeUs,
+void Mahony::update(uint64_t currentTimeUs,
                                 float gx, float gy, float gz,
                                 float ax, float ay, float az,
                                 float mx, float my, float mz)
@@ -321,11 +277,7 @@ void imuCalculateEstimatedAttitude(uint64_t currentTimeUs,
     const float dt = deltaT * 1e-6f;
 
     // *** magnetometer based error estimate ***
-    //bool useMag = false;   // mag will suppress GPS correction
-    float magErr = 0;
-
-    //useMag = true;
-    magErr = imuCalcMagErr(mx, my, mz);
+    float magErr = imuCalcMagErr(mx, my, mz);
 
     // *** GoC based error estimate ***
     float cogErr = 0;
