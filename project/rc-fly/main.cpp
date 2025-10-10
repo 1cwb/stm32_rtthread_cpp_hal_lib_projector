@@ -13,7 +13,6 @@
 #include "delay.h"
 #include "mmagnetmetordrv.hpp"
 #include "mbarometordrv.hpp"
-#include "MadgwickAHRS.hpp"
 #include "qmc5883.hpp"
 #include "usart.h"
 #include "workqueue.hpp"

@@ -4,7 +4,6 @@
 #include "mmagnetmetordrv.hpp"
 #include "mimudrv.hpp"
 #include "mbarometordrv.hpp"
-#include "MadgwickAHRS.hpp"
 #include "qmc5883.hpp"
 #include "datapublish.hpp"
 #include "systeminfo.hpp"
@@ -14,6 +13,9 @@
 #include "project.hpp"
 #include "musbdevicedrv.hpp"
 #include "mgpiodrv.hpp"
+#include "mahony.hpp"
+
+using namespace bfimu;
 
 #define BYTE0(dwTemp)       ( *( (char *)(&dwTemp)		) )
 #define BYTE1(dwTemp)       ( *( (char *)(&dwTemp) + 1) )
@@ -78,7 +80,7 @@ int sensorCalTask(void)
         mDev::mMagnetmetor* mag1 = (mDev::mMagnetmetor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_MAG1);
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
-        MadgwickAHRS ahrs1(200.0f,0.6f);
+        Mahony ahrs1;
         workItem* senscal = new workItem("imucal", 0, 5, [&](void* param){
             //gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
@@ -117,18 +119,11 @@ int sensorCalTask(void)
             //gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
             if(imu1 && mag1)
             {
-                static uint64_t last_us = 0;
-                uint64_t now_us = systickx->systimeNowUs();
-                float dt = (now_us - last_us) / 1e6f;
-                last_us = now_us;
-                // 防止第一次 dt 为 0
-                if (dt <= 0.0f || dt > 0.05f) dt = 0.005f;
-
-                ahrs1.update(accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
+                ahrs1.update(systickx->systimeNowUs(), accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
                 //printf("YAW:%.4f,ROL:%.4f,PIT:%.4f\r\n", yaw, roll, pitch);
-                ahrsData[0] = ahrs1.getYaw()*57.3f;
-                ahrsData[1] = ahrs1.getRoll()*57.3f;
-                ahrsData[2] = ahrs1.getPitch()*57.3f;
+                ahrsData[0] = ahrs1.getYaw()/10.0f;
+                ahrsData[1] = ahrs1.getRoll()/10.0f;
+                ahrsData[2] = ahrs1.getPitch()/10.0f;
             }
             ahrsData[6] = pressure;
             ahrsHub->publish(&ahrsData);

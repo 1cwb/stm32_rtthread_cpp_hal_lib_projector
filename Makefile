@@ -11,7 +11,7 @@ export BOARD_TYPE :=
 export AP_FLY_BOARD := 1
 export RC_FLY_BOARD := 2
 export DEMO_BOARD := 3
-BOARD_TYPE := $(AP_FLY_BOARD)
+BOARD_TYPE := $(RC_FLY_BOARD)
 
 # Build configuration: 0 for Release, 1 for Debug.
 # To build with debug info, run: make DEBUG=1
