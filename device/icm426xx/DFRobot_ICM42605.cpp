@@ -340,15 +340,19 @@ bool DFRobot_ICM42605::setODRAndFSR(uint8_t who,uint8_t ODR,uint8_t FSR)
       switch(FSR){
         case FSR_0:
           _accelRange = (16 * ICM42605_ONE_G / 32768);
+          _adcAcc1G = 32768 / 16;
           break;
         case FSR_1:
           _accelRange = (8 * ICM42605_ONE_G / 32768);
+          _adcAcc1G = 32768 / 8;
           break;
         case FSR_2:
           _accelRange = (4 * ICM42605_ONE_G / 32768);
+          _adcAcc1G = 32768 / 4;
           break;
         case FSR_3:
           _accelRange = (2 * ICM42605_ONE_G / 32768);
+          _adcAcc1G = 32768 / 2;
           break;
       }
     }

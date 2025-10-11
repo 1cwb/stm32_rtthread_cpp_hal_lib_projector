@@ -1156,7 +1156,8 @@ protected:
    * @return return the read length, returning 0 means length reading failed
    */
   virtual uint8_t readReg(uint8_t reg, void* pBuf, size_t size) = 0;
-
+  float getAccelRangeScale() {return _accelRange;}
+  uint32_t getAdcAcc1G() {return _adcAcc1G;}
 private:
   /**
    * @fn setGyroNotchFilterFHz
@@ -1230,7 +1231,6 @@ private:
    * @retval flase  indicate selected parameter is wrong
    */
   bool setUIFilter(uint8_t who,uint8_t filterOrder ,uint8_t UIFilterIndex);
-
 private:
   uint8_t _r, _g, _b;
   uint8_t _mode;
@@ -1239,6 +1239,7 @@ private:
   uint8_t _tapDir ;
   float _gyroRange;
   float _accelRange;
+  uint32_t _adcAcc1G;
   bool FIFOMode;
   int16_t _accelX;
   int16_t _accelY;
@@ -1285,21 +1286,22 @@ public:
    * @retval ERR_IC_VERSION The read sensor ID is wrong
    */
   int begin(void);
-  virtual float getTemp()override{return DFRobot_ICM42605::getTemperature();};
-  virtual float getAccelXms2()override{return DFRobot_ICM42605::getAccelDataX();};
-  virtual float getAccelYms2()override{return DFRobot_ICM42605::getAccelDataY();};
-  virtual float getAccelZms2()override{return DFRobot_ICM42605::getAccelDataZ();};
-  virtual float getGyroXrad()override{return DFRobot_ICM42605::getGyroDataX();};
-  virtual float getGyroYrad()override{return DFRobot_ICM42605::getGyroDataY();};
-  virtual float getGyroZrad()override{return DFRobot_ICM42605::getGyroDataZ();};
+  virtual float getTemp()override{return DFRobot_ICM42605::getTemperature();}
+  virtual float getAccelXms2()override{return DFRobot_ICM42605::getAccelDataX();}
+  virtual float getAccelYms2()override{return DFRobot_ICM42605::getAccelDataY();}
+  virtual float getAccelZms2()override{return DFRobot_ICM42605::getAccelDataZ();}
+  virtual float getGyroXrad()override{return DFRobot_ICM42605::getGyroDataX();}
+  virtual float getGyroYrad()override{return DFRobot_ICM42605::getGyroDataY();}
+  virtual float getGyroZrad()override{return DFRobot_ICM42605::getGyroDataZ();}
 
-  virtual int16_t getAccelX()override{return DFRobot_ICM42605::getAccelX();};
-  virtual int16_t getAccelY()override{return DFRobot_ICM42605::getAccelY();};
-  virtual int16_t getAccelZ()override{return DFRobot_ICM42605::getAccelZ();};
-  virtual int16_t getGyroX()override{return DFRobot_ICM42605::getGyroX();};
-  virtual int16_t getGyroY()override{return DFRobot_ICM42605::getGyroY();};
-  virtual int16_t getGyroZ()override{return DFRobot_ICM42605::getGyroZ();};
-
+  virtual int16_t getAccelX()override{return DFRobot_ICM42605::getAccelX();}
+  virtual int16_t getAccelY()override{return DFRobot_ICM42605::getAccelY();}
+  virtual int16_t getAccelZ()override{return DFRobot_ICM42605::getAccelZ();}
+  virtual int16_t getGyroX()override{return DFRobot_ICM42605::getGyroX();}
+  virtual int16_t getGyroY()override{return DFRobot_ICM42605::getGyroY();}
+  virtual int16_t getGyroZ()override{return DFRobot_ICM42605::getGyroZ();}
+  virtual float getAccelRangeScale() override{return DFRobot_ICM42605::getAccelRangeScale();}
+  virtual uint32_t getAdcAcc1G() override{return DFRobot_ICM42605::getAdcAcc1G();}
   virtual bool updateData()override
   {
       DFRobot_ICM42605::getFIFOData();

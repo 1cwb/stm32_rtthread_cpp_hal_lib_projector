@@ -32,6 +32,8 @@ public:
     virtual float getGyroXrad() = 0;
     virtual float getGyroYrad() = 0;
     virtual float getGyroZrad() = 0;
+    virtual float getAccelRangeScale() = 0;
+    virtual uint32_t getAdcAcc1G() = 0;
     virtual bool updateData() = 0;
     void rotation(float *v, sensorAlign align)
     {

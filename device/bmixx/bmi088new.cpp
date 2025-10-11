@@ -371,15 +371,19 @@ mResult bmi088::accelSetRange(uint32_t maxG)
     if (maxG <= 3) {
         regval = BMI088_ACCEL_RANGE_3_G;
         _accelRangeScale = (3 * BMI088_ONE_G / 32768);
+        _adcAcc1G = 32768 / 3;
     } else if (maxG <= 6) {
         regval = BMI088_ACCEL_RANGE_6_G;
         _accelRangeScale = (6 * BMI088_ONE_G / 32768);
+        _adcAcc1G = 32768 / 6;
     } else if (maxG <= 12) {
         regval = BMI088_ACCEL_RANGE_12_G;
         _accelRangeScale = (12 * BMI088_ONE_G / 32768);
+        _adcAcc1G = 32768 / 12;
     } else if (maxG <= 24) {
         regval = BMI088_ACCEL_RANGE_24_G;
         _accelRangeScale = (24 * BMI088_ONE_G / 32768);
+        _adcAcc1G = 32768 / 24;
     } else {
         return M_RESULT_EINVAL;
     }

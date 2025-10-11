@@ -148,19 +148,21 @@ public:
     ~bmi088() = default;
 
 
-    virtual float getTemp()override{return readTemp();};
-    virtual int16_t getAccelX()override{return acc[0];};
-    virtual int16_t getAccelY()override{return acc[1];};
-    virtual int16_t getAccelZ()override{return acc[2];};
-    virtual int16_t getGyroX()override{return gyr[0];};
-    virtual int16_t getGyroY()override{return gyr[1];};
-    virtual int16_t getGyroZ()override{return gyr[2];};
-    virtual float getAccelXms2()override{return accgMs[0];};
-    virtual float getAccelYms2()override{return accgMs[1];};
-    virtual float getAccelZms2()override{return accgMs[2];};
-    virtual float getGyroXrad()override{return gyrRad[0];};
-    virtual float getGyroYrad()override{return gyrRad[1];};
-    virtual float getGyroZrad()override{return gyrRad[2];};
+    virtual float getTemp()override{return readTemp();}
+    virtual int16_t getAccelX()override{return acc[0];}
+    virtual int16_t getAccelY()override{return acc[1];}
+    virtual int16_t getAccelZ()override{return acc[2];}
+    virtual int16_t getGyroX()override{return gyr[0];}
+    virtual int16_t getGyroY()override{return gyr[1];}
+    virtual int16_t getGyroZ()override{return gyr[2];}
+    virtual float getAccelXms2()override{return accgMs[0];}
+    virtual float getAccelYms2()override{return accgMs[1];}
+    virtual float getAccelZms2()override{return accgMs[2];}
+    virtual float getGyroXrad()override{return gyrRad[0];}
+    virtual float getGyroYrad()override{return gyrRad[1];}
+    virtual float getGyroZrad()override{return gyrRad[2];}
+    virtual float getAccelRangeScale() override{return _accelRangeScale;}
+    virtual uint32_t getAdcAcc1G() override{return _adcAcc1G;}
     virtual bool updateData()override
     {
         gyroReadRad();
@@ -195,6 +197,7 @@ private:
     float _gyroRangesSale;
     float _accelRangeScale;
     float _sampleRate;
+    uint32_t _adcAcc1G;
     mDev::mGpio* _accelCsPin;
     mDev::mGpio* _gyroCsPin;
     mDev::mSpi *_spi;

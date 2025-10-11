@@ -104,7 +104,7 @@ int sensorCalTask(void)
                 
                 if(!accCalibration.isCalibrationComplete())
                 {
-                    accCalibration.performAccelerationCalibration(accData, 1365);
+                    accCalibration.performAccelerationCalibration(accData, imu1->getAdcAcc1G());
                 }
                 else
                 {
@@ -114,9 +114,9 @@ int sensorCalTask(void)
 
                     // 使用 Vector3 的访问方法
                     const Vector3& calResult = accCalibration.getRaw();
-                    accelGyroBias1[3] = (accData.x() - calResult.x()) * 0.071826f;
-                    accelGyroBias1[4] = (accData.y() - calResult.y()) * 0.071826f;
-                    accelGyroBias1[5] = (accData.z() - calResult.z()) * 0.071826f;
+                    accelGyroBias1[3] = (accData.x() - calResult.x()) * imu1->getAccelRangeScale();
+                    accelGyroBias1[4] = (accData.y() - calResult.y()) * imu1->getAccelRangeScale();
+                    accelGyroBias1[5] = (accData.z() - calResult.z()) * imu1->getAccelRangeScale();
                     
                     //printf("x:%.4f, y:%.4f, z:%.4f\r\n", calResult.x(), calResult.y(), calResult.z());
                     //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
