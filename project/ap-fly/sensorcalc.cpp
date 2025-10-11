@@ -23,12 +23,14 @@ using namespace bfimu;
 #define BYTE2(dwTemp)       ( *( (char *)(&dwTemp) + 2) )
 #define BYTE3(dwTemp)       ( *( (char *)(&dwTemp) + 3) )
 uint8_t data_to_send[64] D2_MEM_ALIGN(4);
+
 float mapAngleFloat(float angle) {
     if (angle > 180.0f) {
         angle -= 360.0f;
     }
     return angle;
 }
+
 void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed)
 {
 	volatile uint8_t _cnt=0;
@@ -95,10 +97,14 @@ int sensorCalTask(void)
             if(imu1)
             {
                 imu1->updateData();
-                vector3_t accData = {(float)imu1->getAccelX(), (float)imu1->getAccelY(), (float)imu1->getAccelZ()};
+                // 使用新的 Vector3 类
+                Vector3 accData(static_cast<float>(imu1->getAccelX()), 
+                               static_cast<float>(imu1->getAccelY()), 
+                               static_cast<float>(imu1->getAccelZ()));
+                
                 if(!accCalibration.isCalibrationComplete())
                 {
-                    accCalibration.performAccelerationCalibration(accData,1365);
+                    accCalibration.performAccelerationCalibration(accData, 1365);
                 }
                 else
                 {
@@ -106,10 +112,13 @@ int sensorCalTask(void)
                     accelGyroBias1[1] = imu1->getGyroYrad();
                     accelGyroBias1[2] = imu1->getGyroZrad();
 
-                    accelGyroBias1[3] =  (accData.v[X] - accCalibration.getRaw()->v[X])*0.071826f;
-                    accelGyroBias1[4] = accData.v[Y] - accCalibration.getRaw()->v[Y]*0.071826f;
-                    accelGyroBias1[5] = accData.v[Z] - accCalibration.getRaw()->v[Z]*0.071826f;
-                    //printf("x:%.4f, y:%.4f, z:%.4f\r\n",accCalibration.getRaw()->v[X],accCalibration.getRaw()->v[Y],accCalibration.getRaw()->v[Z]);
+                    // 使用 Vector3 的访问方法
+                    const Vector3& calResult = accCalibration.getRaw();
+                    accelGyroBias1[3] = (accData.x() - calResult.x()) * 0.071826f;
+                    accelGyroBias1[4] = (accData.y() - calResult.y()) * 0.071826f;
+                    accelGyroBias1[5] = (accData.z() - calResult.z()) * 0.071826f;
+                    
+                    //printf("x:%.4f, y:%.4f, z:%.4f\r\n", calResult.x(), calResult.y(), calResult.z());
                     //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
                     //printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
                     imu1Hub->publish(accelGyroBias1);
@@ -133,12 +142,15 @@ int sensorCalTask(void)
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
             if(imu1 && mag1 && accCalibration.isCalibrationComplete())
             {
-                filter1.update(systickx->systimeNowUs(), accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
-                ahrsData[0] = filter1.getYaw()/10.0f;
-                ahrsData[1] = filter1.getRoll()/10.0f;
-                ahrsData[2] = filter1.getPitch()/10.0f;
+                filter1.update(systickx->systimeNowUs(), 
+                              accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], 
+                              accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], 
+                              magBias[0], magBias[1], magBias[2]);
+                ahrsData[0] = filter1.getYaw() / 10.0f;
+                ahrsData[1] = filter1.getRoll() / 10.0f;
+                ahrsData[2] = filter1.getPitch() / 10.0f;
                 ahrsData[6] = pressure;
-                ahrsHub->publish(&ahrsData);
+                ahrsHub->publish(ahrsData);
                 gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
             }
         }, nullptr);
@@ -150,8 +162,8 @@ int sensorCalTask(void)
             if(ahrsHub->poll(ahrsNode))
             {
                 ahrsHub->copy(ahrsNode, ahrsData);
-                ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n",ahrsData[0], ahrsData[1], ahrsData[2]);
-                ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], ahrsData[6], 0, 0);
+                ALOGI("YAW:%10f ROLL:%10f PITCH:%10f \r\n", ahrsData[0], ahrsData[1], ahrsData[2]);
+                ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], static_cast<int32_t>(ahrsData[6]), 0, 0);
             }
             if(mag1Hub->poll(mag1Node))
             {
@@ -161,8 +173,9 @@ int sensorCalTask(void)
             }
             mthread::threadMdelay(10);
         }
-    },nullptr);
+    }, nullptr);
     sensorCal->startup();
     return 0;
 }
+
 TASK_EXPORT(sensorCalTask, "0.1");

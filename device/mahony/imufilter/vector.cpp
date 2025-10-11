@@ -16,238 +16,282 @@
  * You should have received a copy of the GNU General Public
  * License along with this software.
  *
- * If not, see <http://www.gnu.org/licenses/>.
+ * If not, see <http://www.gnu.org/licenses/  >.
  */
 
-#include <math.h>
-#include "maths.hpp"
 #include "vector.hpp"
 #include "axis.hpp"
+#include <algorithm>
+#include <cmath>
+
 namespace bfimu {
 
-bool vector2Equal(const vector2_t *a, const vector2_t *b)
-{
-    return (a->x == b->x) && (a->y == b->y);
+// Vector2 implementation
+bool Vector2::operator==(const Vector2& other) const {
+    return std::equal(v.begin(), v.end(), other.v.begin());
 }
 
-vector2_t *vector2Zero(vector2_t *v)
-{
-    v->x = 0.0f;
-    v->y = 0.0f;
-
-    return v;
+Vector2& Vector2::zero() {
+    std::fill(v.begin(), v.end(), 0.0f);
+    return *this;
 }
 
-vector2_t *vector2Add(vector2_t *result, const vector2_t *a, const vector2_t *b)
-{
-    result->x = a->x + b->x;
-    result->y = a->y + b->y;
-
-    return result;
+Vector2 Vector2::operator+(const Vector2& other) const {
+    return {v[0] + other.v[0], v[1] + other.v[1]};
 }
 
-vector2_t *vector2Sub(vector2_t *result, const vector2_t *a, const vector2_t *b)
-{
-    result->x = a->x - b->x;
-    result->y = a->y - b->y;
-
-    return result;
+Vector2 Vector2::operator-(const Vector2& other) const {
+    return {v[0] - other.v[0], v[1] - other.v[1]};
 }
 
-vector2_t *vector2Scale(vector2_t *result, const vector2_t *v, const float k)
-{
-    result->x = v->x * k;
-    result->y = v->y * k;
-
-    return result;
+Vector2 Vector2::operator*(float scalar) const {
+    return {v[0] * scalar, v[1] * scalar};
 }
 
-float vector2Dot(const vector2_t *a, const vector2_t *b)
-{
-    return a->x * b->x + a->y * b->y;
+Vector2 operator*(float scalar, const Vector2& vec) {
+    return vec * scalar;
 }
 
-float vector2Cross(const vector2_t *a, const vector2_t *b)
-{
-    return a->x * b->y - a->y * b->x;
+Vector2& Vector2::operator+=(const Vector2& other) {
+    v[0] += other.v[0];
+    v[1] += other.v[1];
+    return *this;
 }
 
-float vector2NormSq(const vector2_t *v)
-{
-    return vector2Dot(v, v);
+Vector2& Vector2::operator-=(const Vector2& other) {
+    v[0] -= other.v[0];
+    v[1] -= other.v[1];
+    return *this;
 }
 
-float vector2Norm(const vector2_t *v)
-{
-    return sqrtf(vector2NormSq(v));
+Vector2& Vector2::operator*=(float scalar) {
+    v[0] *= scalar;
+    v[1] *= scalar;
+    return *this;
 }
 
-vector2_t *vector2Normalize(vector2_t *result, const vector2_t *v)
-{
-    const float normSq = vector2NormSq(v);
+float Vector2::dot(const Vector2& other) const {
+    return v[0] * other.v[0] + v[1] * other.v[1];
+}
 
-    if (normSq > 0.0f) {
-        return vector2Scale(result, v, 1.0f / sqrtf(normSq));
+float Vector2::cross(const Vector2& other) const {
+    return v[0] * other.v[1] - v[1] * other.v[0];
+}
+
+float Vector2::normSq() const {
+    return dot(*this);
+}
+
+float Vector2::norm() const {
+    return std::sqrt(normSq());
+}
+
+Vector2& Vector2::normalize() {
+    const float normVal = norm();
+    if (normVal > std::numeric_limits<float>::epsilon()) {
+        *this *= (1.0f / normVal);
     } else {
-        return vector2Zero(result);
+        zero();
     }
+    return *this;
 }
 
-// rotate 2d vector by angle
-// angle is in radians and positive means counterclockwise
-vector2_t *vector2Rotate(vector2_t *result, const vector2_t *v, const float angle)
-{
-    vector2_t tmp;
-    tmp.x = v->x * cos_approx(angle) - v->y * sin_approx(angle);
-    tmp.y = v->x * sin_approx(angle) + v->y * cos_approx(angle);
-    *result = tmp;
-    return result;
-}
- 
-bool vector3Equal(const vector3_t *a, const vector3_t *b)
-{
-    return (a->x == b->x) && (a->y == b->y) && (a->z == b->z);
-}
-
-vector3_t *vector3Zero(vector3_t *v)
-{
-    v->x = 0.0f;
-    v->y = 0.0f;
-    v->z = 0.0f;
-
-    return v;
-}
-
-vector3_t *vector3Add(vector3_t *result, const vector3_t *a, const vector3_t *b)
-{
-    result->x = a->x + b->x;
-    result->y = a->y + b->y;
-    result->z = a->z + b->z;
-
+Vector2 Vector2::normalized() const {
+    Vector2 result = *this;
+    result.normalize();
     return result;
 }
 
-vector3_t *vector3Sub(vector3_t *result, const vector3_t *a, const vector3_t *b)
-{
-    result->x = a->x - b->x;
-    result->y = a->y - b->y;
-    result->z = a->z - b->z;
+Vector2& Vector2::rotate(float angle) {
+    const float cosAngle = cos_approx(angle);
+    const float sinAngle = sin_approx(angle);
+    const float newX = v[0] * cosAngle - v[1] * sinAngle;
+    const float newY = v[0] * sinAngle + v[1] * cosAngle;
+    v[0] = newX;
+    v[1] = newY;
+    return *this;
+}
 
+Vector2 Vector2::rotated(float angle) const {
+    Vector2 result = *this;
+    result.rotate(angle);
     return result;
 }
 
-vector3_t *vector3Scale(vector3_t *result, const vector3_t *v, const float k)
-{
-    result->x = v->x * k;
-    result->y = v->y * k;
-    result->z = v->z * k;
-
-    return result;
+// Vector3 implementation
+bool Vector3::operator==(const Vector3& other) const {
+    return std::equal(v.begin(), v.end(), other.v.begin());
 }
 
-float vector3Dot(const vector3_t *a, const vector3_t *b)
-{
-    return a->x * b->x + a->y * b->y + a->z * b->z;
+Vector3& Vector3::zero() {
+    std::fill(v.begin(), v.end(), 0.0f);
+    return *this;
 }
 
-vector3_t *vector3Cross(vector3_t *result, const vector3_t *a, const vector3_t *b)
-{
-    vector3_t tmp;
-
-    tmp.x = a->y * b->z - a->z * b->y;
-    tmp.y = a->z * b->x - a->x * b->z;
-    tmp.z = a->x * b->y - a->y * b->x;
-
-    *result = tmp;
-
-    return result;
+Vector3 Vector3::operator+(const Vector3& other) const {
+    return {v[0] + other.v[0], v[1] + other.v[1], v[2] + other.v[2]};
 }
 
-float vector3NormSq(const vector3_t *v)
-{
-    return vector3Dot(v, v);
+Vector3 Vector3::operator-(const Vector3& other) const {
+    return {v[0] - other.v[0], v[1] - other.v[1], v[2] - other.v[2]};
 }
 
-float vector3Norm(const vector3_t *v)
-{
-    return sqrtf(vector3NormSq(v));
+Vector3 Vector3::operator*(float scalar) const {
+    return {v[0] * scalar, v[1] * scalar, v[2] * scalar};
 }
 
-vector3_t *vector3Normalize(vector3_t *result, const vector3_t *v)
-{
-    const float normSq = vector3NormSq(v);
+Vector3 operator*(float scalar, const Vector3& vec) {
+    return vec * scalar;
+}
 
-    if (normSq > 0) {  // Hopefully sqrt(nonzero) is quite large
-        return vector3Scale(result, v, 1.0f / sqrtf(normSq));
+Vector3& Vector3::operator+=(const Vector3& other) {
+    v[0] += other.v[0];
+    v[1] += other.v[1];
+    v[2] += other.v[2];
+    return *this;
+}
+
+Vector3& Vector3::operator-=(const Vector3& other) {
+    v[0] -= other.v[0];
+    v[1] -= other.v[1];
+    v[2] -= other.v[2];
+    return *this;
+}
+
+Vector3& Vector3::operator*=(float scalar) {
+    v[0] *= scalar;
+    v[1] *= scalar;
+    v[2] *= scalar;
+    return *this;
+}
+
+float Vector3::dot(const Vector3& other) const {
+    return v[0] * other.v[0] + v[1] * other.v[1] + v[2] * other.v[2];
+}
+
+Vector3 Vector3::cross(const Vector3& other) const {
+    return {
+        v[1] * other.v[2] - v[2] * other.v[1],
+        v[2] * other.v[0] - v[0] * other.v[2],
+        v[0] * other.v[1] - v[1] * other.v[0]
+    };
+}
+
+float Vector3::normSq() const {
+    return dot(*this);
+}
+
+float Vector3::norm() const {
+    return std::sqrt(normSq());
+}
+
+Vector3& Vector3::normalize() {
+    const float normVal = norm();
+    if (normVal > std::numeric_limits<float>::epsilon()) {
+        *this *= (1.0f / normVal);
     } else {
-        return vector3Zero(result);
+        zero();
     }
+    return *this;
 }
 
-vector3_t *matrixVectorMul(vector3_t * result, const matrix33_t *mat, const vector3_t *v)
-{
-    const vector3_t tmp = *v;
+Vector3 Vector3::normalized() const {
+    Vector3 result = *this;
+    result.normalize();
+    return result;
+}
 
-    result->x = mat->m[0][0] * tmp.x + mat->m[0][1] * tmp.y + mat->m[0][2] * tmp.z;
-    result->y = mat->m[1][0] * tmp.x + mat->m[1][1] * tmp.y + mat->m[1][2] * tmp.z;
-    result->z = mat->m[2][0] * tmp.x + mat->m[2][1] * tmp.y + mat->m[2][2] * tmp.z;
+// Matrix33 implementation
+Matrix33::Matrix33() {
+    // Initialize as identity matrix using std::array initialization
+    m = {{
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f}
+    }};
+}
+
+Matrix33::Matrix33(const std::array<std::array<float, 3>, 3>& arr) : m(arr) {}
+
+Matrix33 Matrix33::identity() {
+    return Matrix33();
+}
+
+Vector3 Matrix33::operator*(const Vector3& vec) const {
+    return {
+        m[0][0] * vec.v[0] + m[0][1] * vec.v[1] + m[0][2] * vec.v[2],
+        m[1][0] * vec.v[0] + m[1][1] * vec.v[1] + m[1][2] * vec.v[2],
+        m[2][0] * vec.v[0] + m[2][1] * vec.v[1] + m[2][2] * vec.v[2]
+    };
+}
+
+Matrix33 Matrix33::transpose() const {
+    Matrix33 result;
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+            result.m[i][j] = m[j][i];
+        }
+    }
+    return result;
+}
+
+Matrix33 Matrix33::buildRotationMatrix(const fp_angles_t& rpy) {
+    Matrix33 result;
+    
+    const float cosx = cos_approx(rpy.angles.roll);
+    const float sinx = sin_approx(rpy.angles.roll);
+    const float cosy = cos_approx(rpy.angles.pitch);
+    const float siny = sin_approx(rpy.angles.pitch);
+    const float cosz = cos_approx(rpy.angles.yaw);
+    const float sinz = sin_approx(rpy.angles.yaw);
+
+    result.m[0][X] = cosz * cosy;
+    result.m[0][Y] = -cosy * sinz;
+    result.m[0][Z] = siny;
+    result.m[1][X] = sinz * cosx + sinx * cosz * siny;
+    result.m[1][Y] = cosz * cosx - sinx * sinz * siny;
+    result.m[1][Z] = -sinx * cosy;
+    result.m[2][X] = sinx * sinz - cosz * cosx * siny;
+    result.m[2][Y] = sinx * cosz + sinz * cosx * siny;
+    result.m[2][Z] = cosy * cosx;
 
     return result;
 }
 
-vector3_t *matrixTrnVectorMul(vector3_t *result, const matrix33_t *mat, const vector3_t *v)
-{
-    const vector3_t tmp = *v;
-
-    result->x = mat->m[0][0] * tmp.x + mat->m[1][0] * tmp.y + mat->m[2][0] * tmp.z;
-    result->y = mat->m[0][1] * tmp.x + mat->m[1][1] * tmp.y + mat->m[2][1] * tmp.z;
-    result->z = mat->m[0][2] * tmp.x + mat->m[1][2] * tmp.y + mat->m[2][2] * tmp.z;
-
-    return result;
-}
-
-matrix33_t *buildRotationMatrix(matrix33_t *result, const fp_angles_t *rpy)
-{
-    const float cosx = cos_approx(rpy->angles.roll);
-    const float sinx = sin_approx(rpy->angles.roll);
-    const float cosy = cos_approx(rpy->angles.pitch);
-    const float siny = sin_approx(rpy->angles.pitch);
-    const float cosz = cos_approx(rpy->angles.yaw);
-    const float sinz = sin_approx(rpy->angles.yaw);
-
-    result->m[0][X] = cosz * cosy;
-    result->m[0][Y] = -cosy * sinz;
-    result->m[0][Z] = siny;
-    result->m[1][X] = sinz * cosx + sinx * cosz * siny;
-    result->m[1][Y] = cosz * cosx - sinx * sinz * siny;
-    result->m[1][Z] = -sinx * cosy;
-    result->m[2][X] = sinx * sinz - cosz * cosx * siny;
-    result->m[2][Y] = sinx * cosz + sinz * cosx * siny;
-    result->m[2][Z] = cosy * cosx;
-
-    return result;
-}
-
-vector3_t *applyRotationMatrix(vector3_t *v, const matrix33_t *rotationMatrix)
-{
-    return matrixTrnVectorMul(v, rotationMatrix, v);
-}
-
-matrix33_t *yawToRotationMatrixZ(matrix33_t *result, const float yaw)
-{
+Matrix33 Matrix33::yawToRotationMatrixZ(float yaw) {
+    Matrix33 result;
+    
     const float sinYaw = sin_approx(yaw);
     const float cosYaw = cos_approx(yaw);
 
-    result->m[0][0] = cosYaw;
-    result->m[0][1] = -sinYaw;
-    result->m[0][2] = 0.0f;
-    result->m[1][0] = sinYaw;
-    result->m[1][1] = cosYaw;
-    result->m[1][2] = 0.0f;
-    result->m[2][0] = 0.0f;
-    result->m[2][1] = 0.0f;
-    result->m[2][2] = 1.0f;
+    result.m[0][0] = cosYaw;
+    result.m[0][1] = -sinYaw;
+    result.m[0][2] = 0.0f;
+    result.m[1][0] = sinYaw;
+    result.m[1][1] = cosYaw;
+    result.m[1][2] = 0.0f;
+    result.m[2][0] = 0.0f;
+    result.m[2][1] = 0.0f;
+    result.m[2][2] = 1.0f;
 
     return result;
 }
+
+Vector3 Matrix33::transform(const Vector3& vec) const {
+    return *this * vec;
 }
+
+Vector3 Matrix33::transformTranspose(const Vector3& vec) const {
+    return {
+        m[0][0] * vec.v[0] + m[1][0] * vec.v[1] + m[2][0] * vec.v[2],
+        m[0][1] * vec.v[0] + m[1][1] * vec.v[1] + m[2][1] * vec.v[2],
+        m[0][2] * vec.v[0] + m[1][2] * vec.v[1] + m[2][2] * vec.v[2]
+    };
+}
+
+// Free function
+Vector3 applyRotationMatrix(const Vector3& v, const Matrix33& rotationMatrix) {
+    return rotationMatrix.transformTranspose(v);
+}
+
+} // namespace bfimu
