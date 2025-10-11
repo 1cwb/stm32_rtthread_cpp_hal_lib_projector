@@ -21,6 +21,7 @@
 #define DEV_USART6          "usart6"
 #define DEV_USART8          "usart8"
 #define DEV_SPI1            "spi1"
+#define DEV_SPI2            "spi2"
 #define DEV_SPI4            "spi4"
 #define DEV_SPI5            "spi5"
 #define DEV_I2C1            "i2c1"
