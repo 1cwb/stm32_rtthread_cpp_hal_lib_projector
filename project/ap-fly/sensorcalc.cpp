@@ -14,6 +14,7 @@
 #include "musbdevicedrv.hpp"
 #include "mgpiodrv.hpp"
 #include "mahony.hpp"
+#include "acccalibration.hpp"
 
 using namespace bfimu;
 
@@ -70,7 +71,6 @@ void ANO_DT_Send_Status(float angle_rol, float angle_pit, float angle_yaw, int32
 
 int sensorCalTask(void)
 {
-
     mthread* sensorCal = mthread::create("sensorcal", 2048*2, 1, 20, [&](void* p){
         mDev::mGpio* gpiox = (mDev::mGpio*)mDev::mDeviceManager::getInstance()->getDevice("pb1");
         gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
@@ -81,26 +81,39 @@ int sensorCalTask(void)
         mDev::mBarometor* mb1 = (mDev::mBarometor*)mDev::mDeviceManager::getInstance()->getDevice(DEV_BARO1);
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
         Mahony filter1;
+        StandaloneAccCalibration accCalibration;
         filter1.imuInit();
+        accCalibration.startCalibration();
         workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
             float ahrsData[7] = {0.0};
+
             float accelGyroBias1[6];   // 原来就有，保留
             float magBias[3];          // 原来就有，保留
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             if(imu1)
             {
                 imu1->updateData();
-                accelGyroBias1[0] = imu1->getGyroXrad();
-                accelGyroBias1[1] = imu1->getGyroYrad();
-                accelGyroBias1[2] = imu1->getGyroZrad();
-                accelGyroBias1[3] = imu1->getAccelXms2();
-                accelGyroBias1[4] = imu1->getAccelYms2();
-                accelGyroBias1[5] = imu1->getAccelZms2();
-                //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
-                //printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
-                imu1Hub->publish(accelGyroBias1);
+                vector3_t accData = {(float)imu1->getAccelX(), (float)imu1->getAccelY(), (float)imu1->getAccelZ()};
+                if(!accCalibration.isCalibrationComplete())
+                {
+                    accCalibration.performAccelerationCalibration(accData,1365);
+                }
+                else
+                {
+                    accelGyroBias1[0] = imu1->getGyroXrad();
+                    accelGyroBias1[1] = imu1->getGyroYrad();
+                    accelGyroBias1[2] = imu1->getGyroZrad();
+
+                    accelGyroBias1[3] =  (accData.v[X] - accCalibration.getRaw()->v[X])*0.071826f;
+                    accelGyroBias1[4] = accData.v[Y] - accCalibration.getRaw()->v[Y]*0.071826f;
+                    accelGyroBias1[5] = accData.v[Z] - accCalibration.getRaw()->v[Z]*0.071826f;
+                    //printf("x:%.4f, y:%.4f, z:%.4f\r\n",accCalibration.getRaw()->v[X],accCalibration.getRaw()->v[Y],accCalibration.getRaw()->v[Z]);
+                    //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
+                    //printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
+                    imu1Hub->publish(accelGyroBias1);
+                }
             }
 
             if(mag1)
@@ -118,16 +131,16 @@ int sensorCalTask(void)
                 mb1Hub->publish(&pressure);
             }
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-            if(imu1 && mag1)
+            if(imu1 && mag1 && accCalibration.isCalibrationComplete())
             {
                 filter1.update(systickx->systimeNowUs(), accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], magBias[0], magBias[1], magBias[2]);
                 ahrsData[0] = filter1.getYaw()/10.0f;
                 ahrsData[1] = filter1.getRoll()/10.0f;
                 ahrsData[2] = filter1.getPitch()/10.0f;
+                ahrsData[6] = pressure;
+                ahrsHub->publish(&ahrsData);
+                gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
             }
-            ahrsData[6] = pressure;
-            ahrsHub->publish(&ahrsData);
-            gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
         }, nullptr);
         workQueueManager::getInstance()->find(WORKQUEUE_HP_WORK)->scheduleWork(senscal);
 
