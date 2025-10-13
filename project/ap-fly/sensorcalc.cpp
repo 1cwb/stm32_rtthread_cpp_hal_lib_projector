@@ -15,6 +15,7 @@
 #include "mgpiodrv.hpp"
 #include "mahony.hpp"
 #include "acccalibration.hpp"
+#include "gyrocalibration.hpp"
 
 using namespace bfimu;
 
@@ -84,8 +85,10 @@ int sensorCalTask(void)
         mDev::mSystick* systickx = (mDev::mSystick*)mDev::mDeviceManager::getInstance()->getDevice(DEV_SYSTICK);
         Mahony filter1;
         StandaloneAccCalibration accCalibration;
+        StandaloneGyroCalibration gyroCalibration;
         filter1.imuInit();
         accCalibration.startCalibration();
+        gyroCalibration.startCalibration();
         workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
@@ -101,17 +104,27 @@ int sensorCalTask(void)
                 Vector3 accData(static_cast<float>(imu1->getAccelX()), 
                                static_cast<float>(imu1->getAccelY()), 
                                static_cast<float>(imu1->getAccelZ()));
-                
+                Vector3 gyroData(static_cast<float>(imu1->getGyroX()), 
+                               static_cast<float>(imu1->getGyroY()), 
+                               static_cast<float>(imu1->getGyroZ()));
+                if(!gyroCalibration.isCalibrationComplete())
+                {
+                    gyroCalibration.performGyroCalibration(gyroData);
+                }
+                else
+                {
+                    const Vector3& calResult = gyroCalibration.getRaw();
+                    accelGyroBias1[0] = (gyroData.x() - calResult.x())*imu1->getGyroRangeScale();
+                    accelGyroBias1[1] = (gyroData.y() - calResult.y())*imu1->getGyroRangeScale();
+                    accelGyroBias1[2] = (gyroData.z() - calResult.z())*imu1->getGyroRangeScale();
+                }
+
                 if(!accCalibration.isCalibrationComplete())
                 {
                     accCalibration.performAccelerationCalibration(accData, imu1->getAdcAcc1G());
                 }
                 else
                 {
-                    accelGyroBias1[0] = imu1->getGyroXrad();
-                    accelGyroBias1[1] = imu1->getGyroYrad();
-                    accelGyroBias1[2] = imu1->getGyroZrad();
-
                     // 使用 Vector3 的访问方法
                     const Vector3& calResult = accCalibration.getRaw();
                     accelGyroBias1[3] = (accData.x() - calResult.x()) * imu1->getAccelRangeScale();
@@ -121,6 +134,9 @@ int sensorCalTask(void)
                     //printf("x:%.4f, y:%.4f, z:%.4f\r\n", calResult.x(), calResult.y(), calResult.z());
                     //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
                     //printf("GYR:%d,%.d,%d,ACC:%d,%d,%d\r\n",imu1->getGyroX(),imu1->getGyroY(),imu1->getGyroZ(),imu1->getAccelX(),imu1->getAccelY(),imu1->getAccelZ());
+                }
+                if(accCalibration.isCalibrationComplete() && gyroCalibration.isCalibrationComplete())
+                {
                     imu1Hub->publish(accelGyroBias1);
                 }
             }
@@ -140,7 +156,7 @@ int sensorCalTask(void)
                 mb1Hub->publish(&pressure);
             }
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-            if(imu1 && mag1 && accCalibration.isCalibrationComplete())
+            if(imu1 && mag1 && accCalibration.isCalibrationComplete() && gyroCalibration.isCalibrationComplete())
             {
                 filter1.update(systickx->systimeNowUs(), 
                               accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], 

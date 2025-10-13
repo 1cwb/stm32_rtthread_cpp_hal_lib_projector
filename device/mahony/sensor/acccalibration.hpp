@@ -20,7 +20,7 @@ class StandaloneAccCalibration {
 private:
     // Static variables to maintain state between calls
     uint16_t calibratingA;
-    std::array<int32_t, 3> accumulator;
+    std::array<float, 3> accumulator;
     Vector3 raw;
 
 public:
@@ -72,9 +72,9 @@ public:
         // Calculate final values on the last cycle
         if (isOnFinalCalibrationCycle()) {
             // Calculate average with rounding, shift Z down by acc_1G
-            raw[0] = static_cast<int16_t>((accumulator[X] + (CALIBRATING_ACC_CYCLES / 2)) / CALIBRATING_ACC_CYCLES);
-            raw[1] = static_cast<int16_t>((accumulator[Y] + (CALIBRATING_ACC_CYCLES / 2)) / CALIBRATING_ACC_CYCLES);
-            raw[2] = static_cast<int16_t>((accumulator[Z] + (CALIBRATING_ACC_CYCLES / 2)) / CALIBRATING_ACC_CYCLES - acc1G);
+            raw[0] = static_cast<float>((accumulator[X] + (float)(CALIBRATING_ACC_CYCLES / 2.0f)) / (float)CALIBRATING_ACC_CYCLES);
+            raw[1] = static_cast<float>((accumulator[Y] + (float)(CALIBRATING_ACC_CYCLES / 2.0f)) / (float)CALIBRATING_ACC_CYCLES);
+            raw[2] = static_cast<float>((accumulator[Z] + (float)(CALIBRATING_ACC_CYCLES / 2.0f)) / (float)CALIBRATING_ACC_CYCLES - acc1G);
             
             // Calibration is now complete
             calibratingA = 0;

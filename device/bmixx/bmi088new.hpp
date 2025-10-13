@@ -162,6 +162,7 @@ public:
     virtual float getGyroYrad()override{return gyrRad[1];}
     virtual float getGyroZrad()override{return gyrRad[2];}
     virtual float getAccelRangeScale() override{return _accelRangeScale;}
+    virtual float getGyroRangeScale() override{return _gyroRangesSale;}
     virtual uint32_t getAdcAcc1G() override{return _adcAcc1G;}
     virtual bool updateData()override
     {

@@ -1158,6 +1158,7 @@ protected:
   virtual uint8_t readReg(uint8_t reg, void* pBuf, size_t size) = 0;
   float getAccelRangeScale() {return _accelRange;}
   uint32_t getAdcAcc1G() {return _adcAcc1G;}
+  float getGyroRangeScale() {return _gyroRange;}
 private:
   /**
    * @fn setGyroNotchFilterFHz
@@ -1302,6 +1303,7 @@ public:
   virtual int16_t getGyroZ()override{return DFRobot_ICM42605::getGyroZ();}
   virtual float getAccelRangeScale() override{return DFRobot_ICM42605::getAccelRangeScale();}
   virtual uint32_t getAdcAcc1G() override{return DFRobot_ICM42605::getAdcAcc1G();}
+  virtual float getGyroRangeScale() override{return DFRobot_ICM42605::getGyroRangeScale();}
   virtual bool updateData()override
   {
       DFRobot_ICM42605::getFIFOData();
