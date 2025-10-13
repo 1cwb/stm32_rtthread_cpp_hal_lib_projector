@@ -16,6 +16,7 @@
 #include "mahony.hpp"
 #include "acccalibration.hpp"
 #include "gyrocalibration.hpp"
+#include "magcalibration.hpp"
 
 using namespace bfimu;
 
@@ -86,9 +87,12 @@ int sensorCalTask(void)
         Mahony filter1;
         StandaloneAccCalibration accCalibration;
         StandaloneGyroCalibration gyroCalibration;
+        StandaloneMagCalibration magCalibration;
         filter1.imuInit();
         accCalibration.startCalibration();
         gyroCalibration.startCalibration();
+        magCalibration.startCalibration(systickx->systimeNowUs());
+
         workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
@@ -113,10 +117,11 @@ int sensorCalTask(void)
                 }
                 else
                 {
-                    const Vector3& calResult = gyroCalibration.getRaw();
-                    accelGyroBias1[0] = (gyroData.x() - calResult.x())*imu1->getGyroRangeScale();
-                    accelGyroBias1[1] = (gyroData.y() - calResult.y())*imu1->getGyroRangeScale();
-                    accelGyroBias1[2] = (gyroData.z() - calResult.z())*imu1->getGyroRangeScale();
+                    // 使用新的applyCalibration方法进行补偿
+                    Vector3 calibratedGyroData = gyroCalibration.applyCalibration(gyroData);
+                    accelGyroBias1[0] = calibratedGyroData.x() * imu1->getGyroRangeScale();
+                    accelGyroBias1[1] = calibratedGyroData.y() * imu1->getGyroRangeScale();
+                    accelGyroBias1[2] = calibratedGyroData.z() * imu1->getGyroRangeScale();
                 }
 
                 if(!accCalibration.isCalibrationComplete())
@@ -125,11 +130,11 @@ int sensorCalTask(void)
                 }
                 else
                 {
-                    // 使用 Vector3 的访问方法
-                    const Vector3& calResult = accCalibration.getRaw();
-                    accelGyroBias1[3] = (accData.x() - calResult.x()) * imu1->getAccelRangeScale();
-                    accelGyroBias1[4] = (accData.y() - calResult.y()) * imu1->getAccelRangeScale();
-                    accelGyroBias1[5] = (accData.z() - calResult.z()) * imu1->getAccelRangeScale();
+                    // 使用新的applyCalibration方法进行补偿
+                    Vector3 calibratedAccData = accCalibration.applyCalibration(accData);
+                    accelGyroBias1[3] = calibratedAccData.x() * imu1->getAccelRangeScale();
+                    accelGyroBias1[4] = calibratedAccData.y() * imu1->getAccelRangeScale();
+                    accelGyroBias1[5] = calibratedAccData.z() * imu1->getAccelRangeScale();
                     
                     //printf("x:%.4f, y:%.4f, z:%.4f\r\n", calResult.x(), calResult.y(), calResult.z());
                     //printf("GYR:%.4f,%.4f,%.4f,ACC:%.4f,%.4f,%.4f\r\n", imu1->getGyroXrad(), imu1->getGyroYrad(), imu1->getGyroZrad(), imu1->getAccelXms2(), imu1->getAccelYms2(), imu1->getAccelZms2());
@@ -144,10 +149,27 @@ int sensorCalTask(void)
             if(mag1)
             {
                 mag1->updateData();
-                magBias[0] = mag1->getMageX();
-                magBias[1] = mag1->getMageY();
-                magBias[2] = mag1->getMageZ();
-                mag1Hub->publish(magBias);
+                Vector3 magData(static_cast<float>(mag1->getMageX()), 
+                               static_cast<float>(mag1->getMageY()), 
+                               static_cast<float>(mag1->getMageZ()));
+                Vector3 gyroData(static_cast<float>(imu1->getGyroX()), 
+                                static_cast<float>(imu1->getGyroY()), 
+                                static_cast<float>(imu1->getGyroZ()));
+                if(!magCalibration.isCalibrationComplete())
+                {
+                    magCalibration.performMagnetometerCalibration(magData, gyroData, systickx->systimeNowUs());
+                }
+                else
+                {
+                    // 应用磁罗盘校准偏差补偿
+                    Vector3 calibratedMagData = magCalibration.applyCalibration(magData);
+                    
+                    // 更新magBias数组用于发布和后续处理
+                    magBias[0] = calibratedMagData.x();
+                    magBias[1] = calibratedMagData.y();
+                    magBias[2] = calibratedMagData.z();
+                    mag1Hub->publish(magBias);
+                }
             }
             if(mb1)
             {
@@ -156,7 +178,7 @@ int sensorCalTask(void)
                 mb1Hub->publish(&pressure);
             }
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_LOW);
-            if(imu1 && mag1 && accCalibration.isCalibrationComplete() && gyroCalibration.isCalibrationComplete())
+            if(imu1 && mag1 && accCalibration.isCalibrationComplete() && gyroCalibration.isCalibrationComplete() && magCalibration.isCalibrationComplete())
             {
                 filter1.update(systickx->systimeNowUs(), 
                               accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], 

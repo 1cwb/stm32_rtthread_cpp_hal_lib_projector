@@ -103,6 +103,21 @@ public:
         return 1.0f - (static_cast<float>(calibratingA) / CALIBRATING_ACC_CYCLES);
     }
     
+    // Apply calibration compensation to raw accelerometer data
+    Vector3 applyCalibration(const Vector3& rawAccData) const {
+        // Subtract bias from raw data
+        return Vector3(
+            rawAccData[0] - raw[0],
+            rawAccData[1] - raw[1], 
+            rawAccData[2] - raw[2]
+        );
+    }
+    
+    // Get calibrated data (convenience method)
+    Vector3 getCalibratedData(const Vector3& rawAccData) const {
+        return applyCalibration(rawAccData);
+    }
+    
     // Reset calibration state
     void reset() {
         calibratingA = 0;

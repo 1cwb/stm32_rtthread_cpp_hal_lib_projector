@@ -187,6 +187,21 @@ public:
         return false;
     }
     
+    // Apply calibration compensation to raw gyroscope data
+    Vector3 applyCalibration(const Vector3& rawGyroData) const {
+        // Subtract bias from raw data
+        return Vector3(
+            rawGyroData[0] - raw[0],
+            rawGyroData[1] - raw[1], 
+            rawGyroData[2] - raw[2]
+        );
+    }
+    
+    // Get calibrated data (convenience method)
+    Vector3 getCalibratedData(const Vector3& rawGyroData) const {
+        return applyCalibration(rawGyroData);
+    }
+    
     // Reset calibration state
     void reset() {
         calibratingG = 0;
