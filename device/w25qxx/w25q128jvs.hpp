@@ -46,6 +46,7 @@
 // 状态寄存器位定义
 #define W25Q128JV_STATUS_BUSY     0x01
 #define W25Q128JV_STATUS_WEL      0x02
+#define W25Q128JV_JEDEC_ID        0x00EF4018
 
 class W25Q128JVS : public mDev::mMspiflash {
 public:

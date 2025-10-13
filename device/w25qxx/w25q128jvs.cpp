@@ -1,5 +1,6 @@
 #include "w25q128jvs.hpp"
 #include <cstring>
+#include "mklog.hpp"
 
 W25Q128JVS::W25Q128JVS(const char* name, mDev::mSpi* spi, mDev::mGpio* cs_pin) 
     : mDev::mMspiflash(name), m_spi(spi), m_cs(cs_pin), m_initialized(false) {
@@ -12,16 +13,16 @@ mResult W25Q128JVS::init(void) {
     if (!m_spi || !m_cs) {
         return M_RESULT_ERROR;
     }
-    
+
     // 初始化CS引脚
     m_cs->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
     
     // 短暂延时确保设备稳定
     for (volatile int i = 0; i < 10000; i++);
-    
+
     // 释放掉电模式
     releasePowerDown();
-    
+
     // 等待设备就绪
     mResult result = waitForReady();
     if (result != M_RESULT_EOK) {
@@ -33,8 +34,10 @@ mResult W25Q128JVS::init(void) {
     
     // 可选：读取ID验证设备连接
     uint32_t id = readID();
-    printf("W25Q128JVS ID: 0x%08lX\r\n", id);  // 修复格式警告
-    
+    if (id != W25Q128JV_JEDEC_ID) {
+        ALOGE("W25Q128JVS ID read failed, ID: 0x%08lX\r\n", id);
+        return M_RESULT_ERROR;
+    }
     return M_RESULT_EOK;
 }
 
@@ -177,32 +180,32 @@ mResult W25Q128JVS::blockErase64K(uint32_t SectorAddress) {
 
 mResult W25Q128JVS::chipErase(void) {
     if (!m_spi || !m_cs || !m_initialized) {
-        printf("ERROR: W25Q128JVS chipErase: not initialized\r\n");
+        ALOGD("ERROR: W25Q128JVS chipErase: not initialized\r\n");
         return M_RESULT_ERROR;
     }
     
     // 等待设备就绪
     mResult result = waitForReady();
     if (result != M_RESULT_EOK) {
-        printf("ERROR: W25Q128JVS chipErase: initial waitForReady failed\r\n");
+        ALOGD("ERROR: W25Q128JVS chipErase: initial waitForReady failed\r\n");
         return result;
     }
     
     // 使能写操作
     result = writeEnable();
     if (result != M_RESULT_EOK) {
-        printf("ERROR: W25Q128JVS chipErase: writeEnable failed\r\n");
+        ALOGD("ERROR: W25Q128JVS chipErase: writeEnable failed\r\n");
         return result;
     }
     
     // 发送整片擦除指令
     result = sendCommand(W25X_ChipErase);
     if (result != M_RESULT_EOK) {
-        printf("ERROR: W25Q128JVS chipErase: sendCommand failed\r\n");
+        ALOGD("ERROR: W25Q128JVS chipErase: sendCommand failed\r\n");
         return result;
     }
     
-    printf("W25Q128JVS chipErase: command sent, waiting for completion (may take 30-60 seconds)...\r\n");
+    ALOGD("W25Q128JVS chipErase: command sent, waiting for completion (may take 30-60 seconds)...\r\n");
     
     // 整片擦除需要特别长的等待时间
     const uint32_t maxChipEraseTime = 120000000;  // 120秒
@@ -212,7 +215,7 @@ mResult W25Q128JVS::chipErase(void) {
     while (isBusy()) {
         if (++waitCount > maxChipEraseTime) {
             uint8_t status = readStatusReg1();
-            printf("ERROR: W25Q128JVS chipErase: timeout after %u seconds, status=0x%02X\r\n", 
+            ALOGD("ERROR: W25Q128JVS chipErase: timeout after %u seconds, status=0x%02X\r\n", 
                    waitCount/1000000, status);
             return M_RESULT_ETIMEOUT;
         }
@@ -220,12 +223,12 @@ mResult W25Q128JVS::chipErase(void) {
         // 定期打印进度
         if (waitCount % printInterval == 0) {
             uint8_t status = readStatusReg1();
-            printf("W25Q128JVS chipErase: erasing... %u seconds, status=0x%02X\r\n", 
+            ALOGD("W25Q128JVS chipErase: erasing... %u seconds, status=0x%02X\r\n", 
                    waitCount/1000000, status);
         }
     }
     
-    printf("W25Q128JVS chipErase: completed successfully in %u seconds\r\n", waitCount/1000000);
+    ALOGD("W25Q128JVS chipErase: completed successfully in %u seconds\r\n", waitCount/1000000);
     return M_RESULT_EOK;
 }
 
@@ -346,18 +349,17 @@ mResult W25Q128JVS::readBuffer(uint8_t* pBuffer, uint32_t ReadAddr, uint32_t Num
 mResult W25Q128JVS::writeEnable(void) {
     mResult result = sendCommand(W25X_WriteEnable);
     if (result != M_RESULT_EOK) {
-        printf("ERROR: W25Q128JVS writeEnable: sendCommand failed\r\n");
+        ALOGE("ERROR: W25Q128JVS writeEnable: sendCommand failed\r\n");
         return result;
     }
     
     // 验证写使能是否成功
     uint8_t status = readStatusReg1();
     if (status & W25Q128JV_STATUS_WEL) {
-        printf("W25Q128JVS writeEnable: success, status=0x%02X\r\n", status);
         return M_RESULT_EOK;
     }
     
-    printf("ERROR: W25Q128JVS writeEnable: WEL bit not set, status=0x%02X\r\n", status);
+    ALOGD("ERROR: W25Q128JVS writeEnable: WEL bit not set, status=0x%02X\r\n", status);
     return M_RESULT_ERROR;
 }
 
@@ -385,7 +387,7 @@ bool W25Q128JVS::isBusy(void) {
     
     // 如果状态读取失败，假设设备忙
     if (status == 0xFF) {
-        printf("WARNING: W25Q128JVS isBusy: failed to read status, assuming busy\r\n");
+        ALOGD("WARNING: W25Q128JVS isBusy: failed to read status, assuming busy\r\n");
         return true;
     }
     
@@ -401,7 +403,7 @@ mResult W25Q128JVS::waitForReady(void) {
     while (isBusy()) {
         if (++waitCount > maxWaitCount) {
             uint8_t status = readStatusReg1();
-            printf("ERROR: W25Q128JVS waitForReady: timeout after %u ms, status=0x%02X\r\n", 
+            ALOGE("ERROR: W25Q128JVS waitForReady: timeout after %u ms, status=0x%02X\r\n", 
                    waitCount/1000, status);
             return M_RESULT_ETIMEOUT;
         }
@@ -409,20 +411,18 @@ mResult W25Q128JVS::waitForReady(void) {
         // 定期打印状态信息
         if (waitCount % printInterval == 0) {
             uint8_t status = readStatusReg1();
-            printf("W25Q128JVS waitForReady: waiting... %u ms, status=0x%02X\r\n", 
+            ALOGD("W25Q128JVS waitForReady: waiting... %u ms, status=0x%02X\r\n", 
                    waitCount/1000, status);
         }
     }
     
     if (waitCount > 0) {
-        printf("W25Q128JVS waitForReady: completed after %u ms\r\n", waitCount/1000);
+        ALOGD("W25Q128JVS waitForReady: completed after %u ms\r\n", waitCount/1000);
     }
-    
     return M_RESULT_EOK;
 }
 
 uint8_t W25Q128JVS::readStatusReg1(void) {
-    uint8_t status = 0;
     uint8_t tx_buf[2] = {W25X_ReadStatusReg1, 0xFF};  // 命令 + dummy byte
     uint8_t rx_buf[2] = {0};
     
