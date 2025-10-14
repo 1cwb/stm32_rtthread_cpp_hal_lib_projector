@@ -3,6 +3,8 @@
 #include "sys.h"
 #include "mspidrv.hpp"
 #include "gpio.hpp"
+#include <string>
+
 int qspiflashInit()
 {
     gpiox* w25qcs = new gpiox("w25qcs");
@@ -13,29 +15,45 @@ int qspiflashInit()
         return -1;
     }
 #if 0
-    if(w25qxx->chipErase() != M_RESULT_EOK)
-    {
-        printf("erase chip fail\r\n");
-        return -1;
-    }
-    printf("erase qspiflash ok\r\n");
-#endif
-#if 1
-uint8_t buf[10] = {0,1,2,3,4,5,6,7,7,7};
-uint8_t rbuf[10] = {0};
-if(w25qxx->writeBuffer(buf, 0x00, 10) != M_RESULT_EOK)
+std::string qspiflashTestStr = "hello world"; 
+char* buf = "hello world"; 
+uint8_t rbuf[20] = {0}; 
+
+// 1. 先擦除要写入的区域（4KB扇区擦除）
+uint32_t test_addr = 0x00;
+printf("Erasing sector at 0x%08X...\r\n", test_addr);
+if(w25qxx->sectorErase(test_addr) != M_RESULT_EOK)
 {
-    return -1;
+    printf("Sector erase failed!\r\n");
+    return -1; 
 }
-if(w25qxx->readBuffer(rbuf, 0x00, 10) != M_RESULT_EOK)
-{
-    return -1;
-}
-for (int i = 0; i < 10; i++)
-{
-    printf("0x%x ", rbuf[i]);
+
+// 2. 等待擦除完成
+printf("Waiting for erase to complete...\r\n");
+HAL_Delay(100);  // 等待擦除完成
+
+// 3. 现在写入数据
+printf("Writing: %s (len=%d)\r\n", buf, strlen(buf)+1);
+if(w25qxx->writeBuffer((uint8_t*)buf, test_addr, strlen(buf)+1) != M_RESULT_EOK) 
+{ 
+    printf("Write failed!\r\n");
+    return -1; 
+} 
+
+// 4. 读取并验证
+if(w25qxx->readBuffer(rbuf, test_addr, strlen(buf)+1) != M_RESULT_EOK) 
+{ 
+    printf("Read failed!\r\n");
+    return -1; 
+} 
+
+// 5. 打印结果
+printf("Raw data read: ");
+for(int i = 0; i < strlen(buf)+1; i++) {
+    printf("%02x ", rbuf[i]);
 }
 printf("\r\n");
+printf("read qspiflash ok: %s\r\n", (char*)rbuf); 
 #endif
     return 0;
 }

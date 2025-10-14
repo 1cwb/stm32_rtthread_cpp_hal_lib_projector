@@ -17,6 +17,7 @@
 #include "acccalibration.hpp"
 #include "gyrocalibration.hpp"
 #include "magcalibration.hpp"
+#include "config.hpp"
 
 using namespace bfimu;
 
@@ -89,9 +90,23 @@ int sensorCalTask(void)
         StandaloneGyroCalibration gyroCalibration;
         StandaloneMagCalibration magCalibration;
         filter1.imuInit();
-        accCalibration.startCalibration();
-        gyroCalibration.startCalibration();
-        magCalibration.startCalibration(systickx->systimeNowUs());
+        mConfig* pcfg = mConfig::getInstance();
+        if(pcfg->ready())
+        {
+            pcfg->load();
+            Vector3 accRaw(atof(pcfg->getValue("ACCXZERO").c_str()), 
+                        atof(pcfg->getValue("ACCYZERO").c_str()), 
+                        atof(pcfg->getValue("ACCZZERO").c_str()));
+            Vector3 gyroRaw(atof(pcfg->getValue("GYROXZERO").c_str()), 
+                        atof(pcfg->getValue("GYROYZERO").c_str()), 
+                        atof(pcfg->getValue("GYROZZERO").c_str()));
+            Vector3 magRaw(atof(pcfg->getValue("MAGXZERO").c_str()), 
+                        atof(pcfg->getValue("MAGYZERO").c_str()), 
+                        atof(pcfg->getValue("MAGZZERO").c_str()));
+            accCalibration.setRaw(accRaw);
+            gyroCalibration.setRaw(gyroRaw);
+            magCalibration.setRaw(magRaw);
+        }
 
         workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
@@ -101,6 +116,20 @@ int sensorCalTask(void)
             float accelGyroBias1[6];   // 原来就有，保留
             float magBias[3];          // 原来就有，保留
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
+            if(cliHub->poll(cliNode))
+            {
+                uint8_t calibration = 0;
+                if(cliHub->copy(cliNode, &calibration) == M_RESULT_EOK)
+                {
+                    ALOGD("cliHub poll calibration %d\r\n", calibration);
+                    if(calibration == 1)
+                    {
+                        accCalibration.startCalibration();
+                        gyroCalibration.startCalibration();
+                        magCalibration.startCalibration(systickx->systimeNowUs());
+                    }
+                }
+            }
             if(imu1)
             {
                 imu1->updateData();
@@ -158,6 +187,21 @@ int sensorCalTask(void)
                 if(!magCalibration.isCalibrationComplete())
                 {
                     magCalibration.performMagnetometerCalibration(magData, gyroData, systickx->systimeNowUs());
+                    if(magCalibration.isCalibrationComplete())
+                    {
+                        std::vector<mConfig::ConfigItem> configItems = {
+                            {"ACCXZERO", std::to_string(accCalibration.getRaw().x())},
+                            {"ACCYZERO", std::to_string(accCalibration.getRaw().y())},
+                            {"ACCZZERO", std::to_string(accCalibration.getRaw().z())},
+                            {"GYROXZERO", std::to_string(gyroCalibration.getRaw().x())},
+                            {"GYROYZERO", std::to_string(gyroCalibration.getRaw().y())},
+                            {"GYROZZERO", std::to_string(gyroCalibration.getRaw().z())},
+                            {"MAGXZERO", std::to_string(magCalibration.getRaw().x())},
+                            {"MAGYZERO", std::to_string(magCalibration.getRaw().y())},
+                            {"MAGZZERO", std::to_string(magCalibration.getRaw().z())},
+                        };
+                        pcfg->save(configItems);
+                    }
                 }
                 else
                 {

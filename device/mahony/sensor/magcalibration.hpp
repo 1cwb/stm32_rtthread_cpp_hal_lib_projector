@@ -34,7 +34,7 @@ private:
     compassBiasEstimator_t biasEstimator;
     
     // 校准结果
-    Vector3 bias;
+    Vector3 raw;
     
     // 运动检测相关
     float gyroNormSquaredMin;
@@ -133,7 +133,7 @@ public:
         magCalProcessActive(false),
         didMovementStart(false),
         magCalEndTime(0),
-        bias(0.0f, 0.0f, 0.0f),
+        raw(0.0f, 0.0f, 0.0f),
         gyroNormSquaredMin(GYRO_NORM_SQUARED_MIN)
     {
         initBiasEstimator();
@@ -151,7 +151,7 @@ public:
         initBiasEstimator();
         
         // 清零当前偏差
-        bias = Vector3(0.0f, 0.0f, 0.0f);
+        raw = Vector3(0.0f, 0.0f, 0.0f);
     }
     
     // 检查校准是否完成
@@ -197,10 +197,10 @@ public:
             // 校准时间结束 - 无论是否检测到运动都完成
             if (didMovementStart) {
                 // 如果检测到运动，保存校准结果
-                bias = Vector3(biasEstimator.b[0], biasEstimator.b[1], biasEstimator.b[2]);
+                raw = Vector3(biasEstimator.b[0], biasEstimator.b[1], biasEstimator.b[2]);
             } else {
                 // 超时未检测到运动，使用当前估计作为结果
-                bias = Vector3(biasEstimator.b[0], biasEstimator.b[1], biasEstimator.b[2]);
+                raw = Vector3(biasEstimator.b[0], biasEstimator.b[1], biasEstimator.b[2]);
             }
             // 校准完成，重置状态
             magCalProcessActive = false;
@@ -215,10 +215,13 @@ public:
     }
 
     // 获取当前偏差估计
-    const Vector3& getBias() const {
-        return bias;
+    const Vector3& getRaw() const {
+        return raw;
     }
-    
+    void setRaw(const Vector3& raw)
+    {
+        this->raw = raw;
+    }
     // 获取当前偏差估计（实时更新）
     Vector3 getCurrentBias() const {
         return Vector3(biasEstimator.b[0], biasEstimator.b[1], biasEstimator.b[2]);
@@ -254,7 +257,7 @@ public:
         magCalProcessActive = false;
         didMovementStart = false;
         magCalEndTime = 0;
-        bias = Vector3(0.0f, 0.0f, 0.0f);
+        raw = Vector3(0.0f, 0.0f, 0.0f);
         initBiasEstimator();
     }
     
@@ -265,7 +268,7 @@ public:
     
     // 应用校准到原始数据
     Vector3 applyCalibration(const Vector3& rawMagData) const {
-        return rawMagData - bias;
+        return rawMagData - raw;
     }
     
     // 获取自适应遗忘因子（调试用）

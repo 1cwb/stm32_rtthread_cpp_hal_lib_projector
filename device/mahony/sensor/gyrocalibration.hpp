@@ -162,7 +162,10 @@ public:
     const Vector3& getRaw() const {
         return raw;
     }
-    
+    void setRaw(const Vector3& raw)
+    {
+        this->raw = raw;
+    }
     // Get calibration progress (0.0 to 1.0)
     float getProgress() const {
         if (calibratingG == 0) {

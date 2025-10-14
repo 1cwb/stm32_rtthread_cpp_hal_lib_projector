@@ -295,6 +295,11 @@ void usartRecvEnter(void* p)
                     {
                         SoftReset();
                     }
+                    if(strncmp(str.c_str(),"calibration",11) == 0)
+                    {
+                        uint8_t CALIBRATION = 1;
+                        cliHub->publish(&CALIBRATION);
+                    }
                     break;
                 case INTERFACE_ID_U2:
                     /*for(uint32_t i = 0; i < ifdata.len; i++)

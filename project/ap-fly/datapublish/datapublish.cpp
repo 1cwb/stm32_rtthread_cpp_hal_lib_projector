@@ -7,6 +7,7 @@ mcnHub* mag1Hub = nullptr;
 mcnHub* mb1Hub = nullptr;
 mcnHub* ahrsHub = nullptr;
 mcnHub* powerHub = nullptr;
+mcnHub* cliHub = nullptr;
 mcnNode* imu1Node = nullptr;
 mcnNode* imu2Node = nullptr;
 mcnNode* mag1Node = nullptr;
@@ -15,6 +16,7 @@ mcnNode* ahrsNode = nullptr;
 mcnNode* ahrsSendBackToRemoteNode = nullptr;
 mcnNode* powerSendbackNode = nullptr;
 mcnNode* powerNode = nullptr;
+mcnNode* cliNode = nullptr;
 int mcnInit()
 {
     imu1Hub = new mcnHub("imu1Hub",sizeof(float)*6);
@@ -90,6 +92,18 @@ int mcnInit()
     }
     powerSendbackNode = powerHub->subscribe("powerSendbackNode");
     if(!powerSendbackNode)
+    {
+        return -1;
+    }
+
+    cliHub = new mcnHub("clihub",sizeof(uint8_t));
+    if(!cliHub)
+    {
+        return -1;
+    }
+    cliHub->init();
+    cliNode = cliHub->subscribe("cliNode");
+    if(!cliNode)
     {
         return -1;
     }
