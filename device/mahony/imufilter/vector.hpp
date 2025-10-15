@@ -74,7 +74,16 @@ public:
     Vector3() : v{0.0f, 0.0f, 0.0f} {}
     Vector3(float x, float y, float z) : v{x, y, z} {}
     explicit Vector3(const std::array<float, 3>& arr) : v(arr) {}
-
+    Vector3& operator=(const Vector3& other) {
+        if (this != &other) {
+            v = other.v;
+        }
+        return *this;
+    }
+    Vector3& operator=(std::array<float, 3>&& arr) {
+        v = std::move(arr);
+        return *this;
+    }
     // Accessors
     float& x() { return v[0]; }
     float& y() { return v[1]; }

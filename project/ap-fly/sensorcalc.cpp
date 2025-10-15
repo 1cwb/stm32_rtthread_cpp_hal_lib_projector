@@ -18,6 +18,7 @@
 #include "gyrocalibration.hpp"
 #include "magcalibration.hpp"
 #include "config.hpp"
+#include "imufilter.hpp"
 
 using namespace bfimu;
 
@@ -115,6 +116,9 @@ int sensorCalTask(void)
 
             float accelGyroBias1[6];   // 原来就有，保留
             float magBias[3];          // 原来就有，保留
+            Vector3 accData;
+            Vector3 gyroData;
+            Vector3 magData;
             gpiox->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             if(cliHub->poll(cliNode))
             {
@@ -134,10 +138,10 @@ int sensorCalTask(void)
             {
                 imu1->updateData();
                 // 使用新的 Vector3 类
-                Vector3 accData(static_cast<float>(imu1->getAccelX()), 
+                accData = Vector3(static_cast<float>(imu1->getAccelX()), 
                                static_cast<float>(imu1->getAccelY()), 
                                static_cast<float>(imu1->getAccelZ()));
-                Vector3 gyroData(static_cast<float>(imu1->getGyroX()), 
+                gyroData = Vector3(static_cast<float>(imu1->getGyroX()), 
                                static_cast<float>(imu1->getGyroY()), 
                                static_cast<float>(imu1->getGyroZ()));
                 if(!gyroCalibration.isCalibrationComplete())
@@ -178,12 +182,9 @@ int sensorCalTask(void)
             if(mag1)
             {
                 mag1->updateData();
-                Vector3 magData(static_cast<float>(mag1->getMageX()), 
+                magData = Vector3(static_cast<float>(mag1->getMageX()), 
                                static_cast<float>(mag1->getMageY()), 
                                static_cast<float>(mag1->getMageZ()));
-                Vector3 gyroData(static_cast<float>(imu1->getGyroX()), 
-                                static_cast<float>(imu1->getGyroY()), 
-                                static_cast<float>(imu1->getGyroZ()));
                 if(!magCalibration.isCalibrationComplete())
                 {
                     magCalibration.performMagnetometerCalibration(magData, gyroData, systickx->systimeNowUs());
