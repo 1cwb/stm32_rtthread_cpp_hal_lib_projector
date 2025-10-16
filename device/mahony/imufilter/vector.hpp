@@ -132,7 +132,7 @@ public:
     Matrix33 transpose() const;
     
     // Factory methods
-    static Matrix33 buildRotationMatrix(const fp_angles_t& rpy);
+    static Matrix33 buildRotationMatrix(Matrix33& result, const fp_angles_t& rpy);
     static Matrix33 yawToRotationMatrixZ(float yaw);
     
     // Transformation

@@ -19,6 +19,7 @@
 #include "magcalibration.hpp"
 #include "config.hpp"
 #include "imufilter.hpp"
+#include "boardalignment.hpp"
 
 using namespace bfimu;
 
@@ -144,6 +145,9 @@ int sensorCalTask(void)
                 gyroData = Vector3(static_cast<float>(imu1->getGyroX()), 
                                static_cast<float>(imu1->getGyroY()), 
                                static_cast<float>(imu1->getGyroZ()));
+                Alignment::alignSensorViaRotation(accData, CW0_DEG);
+                Alignment::alignSensorViaRotation(gyroData, CW0_DEG);
+
                 if(!gyroCalibration.isCalibrationComplete())
                 {
                     gyroCalibration.performGyroCalibration(gyroData);
@@ -185,6 +189,7 @@ int sensorCalTask(void)
                 magData = Vector3(static_cast<float>(mag1->getMageX()), 
                                static_cast<float>(mag1->getMageY()), 
                                static_cast<float>(mag1->getMageZ()));
+                Alignment::alignSensorViaRotation(magData, CW0_DEG);
                 if(!magCalibration.isCalibrationComplete())
                 {
                     magCalibration.performMagnetometerCalibration(magData, gyroData, systickx->systimeNowUs());

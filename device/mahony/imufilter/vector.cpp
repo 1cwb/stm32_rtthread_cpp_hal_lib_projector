@@ -235,9 +235,7 @@ Matrix33 Matrix33::transpose() const {
     return result;
 }
 
-Matrix33 Matrix33::buildRotationMatrix(const fp_angles_t& rpy) {
-    Matrix33 result;
-    
+Matrix33 Matrix33::buildRotationMatrix(Matrix33& result,const fp_angles_t& rpy) {
     const float cosx = cos_approx(rpy.angles.roll);
     const float sinx = sin_approx(rpy.angles.roll);
     const float cosy = cos_approx(rpy.angles.pitch);
