@@ -110,7 +110,7 @@ int sensorCalTask(void)
             magCalibration.setRaw(magRaw);
         }
 
-        workItem* senscal = new workItem("imucal", 0, 1, [&](void* param){
+        workItem* senscal = new workItem("imucal", 1000, 5, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
             float ahrsData[7] = {0.0};
