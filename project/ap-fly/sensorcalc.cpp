@@ -20,6 +20,7 @@
 #include "config.hpp"
 #include "imufilter.hpp"
 #include "boardalignment.hpp"
+#include "pid.hpp"
 
 using namespace bfimu;
 
