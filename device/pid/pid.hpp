@@ -8,36 +8,37 @@ public:
     enum class FilterType {
         NONE,
         PT1,
-        BIQUAD
+        BIQUAD,
+        NOTCH  // 新增陷波滤波器类型
     };
 
     struct PIDConfig {
         // 基础PID参数
-        float kp = 0.0f;
-        float ki = 0.0f;
-        float kd = 0.0f;
-        float ff = 0.0f;
+        float kp = 0.0f;                    // 比例增益：控制当前误差的响应强度，值越大响应越激进
+        float ki = 0.0f;                    // 积分增益：控制历史误差积累的响应强度，消除稳态误差
+        float kd = 0.0f;                    // 微分增益：控制误差变化率的响应强度，提供预测性阻尼
+        float ff = 0.0f;                    // 前馈增益：直接响应设定值变化的强度，提高响应速度
         
         // 限幅参数
-        float i_max = 0.0f;
-        float d_min = 0.0f;
-        float d_max = 0.0f;
-        float output_max = 0.0f;
+        float i_max = 0.0f;                 // 积分限幅：限制积分器最大积累值，防止积分饱和
+        float d_min = 0.0f;                 // 微分最小值：确保微分项有最小输出，防止D项过小失效
+        float d_max = 0.0f;                 // 微分最大值：限制微分项最大输出，防止微分冲击
+        float output_max = 0.0f;            // 总输出限幅：限制PID控制器总输出范围，保护执行器
         
         // 滤波参数
-        FilterType dterm_filter_type = FilterType::NONE;
-        float dterm_lpf_hz = 0.0f;
-        float dterm_notch_hz = 0.0f;
-        float dterm_notch_cutoff = 0.0f;
+        FilterType dterm_filter_type = FilterType::NONE;  // 微分滤波器类型：NONE(无滤波)/PT1(一阶低通)/BIQUAD(双二阶)/NOTCH(陷波)
+        float dterm_lpf_hz = 0.0f;          // 微分低通滤波截止频率(Hz)：去除高频噪声，典型值50-200Hz
+        float dterm_notch_hz = 0.0f;          // 微分陷波滤波中心频率(Hz)：专门抑制特定频率干扰
+        float dterm_notch_cutoff = 0.0f;      // 微分陷波滤波带宽参数：控制陷波器宽度
         
         // 高级参数
-        float setpoint_weight = 1.0f;
-        float iterm_relax_cutoff = 0.0f;
-        float throttle_boost = 0.0f;
-        float tpa_breakpoint = 0.0f;
-        float tpa_rate = 0.0f;
+        float setpoint_weight = 1.0f;       // 设定值权重(0-2)：平衡设定值变化与测量值变化的响应，减少D-kick
+        float iterm_relax_cutoff = 0.0f;      // 积分放松阈值：误差快速变化时减少积分积累，防止过冲
+        float throttle_boost = 0.0f;          // 油门增强(预留)：根据油门变化提供额外前馈补偿
+        float tpa_breakpoint = 0.0f;          // TPA断点(0-1)：开始应用PID衰减的油门阈值
+        float tpa_rate = 0.0f;                // TPA衰减率(0-1)：高油门时PID增益的衰减比例
         
-        float dt = 0.001f;  // 默认控制周期1ms
+        float dt = 0.001f;                    // 控制周期(秒)：默认1ms，影响积分和微分计算精度
     };
 
     PID(const PIDConfig& config) : config_(config) {
@@ -51,6 +52,10 @@ public:
         last_setpoint_ = 0.0f;
         last_measurement_ = 0.0f;
         std::fill(std::begin(dterm_filter_state_), std::end(dterm_filter_state_), 0.0f);
+        // 重置陷波滤波器系数
+        if (config_.dterm_filter_type == FilterType::NOTCH) {
+            updateNotchFilterCoefficients();
+        }
     }
 
     void setConfig(const PIDConfig& config) {
@@ -90,6 +95,15 @@ public:
             config_.dterm_lpf_hz = constrainf(value, 0.0f, 500.0f);
             updateFilterCoefficients();
         }
+        else if (param == "dterm_notch_hz") {
+            config_.dterm_notch_hz = constrainf(value, 0.0f, 500.0f);
+            updateFilterCoefficients();
+        }
+        else if (param == "dterm_notch_cutoff") {
+            config_.dterm_notch_cutoff = constrainf(value, 0.0f, 100.0f);
+            updateFilterCoefficients();
+        }
+
         else if (param == "setpoint_weight") {
             config_.setpoint_weight = constrainf(value, 0.0f, 2.0f);
         }
@@ -128,6 +142,13 @@ public:
             config_.dterm_lpf_hz = new_config.dterm_lpf_hz;
             updateFilterCoefficients();
         }
+        if (config_.dterm_notch_hz != new_config.dterm_notch_hz || 
+            config_.dterm_notch_cutoff != new_config.dterm_notch_cutoff) {
+            config_.dterm_notch_hz = new_config.dterm_notch_hz;
+            config_.dterm_notch_cutoff = new_config.dterm_notch_cutoff;
+            updateFilterCoefficients();
+        }
+
     }
     
     float update(float setpoint, float measurement, float throttle = 0.0f) {
@@ -180,8 +201,32 @@ private:
             float rc = 1.0f / (2.0f * M_PI * config_.dterm_lpf_hz);
             filter_coeffs_.alpha = config_.dt / (rc + config_.dt);
         }
+        else if (config_.dterm_filter_type == FilterType::NOTCH && 
+                 config_.dterm_notch_hz > 0 && config_.dterm_notch_cutoff > 0) {
+            updateNotchFilterCoefficients();
+        }
     }
     
+    // Betaflight风格的陷波滤波器系数计算
+    void updateNotchFilterCoefficients() {
+        if (config_.dterm_notch_hz <= 0 || config_.dterm_notch_cutoff <= 0) return;
+        
+        // Betaflight风格：使用Q值而不是直接带宽
+        float notchQ = config_.dterm_notch_hz / config_.dterm_notch_cutoff;
+        float omega = 2.0f * M_PI * config_.dterm_notch_hz * config_.dt;
+        float sn = std::sin(omega);
+        float cs = std::cos(omega);
+        float alpha = sn / (2.0f * notchQ);
+        
+        float a0 = 1.0f + alpha;
+        
+        filter_coeffs_.notch_b0 = 1.0f / a0;
+        filter_coeffs_.notch_b1 = -2.0f * cs / a0;
+        filter_coeffs_.notch_b2 = 1.0f / a0;
+        filter_coeffs_.notch_a1 = -2.0f * cs / a0;
+        filter_coeffs_.notch_a2 = (1.0f - alpha) / a0;
+    }
+
     float calculateTPAFactor(float throttle) {
         if (throttle <= config_.tpa_breakpoint || config_.tpa_rate <= 0.0f) {
             return 1.0f;
@@ -217,10 +262,10 @@ private:
     }
     
     float updateDTerm(float setpoint, float measurement, float tpa_factor) {
+        float dt = std::max(config_.dt, 1e-6f);  // 防止除零
+        float setpoint_derivative = (setpoint - last_setpoint_) / dt;
+        float measurement_derivative = (measurement - last_measurement_) / dt;
         // 带设定值权重的微分计算
-        float setpoint_derivative = (setpoint - last_setpoint_) / config_.dt;
-        float measurement_derivative = (measurement - last_measurement_) / config_.dt;
-        
         float raw_derivative = setpoint_derivative * config_.setpoint_weight - measurement_derivative;
         
         // 应用滤波
@@ -246,6 +291,8 @@ private:
                 return applyPT1Filter(input);
             case FilterType::BIQUAD:
                 return applyBiquadFilter(input);
+            case FilterType::NOTCH:
+                return applyNotchFilter(input);
             case FilterType::NONE:
             default:
                 return input;
@@ -290,9 +337,31 @@ private:
         return output;
     }
     
+    // Betaflight风格的陷波滤波器应用
+    float applyNotchFilter(float input) {
+        if (config_.dterm_notch_hz <= 0 || config_.dterm_notch_cutoff <= 0) return input;
+        
+        float output = filter_coeffs_.notch_b0 * input + 
+                      filter_coeffs_.notch_b1 * dterm_filter_state_[0] + 
+                      filter_coeffs_.notch_b2 * dterm_filter_state_[1] -
+                      filter_coeffs_.notch_a1 * dterm_filter_state_[2] - 
+                      filter_coeffs_.notch_a2 * dterm_filter_state_[3];
+        
+        // 更新状态
+        dterm_filter_state_[1] = dterm_filter_state_[0];
+        dterm_filter_state_[0] = input;
+        dterm_filter_state_[3] = dterm_filter_state_[2];
+        dterm_filter_state_[2] = output;
+        
+        return output;
+    }
+
     // 滤波器系数结构体
     struct FilterCoeffs {
         float alpha = 0.0f;
+        // 陷波滤波器系数
+        float notch_b0 = 0.0f, notch_b1 = 0.0f, notch_b2 = 0.0f;
+        float notch_a1 = 0.0f, notch_a2 = 0.0f;
     } filter_coeffs_;
     
 private:
@@ -326,7 +395,7 @@ public:
         FlightConfig config;
     };
 
-    FlightController(const FlightConfig& config) 
+    FlightController(const FlightConfig& config)
         : config_(config),
           roll_angle_pid(config.angle_pid),
           pitch_angle_pid(config.angle_pid), 
@@ -446,7 +515,7 @@ public:
         rate_output[1] = pitch_rate_pid.update(rate_setpoint[1], rate_measure[1], throttle);
         rate_output[2] = yaw_rate_pid.update(rate_setpoint[2], rate_measure[2], throttle);
         
-        // 混控器 (QuadX布局)
+        // Betaflight风格的混控器
         mixOutputs(rate_output, throttle, motor_output);
     }
     
@@ -459,20 +528,50 @@ private:
         config.dt = dt;
     }
     
+    // Betaflight风格的动态范围压缩（只在必要时）
+    void applyMotorOutputLimiting(std::array<float, 4>& motor_output) {
+        float max_output = *std::max_element(motor_output.begin(), motor_output.end());
+        float min_output = *std::min_element(motor_output.begin(), motor_output.end());
+        
+        // 只有在需要时才压缩
+        if (max_output > 1.0f || min_output < 0.0f) {
+            float scale = 1.0f;
+            if (max_output > 1.0f) scale = 1.0f / max_output;
+            if (min_output < 0.0f) scale = std::min(scale, -1.0f / min_output);
+            
+            for (int i = 0; i < 4; i++) {
+                motor_output[i] *= scale;
+            }
+        }
+    }
+    
+    // Betaflight风格的混控器实现
     void mixOutputs(const std::array<float, 3>& rate_output, float throttle, 
                    std::array<float, 4>& motor_output) {
-        // QuadX 混控器
-        float roll = rate_output[0];
-        float pitch = rate_output[1];
-        float yaw = rate_output[2];
+        // QuadX混控矩阵 (Betaflight标准布局)
+        const std::array<std::array<float, 3>, 4> mix_table = {{
+            { 1.0f,  1.0f, -1.0f},  // 前左: throttle + pitch + roll - yaw
+            { 1.0f, -1.0f,  1.0f},  // 前右: throttle + pitch - roll + yaw
+            {-1.0f,  1.0f,  1.0f},  // 后左: throttle - pitch + roll + yaw  
+            {-1.0f, -1.0f, -1.0f}   // 后右: throttle - pitch - roll - yaw
+        }};
         
-        // 基础混控
-        motor_output[0] = throttle + pitch + roll - yaw;  // 前左
-        motor_output[1] = throttle + pitch - roll + yaw;  // 前右  
-        motor_output[2] = throttle - pitch + roll + yaw;  // 后左
-        motor_output[3] = throttle - pitch - roll - yaw;  // 后右
+        // Betaflight风格混控：保持油门线性
+        for (int i = 0; i < 4; i++) {
+            motor_output[i] = throttle;
+            
+            for (int axis = 0; axis < 3; axis++) {
+                motor_output[i] += mix_table[i][axis] * rate_output[axis];
+            }
+            
+            // 基础限制（保持线性）
+            motor_output[i] = constrain(motor_output[i], 0.0f, 1.0f);
+        }
         
-        // 死区补偿和非线性校正
+        // 可选：只在必要时进行动态压缩
+        applyMotorOutputLimiting(motor_output);
+        
+        // Betaflight风格的电机死区处理（在输出阶段）
         for (int i = 0; i < 4; i++) {
             // 死区补偿
             if (motor_output[i] < config_.motor_deadband_low) {
@@ -483,21 +582,8 @@ private:
             
             // 非线性校正
             motor_output[i] = std::pow(motor_output[i], config_.motor_nonlinearity_exponent);
-        }
-        
-        // 归一化到 [0, 1] 范围
-        float min_output = *std::min_element(motor_output.begin(), motor_output.end());
-        float max_output = *std::max_element(motor_output.begin(), motor_output.end());
-        float range = max_output - min_output;
-        
-        if (range > 1e-6f) {
-            for (int i = 0; i < 4; i++) {
-                motor_output[i] = (motor_output[i] - min_output) / range;
-            }
-        }
-        
-        // 确保在 [0, 1] 范围内
-        for (int i = 0; i < 4; i++) {
+            
+            // 最终确保在 [0, 1] 范围内
             motor_output[i] = constrain(motor_output[i], 0.0f, 1.0f);
         }
     }
@@ -507,7 +593,7 @@ private:
     }
 };
 
-// 四轴穿越机预设模板
+// 四轴穿越机预设模板（保持不变）
 namespace DronePresets {
     // 5寸竞速穿越机预设
     const FlightController::DronePreset RACING_5INCH = {
@@ -674,54 +760,3 @@ namespace DronePresets {
         }
     };
 }
-#if 0
-// 测试用例
-int main() {
-    // 使用预设模板创建飞行控制器
-    FlightController flight_controller(DronePresets::RACING_5INCH.config);
-    
-    // 模拟数据
-    std::array<float, 3> angle_setpoint = {10.0f, 5.0f, 0.0f};  // 目标角度
-    std::array<float, 3> angle_measure = {8.0f, 4.5f, 0.1f};    // 当前角度
-    std::array<float, 3> rate_measure = {2.0f, 1.5f, 0.5f};     // 当前角速度
-    float throttle = 0.6f;                                      // 油门
-    std::array<float, 4> motor_output;                           // 电机输出
-    
-    // 更新控制器
-    flight_controller.update(0.001f, angle_setpoint, angle_measure, rate_measure, throttle, motor_output);
-    
-    // 输出电机值
-    std::cout << "电机输出: ";
-    for (float output : motor_output) {
-        std::cout << output << " ";
-    }
-    std::cout << std::endl;
-    
-    // 空中实时调参示例
-    flight_controller.updatePIDParam("angle", "roll", "kp", 1.8f);  // 增加横滚角度环P增益
-    flight_controller.updatePIDParam("rate", "pitch", "kd", 0.001f); // 增加俯仰角速度环D增益
-    
-    // 再次更新控制器
-    flight_controller.update(0.001f, angle_setpoint, angle_measure, rate_measure, throttle, motor_output);
-    
-    std::cout << "调参后电机输出: ";
-    for (float output : motor_output) {
-        std::cout << output << " ";
-    }
-    std::cout << std::endl;
-    
-    // 切换到另一个预设模板
-    flight_controller.applyPreset(DronePresets::FREESTYLE_3INCH);
-    
-    // 再次更新控制器
-    flight_controller.update(0.001f, angle_setpoint, angle_measure, rate_measure, throttle, motor_output);
-    
-    std::cout << "切换预设后电机输出: ";
-    for (float output : motor_output) {
-        std::cout << output << " ";
-    }
-    std::cout << std::endl;
-    
-    return 0;
-}
-#endif
