@@ -85,7 +85,7 @@ int i2cInit()
     memset(&I2C_Handle, 0, sizeof(I2C_Handle));
     /* I2C 配置 */
     I2C_Handle.Instance = I2C4;
-    I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C4),1000,0);//0x307075B1;//100KHz
+    I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C4),2000,0);//0x307075B1;//100KHz
     I2C_Handle.Init.OwnAddress1      = 0;
     I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
     I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
@@ -111,7 +111,7 @@ int i2cInit()
     },&I2C_Handle);
 
     I2C_Handle.Instance = I2C1;
-    I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C1),1000,0);//0x307075B1;//100KHz
+    I2C_Handle.Init.Timing           = i2cx::i2cClockTIMINGR(i2cx::getClockFreq(I2C1),2000,0);//0x307075B1;//100KHz
     I2C_Handle.Init.OwnAddress1      = 0;
     I2C_Handle.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
     I2C_Handle.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
