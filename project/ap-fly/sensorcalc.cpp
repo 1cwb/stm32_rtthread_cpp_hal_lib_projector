@@ -20,7 +20,7 @@
 #include "config.hpp"
 #include "imufilter.hpp"
 #include "boardalignment.hpp"
-#include "pid.hpp"
+#include "flightpid.hpp"
 
 using namespace bfimu;
 
@@ -110,10 +110,7 @@ int sensorCalTask(void)
             gyroCalibration.setRaw(gyroRaw);
             magCalibration.setRaw(magRaw);
         }
-        control::PIDController anglePidRoll(control::AnglePidConfig);
-        control::PIDController anglePidPitch(control::AnglePidConfig);
-        control::PIDController anglePidYaw(control::AnglePidConfig);
-
+        FlightPid flightPid(control::anglePidConfig, control::ratePidConfig);
         workItem* senscal = new workItem("imucal", 1000, 5, [&](void* param){
             gpiox1->setLevel(mDev::mGpio::GPIOLEVEL::LEVEL_HIGH);
             float pressure = 0.0;
@@ -238,14 +235,18 @@ int sensorCalTask(void)
                               accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2], 
                               accelGyroBias1[3], accelGyroBias1[4], accelGyroBias1[5], 
                               magBias[0], magBias[1], magBias[2]);
-                ahrsData[0] = filter1.getYaw() / 10.0f;
-                ahrsData[1] = filter1.getRoll() / 10.0f;
-                ahrsData[2] = -(filter1.getPitch() / 10.0f);
+                ahrsData[0] = filter1.getRoll() / 10.0f;
+                ahrsData[1] = -(filter1.getPitch() / 10.0f);
+                ahrsData[2] = filter1.getYaw() / 10.0f;
                 ahrsData[6] = pressure;
+                std::array<float, 3> pidAngSetpoint = {0.0f, 0.0f, ahrsData[2]};
                 std::array<float, 3> pidAngleOut; 
-                pidAngleOut[0] = anglePidRoll.update(0.0f, ahrsData[1]);
-                pidAngleOut[1] = anglePidPitch.update(0.0f, ahrsData[2]);
-                pidAngleOut[2] = anglePidYaw.update(0.0f, 0);
+                std::array<float, 3> angle = {ahrsData[0], ahrsData[1], ahrsData[2]};
+                std::array<float, 3> rate = {accelGyroBias1[0], accelGyroBias1[1], accelGyroBias1[2]};
+                flightPid.update(pidAngSetpoint, angle, rate, pidAngleOut);
+                //pidAngleOut[0] = anglePidRoll.update(0.0f, ahrsData[1]);
+                //pidAngleOut[1] = anglePidPitch.update(0.0f, ahrsData[2]);
+                //pidAngleOut[2] = anglePidYaw.update(0.0f, 0);
                 //ALOGD("YAW:%10f ROLL:%10f PITCH:%10f PIDYAW:%10f PIDROLL:%10f PIDPITCH:%10f \r\n", ahrsData[0], ahrsData[1], ahrsData[2], pidAngleOut[2], pidAngleOut[0], pidAngleOut[1]);
                 ahrsData[3] = pidAngleOut[2];
                 ahrsData[4] = pidAngleOut[0];
@@ -262,8 +263,8 @@ int sensorCalTask(void)
             if(ahrsHub->poll(ahrsNode))
             {
                 ahrsHub->copy(ahrsNode, ahrsData);
-                ALOGI("YAW:%10f ROLL:%10f PITCH:%10f PIDYAW:%10f PIDROLL:%10f PIDPITCH:%10f \r\n", ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3], ahrsData[4], ahrsData[5]);
-                ANO_DT_Send_Status(ahrsData[1], ahrsData[2], ahrsData[0], static_cast<int32_t>(ahrsData[6]), 0, 0);
+                ALOGI("ROLL:%10f PITCH:%10f YAW:%10f PIDROLL:%10f PIDPITCH:%10f PIDYAW:%10f \r\n", ahrsData[0], ahrsData[1], ahrsData[2], ahrsData[3], ahrsData[4], ahrsData[5]);
+                ANO_DT_Send_Status(ahrsData[0], ahrsData[1], ahrsData[2], static_cast<int32_t>(ahrsData[6]), 0, 0);
             }
             if(mag1Hub->poll(mag1Node))
             {

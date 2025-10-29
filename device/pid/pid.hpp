@@ -103,6 +103,7 @@ private:
 };
 // 在文件末尾，namespace control 内部
 // 角度模式（Angle/Horizon）配置声明
-extern PIDController<float>::Config AnglePidConfig;
+extern PIDController<float>::Config anglePidConfig;
+extern PIDController<float>::Config ratePidConfig;
 
 } // namespace control

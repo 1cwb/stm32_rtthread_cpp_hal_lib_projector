@@ -1,5 +1,5 @@
 #include "pid.hpp"
-
+#include <stdio.h>
 namespace control {
 
 template<typename T, bool UseAntiWindup, bool UseDerivativeFilter>
@@ -129,17 +129,29 @@ template class PIDController<float, false, false>;
 // template class PIDController<int32_t, true, true>;
 // ...
 
-// 角度模式（Angle/Horizon）配置示例
-PIDController<float>::Config AnglePidConfig = {
-    .kp = 3.0f,          // 比例增益（需根据飞机调整）
-    .ki = 0.05f,         // 积分增益（Betaflight默认较小）
-    .kd = 0.01f,         // 微分增益
-    .tau = 0.1f,         // 微分滤波器时间常数（等效于Betaflight的D滤波器）
-    .limMin = -500.0f,   // 角度模式输出下限（对应angle_mode_limit）
-    .limMax = 500.0f,    // 角度模式输出上限
-    .limMinInt = -250.0f,// 积分项下限（约为总限制的50%）
-    .limMaxInt = 250.0f, // 积分项上限
-    .sampleTime = 0.005f // 假设1kHz控制频率（Betaflight默认）
+// 角度环配置 (200Hz) - 同步调整
+PIDController<float>::Config anglePidConfig = {
+    .kp = 22.5f,         // P增益保持
+    .ki = 0.25f,         // I增益保持
+    .kd = 0.10f,         // D增益保持
+    .tau = 0.01f,        // 保持
+    .limMin = -1000.0f,  // 【同步调整】与角速度环的limMin一致
+    .limMax = 1000.0f,   // 【同步调整】角度环输出就是角速度环的设定值
+    .limMinInt = -50.0f, // 【同步调整】积分限制设为总范围的5%
+    .limMaxInt = 50.0f,  // 【同步调整】limMaxInt = 0.05 * limMax
+    .sampleTime = 0.005f // 200Hz
 };
 
+// 角速度环配置 (200Hz) - 基于物理系统设计
+PIDController<float>::Config ratePidConfig = {
+    .kp = 0.65f,         // P增益保持
+    .ki = 0.40f,         // I增益保持  
+    .kd = 0.175f,        // D增益保持
+    .tau = 0.005f,       // 保持
+    .limMin = -1000.0f,  // 【关键修改】基于实际最大角速度：典型3寸机可达±1000°/s
+    .limMax = 1000.0f,   // 【关键修改】对应物理系统的角速度限制
+    .limMinInt = -200.0f, // 【同步调整】积分限制设为总范围的20%
+    .limMaxInt = 200.0f,  // 【同步调整】limMaxInt = 0.2 * limMax
+    .sampleTime = 0.005f // 200Hz
+};
 } // namespace control
