@@ -26,6 +26,7 @@
 #include "madcdrv.hpp"
 #include "mpwmdrv.hpp"
 #include "mtimerdrv.hpp"
+#include "mdshotdrv.hpp"
 
 int main(void)
 {
@@ -42,7 +43,7 @@ int main(void)
     mDev::mPWM* pwm6 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM6);
     mDev::mPWM* pwm7 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM7);
     mDev::mPWM* pwm8 = (mDev::mPWM*)mDev::mDeviceManager::getInstance()->getDevice(DEV_PWM8);
-
+    mDev::mDSHOT* dshot1 = (mDev::mDSHOT*)mDev::mDeviceManager::getInstance()->getDevice("dshot1");
     if(timer1)
     {
         timer1->registerInterruptCb([&](mDev::mDevice* dev, void* p){
@@ -53,8 +54,8 @@ int main(void)
     }
     if(pwm1)
     {
-        pwm1->setDutyCycle(10.0f);
-        pwm1->start();
+       // pwm1->setDutyCycle(0.0f);
+       // pwm1->start();
     }
     if(pwm2)
     {
@@ -143,12 +144,14 @@ int main(void)
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(ledWorkItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(dataSendbackItem);
     workQueueManager::getInstance()->find(WORKQUEUE_LP_WORK)->scheduleWork(sysInfoWorkItem);
-
+    uint16_t throote = 100;
     while(1)
     {
         if(led0)
         led0->toggle();
-        mthread::threadDelay(1000);
+        dshot1->send(throote);
+        mthread::threadDelay(10000);
+        throote = 1000;
     }
     return 0;
 }
